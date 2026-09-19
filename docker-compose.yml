@@ -1,21 +1,24 @@
-# Drop-in service for a reverse-proxied stack.
-# Point weather.heavenly.cl at this container on internal port 4310.
-# No Traefik/Caddy/nginx labels are required; add them in your own stack file if you want.
-
+# Production stack for nginx-proxy on heavenly.
+# Path on the VPS: /opt/stacks/app-heavenly-weather
+# Public site: https://weather.heavenly.cl
 services:
   weather:
     build: .
-    image: heavenly-weather:local
-    container_name: weather
+    image: app-heavenly-weather:latest
+    container_name: app-heavenly-weather
     restart: unless-stopped
-    ports:
-      - "4310:4310"
     environment:
+      NODE_ENV: production
       PORT: "4310"
       HOSTNAME: "0.0.0.0"
-      # Optional MeteoChile WRF-DMC. Without these, Open-Meteo GFS is used.
-      # METEOCHILE_USER: you@example.com
-      # METEOCHILE_TOKEN: your-token
+      VIRTUAL_HOST: weather.heavenly.cl
+      LETSENCRYPT_HOST: weather.heavenly.cl
+      VIRTUAL_PORT: "4310"
+      METEOCHILE_USER: ${METEOCHILE_USER:-}
+      METEOCHILE_TOKEN: ${METEOCHILE_TOKEN:-}
+    networks:
+      - proxy_network
+      - default
     healthcheck:
       test:
         [
@@ -27,4 +30,9 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 20s
+      start_period: 40s
+
+networks:
+  proxy_network:
+    external: true
+  default:

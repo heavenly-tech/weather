@@ -3,13 +3,16 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# GitHub may carry a stub lockfile; npm ci needs a fully resolved one.
+# --ignore-scripts skips postinstall until sources are copied in the builder.
+RUN npm install --ignore-scripts --no-audit --no-fund
 
 FROM node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
 RUN node scripts/copy-cesium.mjs && npm run build
 
 FROM node:22-alpine AS runner

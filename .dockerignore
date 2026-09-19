@@ -7,6 +7,4 @@ agent-tools
 !README.md
 .env*
 !.env.example
-Dockerfile
-docker-compose.yml
-compose.yaml
+deploy.sh

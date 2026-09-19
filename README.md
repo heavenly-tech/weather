@@ -12,30 +12,40 @@ npm run dev
 
 The dev server binds `0.0.0.0:43123`. Open http://127.0.0.1:43123.
 
-## Docker (drop into a reverse-proxied stack)
+## Production (weather.heavenly.cl)
 
-Internal listen port is **4310**. Proxy `weather.heavenly.cl` to that port. The app does not assume Traefik, Caddy, or nginx labels.
+Same nginx-proxy stack as [flight.heavenly.cl](https://flight.heavenly.cl) and [mora.oficinaslascondes.cl](https://mora.oficinaslascondes.cl). Internal listen port is **4310**. The compose file sets `VIRTUAL_HOST`, `LETSENCRYPT_HOST`, and `VIRTUAL_PORT` and joins the external `proxy_network`.
+
+On a machine that can `ssh heavenly`:
 
 ```bash
-docker compose up --build -d
+./deploy.sh
 ```
 
-Local check: http://127.0.0.1:4310  
-Health: http://127.0.0.1:4310/api/health
+That clones or updates `/opt/stacks/app-heavenly-weather` and runs `docker compose up -d --build`.
 
-Optional environment on the `weather` service:
+Manual equivalent on the VPS:
+
+```bash
+mkdir -p /opt/stacks
+git clone https://github.com/heavenly-tech/weather.git /opt/stacks/app-heavenly-weather
+cd /opt/stacks/app-heavenly-weather
+docker compose up -d --build
+```
+
+Optional environment next to compose (MeteoChile WRF-DMC). Without these, the WRF page uses live Open-Meteo GFS:
 
 | Variable | Purpose |
 | --- | --- |
 | `METEOCHILE_USER` | Email registered with MeteoChile Servicios Climáticos |
 | `METEOCHILE_TOKEN` | Personal token for WRF-DMC `getDatosModelo` |
 
-Without those, the WRF page uses live Open-Meteo GFS (the parent model WRF-DMC nests from) and labels the source as fallback.
+Health: `http://127.0.0.1:4310/api/health` inside the container.
 
 ## What is live vs mocked
 
 | Product | Live source | Fallback |
-| --- | --- | --- |
+| --- | --- |
 | METAR / TAF | NOAA Aviation Weather Center | Clearly marked mock observation/forecast |
 | GRAMET | Derived from Open-Meteo GFS pressure levels along the route | Mock sounding |
 | GAMET | Derived GAMET-style bulletin from GFS + AWC SIGMETs (official DGAC GAMET is OPMET-only) | Mock bulletin |
