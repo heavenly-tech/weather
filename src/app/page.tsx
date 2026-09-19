@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MetarPanel } from "@/components/metar-taf-panels";
+import { MetarPanel, TafPanel } from "@/components/metar-taf-panels";
 import { ProductEmpty } from "@/components/product-state";
 import { ProductMeta } from "@/components/product-meta";
-import { Badge } from "@/components/ui/badge";
 import { DEFAULT_ICAO, getStation } from "@/lib/stations";
-import { flightCategoryBg, formatWind } from "@/lib/format";
 import { loadMetar, loadTaf, normalizeIcao } from "@/lib/products";
 
 export const dynamic = "force-dynamic";
@@ -56,37 +53,23 @@ export default async function HomePage({
         <div className="space-y-3">
           <ProductMeta envelope={metar} />
           <MetarPanel metar={metar.data} />
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Card size="sm">
-              <CardHeader>
-                <CardTitle>Wind</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {formatWind(metar.data.windDirDeg, metar.data.windKt, metar.data.gustKt)}
-              </CardContent>
-            </Card>
-            <Card size="sm">
-              <CardHeader>
-                <CardTitle>Flight category</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Badge className={flightCategoryBg(metar.data.flightCategory)} variant="outline">
-                  {metar.data.flightCategory}
-                </Badge>
-              </CardContent>
-            </Card>
-            <Card size="sm">
-              <CardHeader>
-                <CardTitle>TAF snapshot</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                {taf.data
-                  ? `${taf.data.periods.length} decoded periods · ${taf.source}`
-                  : "No TAF on file."}
-              </CardContent>
-            </Card>
-          </div>
         </div>
+      )}
+
+      {taf.data ? (
+        <div className="space-y-3">
+          <div>
+            <p className="text-[11px] tracking-[0.28em] text-primary uppercase">Terminal forecast</p>
+            <h2 className="mt-1 font-heading text-xl">TAF {icao}</h2>
+          </div>
+          <ProductMeta envelope={taf} />
+          <TafPanel taf={taf.data} />
+        </div>
+      ) : (
+        <ProductEmpty
+          title="No TAF"
+          body="AWC did not return a terminal forecast for this aerodrome, and no fallback bulletin is on file. Try SCEL or SCFA."
+        />
       )}
     </div>
   );

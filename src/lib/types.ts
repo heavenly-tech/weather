@@ -22,7 +22,7 @@ export type MetarObservation = {
   windDirDeg: number | null;
   windKt: number | null;
   gustKt: number | null;
-  visSm: string | null;
+  visM: number | null;
   altimeterHpa: number | null;
   flightCategory: FlightCategory;
   cover: string | null;
@@ -39,9 +39,10 @@ export type TafPeriod = {
   probability: number | null;
   windDirDeg: number | null;
   windKt: number | null;
-  visSm: string | number | null;
+  visM: number | null;
   wx: string | null;
   clouds: CloudLayer[];
+  flightCategory: FlightCategory;
 };
 
 export type TafForecast = {

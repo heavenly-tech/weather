@@ -1,5 +1,6 @@
 import type { CloudLayer, FlightCategory, MetarObservation, TafForecast, TafPeriod } from "./types";
 import { unixToIso } from "./format";
+import { awcVisToMeters, ceilingFtFromClouds, flightCategoryFromWx, resolveVisM } from "./visibility";
 
 type AwcCloud = { cover?: string; base?: number | null; type?: string | null };
 
@@ -70,6 +71,9 @@ function windDir(value: number | string | null | undefined): number | null {
 }
 
 export function parseAwcMetar(row: AwcMetar): MetarObservation {
+  const layers = clouds(row.clouds);
+  const visM = resolveVisM(row.rawOb, row.visib);
+  const fromAwc = flightCat(row.fltCat);
   return {
     icao: (row.icaoId ?? "").toUpperCase(),
     name: row.name ?? row.icaoId ?? "Unknown station",
@@ -80,11 +84,12 @@ export function parseAwcMetar(row: AwcMetar): MetarObservation {
     windDirDeg: windDir(row.wdir),
     windKt: row.wspd ?? null,
     gustKt: row.wgst ?? null,
-    visSm: row.visib != null ? String(row.visib) : null,
+    visM,
     altimeterHpa: row.altim ?? null,
-    flightCategory: flightCat(row.fltCat),
+    flightCategory:
+      fromAwc === "UNK" ? flightCategoryFromWx(visM, ceilingFtFromClouds(layers)) : fromAwc,
     cover: row.cover ?? null,
-    clouds: clouds(row.clouds),
+    clouds: layers,
     lat: row.lat ?? 0,
     lon: row.lon ?? 0,
     elevM: row.elev ?? null,
@@ -92,17 +97,22 @@ export function parseAwcMetar(row: AwcMetar): MetarObservation {
 }
 
 export function parseAwcTaf(row: AwcTaf): TafForecast {
-  const periods: TafPeriod[] = (row.fcsts ?? []).map((p) => ({
-    from: unixToIso(p.timeFrom),
-    to: unixToIso(p.timeTo),
-    change: p.fcstChange ?? null,
-    probability: p.probability ?? null,
-    windDirDeg: p.wdir ?? null,
-    windKt: p.wspd ?? null,
-    visSm: p.visib ?? null,
-    wx: p.wxString ?? null,
-    clouds: clouds(p.clouds),
-  }));
+  const periods: TafPeriod[] = (row.fcsts ?? []).map((p) => {
+    const layers = clouds(p.clouds);
+    const visM = awcVisToMeters(p.visib);
+    return {
+      from: unixToIso(p.timeFrom),
+      to: unixToIso(p.timeTo),
+      change: p.fcstChange ?? null,
+      probability: p.probability ?? null,
+      windDirDeg: windDir(p.wdir),
+      windKt: p.wspd ?? null,
+      visM,
+      wx: p.wxString ?? null,
+      clouds: layers,
+      flightCategory: flightCategoryFromWx(visM, ceilingFtFromClouds(layers)),
+    };
+  });
   return {
     icao: (row.icaoId ?? "").toUpperCase(),
     name: row.name ?? row.icaoId ?? "Unknown station",

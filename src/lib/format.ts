@@ -16,9 +16,10 @@ export function padIcao(id: string): string {
 
 export function formatWind(dir: number | null, kt: number | null, gust?: number | null): string {
   if (kt == null) return "—";
-  if (kt === 0 || dir == null) return "Calm";
-  const d = String(Math.round(dir)).padStart(3, "0");
   const g = gust && gust > kt ? `G${gust}` : "";
+  if (kt === 0) return "Calm";
+  if (dir == null) return `VRB / ${kt} kt${g}`;
+  const d = String(Math.round(dir)).padStart(3, "0");
   return `${d}° / ${kt} kt${g}`;
 }
 
@@ -71,15 +72,15 @@ export function flightCategoryColor(cat: FlightCategory): string {
 export function flightCategoryBg(cat: FlightCategory): string {
   switch (cat) {
     case "VFR":
-      return "bg-emerald-500/15 text-emerald-200 ring-emerald-500/30";
+      return "bg-emerald-500 text-emerald-950 ring-emerald-300/80";
     case "MVFR":
-      return "bg-sky-500/15 text-sky-200 ring-sky-500/30";
+      return "bg-sky-400 text-sky-950 ring-sky-200/80";
     case "IFR":
-      return "bg-amber-500/15 text-amber-200 ring-amber-500/30";
+      return "bg-amber-400 text-amber-950 ring-amber-200/80";
     case "LIFR":
-      return "bg-rose-500/15 text-rose-200 ring-rose-500/30";
+      return "bg-rose-500 text-rose-50 ring-rose-200/80";
     default:
-      return "bg-muted text-muted-foreground";
+      return "bg-muted text-muted-foreground ring-foreground/20";
   }
 }
 

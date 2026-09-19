@@ -7,7 +7,9 @@ export default function NotFound() {
       <p className="text-[11px] tracking-[0.28em] text-primary uppercase">Off the chart</p>
       <h1 className="font-heading text-3xl">That briefing page is not on this desk.</h1>
       <p className="text-muted-foreground">
-        The Chile aviation products live on Briefing, METAR/TAF, GRAMET, GAMET, WRF point, Synoptic, and 3D field.
+        The Chile aviation products live on Briefing, METAR/TAF, GRAMET, GAMET, WRF point, Synoptic, and 3D
+        field. Flight-category marks (VFR / MVFR / IFR / LIFR) open the Chile VFR and Special VFR margins
+        note.
       </p>
       <Link className={buttonVariants()} href="/?icao=SCEL">
         Back to SCEL briefing
