@@ -1,0 +1,38 @@
+# Production stack for nginx-proxy on heavenly.
+# Path on the VPS: /opt/stacks/app-heavenly-weather
+# Public site: https://weather.heavenly.cl
+services:
+  weather:
+    build: .
+    image: app-heavenly-weather:latest
+    container_name: app-heavenly-weather
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "4310"
+      HOSTNAME: "0.0.0.0"
+      VIRTUAL_HOST: weather.heavenly.cl
+      LETSENCRYPT_HOST: weather.heavenly.cl
+      VIRTUAL_PORT: "4310"
+      METEOCHILE_USER: ${METEOCHILE_USER:-}
+      METEOCHILE_TOKEN: ${METEOCHILE_TOKEN:-}
+    networks:
+      - proxy_network
+      - default
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4310/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+networks:
+  proxy_network:
+    external: true
+  default:
