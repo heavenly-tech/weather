@@ -1,0 +1,30 @@
+# Drop-in service for a reverse-proxied stack.
+# Point weather.heavenly.cl at this container on internal port 4310.
+# No Traefik/Caddy/nginx labels are required; add them in your own stack file if you want.
+
+services:
+  weather:
+    build: .
+    image: heavenly-weather:local
+    container_name: weather
+    restart: unless-stopped
+    ports:
+      - "4310:4310"
+    environment:
+      PORT: "4310"
+      HOSTNAME: "0.0.0.0"
+      # Optional MeteoChile WRF-DMC. Without these, Open-Meteo GFS is used.
+      # METEOCHILE_USER: you@example.com
+      # METEOCHILE_TOKEN: your-token
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4310/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s

@@ -1,0 +1,12 @@
+.git
+.gitignore
+.next
+node_modules
+agent-tools
+*.md
+!README.md
+.env*
+!.env.example
+Dockerfile
+docker-compose.yml
+compose.yaml
