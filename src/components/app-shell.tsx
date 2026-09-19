@@ -34,18 +34,18 @@ const NAV = [
   { href: "/viz", label: "3D field", icon: Layers3 },
 ];
 
+function formatZulu(d: Date) {
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  const ss = String(d.getUTCSeconds()).padStart(2, "0");
+  return `${dd}${hh}${mm}${ss}Z`;
+}
+
 function useUtcClock() {
-  const [now, setNow] = useState("--");
+  const [now, setNow] = useState(() => formatZulu(new Date()));
   useEffect(() => {
-    const tick = () => {
-      const d = new Date();
-      const dd = String(d.getUTCDate()).padStart(2, "0");
-      const hh = String(d.getUTCHours()).padStart(2, "0");
-      const mm = String(d.getUTCMinutes()).padStart(2, "0");
-      const ss = String(d.getUTCSeconds()).padStart(2, "0");
-      setNow(`${dd}${hh}${mm}${ss}Z`);
-    };
-    tick();
+    const tick = () => setNow(formatZulu(new Date()));
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
   }, []);
@@ -141,7 +141,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <StationPicker value={icao} onChange={setIcao} />
             </div>
             <div className="hidden text-right sm:block">
-              <p className="font-mono text-sm text-primary">{zulu}</p>
+              <p className="font-mono text-sm text-primary" suppressHydrationWarning>
+                {zulu}
+              </p>
               <p className="text-[11px] tracking-widest text-muted-foreground uppercase">UTC</p>
             </div>
           </header>
