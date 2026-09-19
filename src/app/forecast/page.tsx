@@ -1,19 +1,21 @@
-"use client";
-
-import { useSearchParams } from "next/navigation";
 import { Meteogram } from "@/components/meteogram";
-import { ProductEmpty, ProductError, ProductLoading } from "@/components/product-state";
-import { SourceBadge } from "@/components/source-badge";
-import { useProduct } from "@/hooks/use-product";
-import { DEFAULT_ICAO, getStation } from "@/lib/stations";
-import type { PointForecast } from "@/lib/types";
+import { ProductEmpty } from "@/components/product-state";
+import { ProductMeta } from "@/components/product-meta";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DEFAULT_ICAO, getStation } from "@/lib/stations";
+import { loadForecast, normalizeIcao } from "@/lib/products";
 
-export default function ForecastPage() {
-  const search = useSearchParams();
-  const icao = (search.get("icao") ?? DEFAULT_ICAO).toUpperCase();
+export const dynamic = "force-dynamic";
+
+export default async function ForecastPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const icao = normalizeIcao(params.icao, DEFAULT_ICAO);
   const station = getStation(icao);
-  const product = useProduct<PointForecast>(`/api/forecast?icao=${icao}`);
+  const product = await loadForecast(icao);
 
   return (
     <div className="space-y-6">
@@ -28,27 +30,23 @@ export default function ForecastPage() {
         </p>
       </div>
 
-      {product.status === "loading" ? <ProductLoading /> : null}
-      {product.status === "empty" ? (
-        <ProductEmpty title="No forecast series" body="The model grid did not return a time series for that point." />
-      ) : null}
-      {product.status === "error" ? <ProductError title="Forecast failed" body={product.message} /> : null}
-      {product.status === "ready" ? (
+      {product.data ? (
         <div className="space-y-3">
-          <SourceBadge source={product.envelope.source} label={product.envelope.sourceLabel} />
-          {product.envelope.warning ? <p className="text-xs text-amber-200">{product.envelope.warning}</p> : null}
+          <ProductMeta envelope={product} />
           <Card>
             <CardHeader>
               <CardTitle>
-                {product.envelope.data.model} · {product.envelope.data.hours.length} hours
+                {product.data.model} · {product.data.hours.length} hours
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Meteogram forecast={product.envelope.data} />
+              <Meteogram forecast={product.data} />
             </CardContent>
           </Card>
         </div>
-      ) : null}
+      ) : (
+        <ProductEmpty title="No forecast series" body="The model grid did not return a time series for that point." />
+      )}
     </div>
   );
 }
