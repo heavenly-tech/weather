@@ -1,24 +1,25 @@
-"use client";
-
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetarPanel } from "@/components/metar-taf-panels";
-import { ProductEmpty, ProductError, ProductLoading } from "@/components/product-state";
-import { SourceBadge } from "@/components/source-badge";
-import { useProduct } from "@/hooks/use-product";
+import { ProductEmpty } from "@/components/product-state";
+import { ProductMeta } from "@/components/product-meta";
+import { Badge } from "@/components/ui/badge";
 import { DEFAULT_ICAO, getStation } from "@/lib/stations";
 import { flightCategoryBg, formatWind } from "@/lib/format";
-import type { MetarObservation, TafForecast } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
+import { loadMetar, loadTaf, normalizeIcao } from "@/lib/products";
 
-export default function HomePage() {
-  const search = useSearchParams();
-  const icao = (search.get("icao") ?? DEFAULT_ICAO).toUpperCase();
+export const dynamic = "force-dynamic";
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const icao = normalizeIcao(params.icao, DEFAULT_ICAO);
   const station = getStation(icao);
-  const metar = useProduct<MetarObservation>(`/api/metar?icao=${icao}`);
-  const taf = useProduct<TafForecast>(`/api/taf?icao=${icao}`);
+  const [metar, taf] = await Promise.all([loadMetar(icao), loadTaf(icao)]);
 
   return (
     <div className="space-y-6">
@@ -46,36 +47,22 @@ export default function HomePage() {
         </Link>
       </div>
 
-      {metar.status === "loading" ? <ProductLoading /> : null}
-      {metar.status === "empty" ? (
+      {!metar.data ? (
         <ProductEmpty
           title="No observation for that aerodrome"
           body="Pick a Chilean ICAO such as SCEL, SCFA, or SCCI. Some private strips never file a METAR."
         />
-      ) : null}
-      {metar.status === "error" ? (
-        <ProductError title="METAR circuit failed" body={metar.message} />
-      ) : null}
-      {metar.status === "ready" ? (
+      ) : (
         <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <SourceBadge source={metar.envelope.source} label={metar.envelope.sourceLabel} />
-            {metar.envelope.warning ? (
-              <span className="text-xs text-amber-200">{metar.envelope.warning}</span>
-            ) : null}
-          </div>
-          <MetarPanel metar={metar.envelope.data} />
+          <ProductMeta envelope={metar} />
+          <MetarPanel metar={metar.data} />
           <div className="grid gap-3 sm:grid-cols-3">
             <Card size="sm">
               <CardHeader>
                 <CardTitle>Wind</CardTitle>
               </CardHeader>
               <CardContent>
-                {formatWind(
-                  metar.envelope.data.windDirDeg,
-                  metar.envelope.data.windKt,
-                  metar.envelope.data.gustKt
-                )}
+                {formatWind(metar.data.windDirDeg, metar.data.windKt, metar.data.gustKt)}
               </CardContent>
             </Card>
             <Card size="sm">
@@ -83,8 +70,8 @@ export default function HomePage() {
                 <CardTitle>Flight category</CardTitle>
               </CardHeader>
               <CardContent>
-                <Badge className={flightCategoryBg(metar.envelope.data.flightCategory)} variant="outline">
-                  {metar.envelope.data.flightCategory}
+                <Badge className={flightCategoryBg(metar.data.flightCategory)} variant="outline">
+                  {metar.data.flightCategory}
                 </Badge>
               </CardContent>
             </Card>
@@ -93,14 +80,14 @@ export default function HomePage() {
                 <CardTitle>TAF snapshot</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground">
-                {taf.status === "ready"
-                  ? `${taf.envelope.data.periods.length} decoded periods · ${taf.envelope.source}`
-                  : "Loading TAF…"}
+                {taf.data
+                  ? `${taf.data.periods.length} decoded periods · ${taf.source}`
+                  : "No TAF on file."}
               </CardContent>
             </Card>
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
