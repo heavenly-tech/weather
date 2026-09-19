@@ -63,13 +63,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [navOpen, setNavOpen] = useState(false);
 
   function setIcao(next: string) {
+    const icaoNext = next.toUpperCase();
+    if (icaoNext === icao) return;
     const params = new URLSearchParams(search.toString());
-    params.set("icao", next);
+    params.set("icao", icaoNext);
     if (pathname === "/gramet") {
-      params.set("from", next);
+      params.set("from", icaoNext);
     }
     if (pathname === "/gamet") {
-      const nextStation = getStation(next);
+      const nextStation = getStation(icaoNext);
       params.set(
         "fir",
         nextStation?.fir === "INTL" ? "SANTIAGO" : (nextStation?.fir ?? "SANTIAGO")

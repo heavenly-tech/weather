@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Input } from "@/components/ui/input";
+import { useMemo, useRef, useState } from "react";
 import { searchStations, getStation, type Station } from "@/lib/stations";
 import { cn } from "@/lib/utils";
 
@@ -14,15 +13,27 @@ export function StationPicker({
   onChange: (icao: string) => void;
   className?: string;
 }) {
-  const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
+  if (!open && query !== value) {
+    setQuery(value);
+  }
   const matches = useMemo(() => searchStations(query).slice(0, 12), [query]);
   const current = getStation(value);
 
   function choose(station: Station) {
     onChange(station.icao);
-    setQuery("");
+    setQuery(station.icao);
     setOpen(false);
+    inputRef.current?.blur();
+  }
+
+  function commitRaw(raw: string) {
+    const typed = raw.trim().toUpperCase();
+    const list = typed ? searchStations(typed) : matches;
+    const exact = list.find((s) => s.icao === typed) ?? list[0];
+    if (exact) choose(exact);
   }
 
   return (
@@ -30,23 +41,32 @@ export function StationPicker({
       className={cn("relative w-full max-w-sm", className)}
       onSubmit={(e) => {
         e.preventDefault();
-        const typed = query.trim().toUpperCase();
-        const exact = matches.find((s) => s.icao === typed) ?? matches[0];
-        if (exact) choose(exact);
+        commitRaw(inputRef.current?.value ?? query);
       }}
     >
       <label className="mb-1 block text-[11px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
         Aerodrome
       </label>
-      <Input
-        value={open ? query : query || value}
+      <input
+        ref={inputRef}
+        name="icao"
+        value={query}
         onChange={(e) => {
           setQuery(e.target.value);
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
         onKeyDown={(e) => {
-          if (e.key === "Escape") setOpen(false);
+          if (e.key === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            commitRaw((e.target as HTMLInputElement).value);
+          }
+          if (e.key === "Escape") {
+            setQuery(value);
+            setOpen(false);
+            inputRef.current?.blur();
+          }
         }}
         onBlur={() => {
           window.setTimeout(() => setOpen(false), 120);
@@ -54,7 +74,8 @@ export function StationPicker({
         placeholder="SCEL · Santiago"
         aria-label="Search ICAO station"
         autoComplete="off"
-        name="icao"
+        spellCheck={false}
+        className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base outline-none md:text-sm dark:bg-input/30"
       />
       {current && !open ? (
         <p className="mt-1 truncate text-xs text-muted-foreground">
@@ -80,9 +101,7 @@ export function StationPicker({
                   onClick={() => choose(station)}
                 >
                   <span className="font-mono text-primary">{station.icao}</span>
-                  <span className="truncate text-muted-foreground">
-                    {station.city}
-                  </span>
+                  <span className="truncate text-muted-foreground">{station.city}</span>
                 </button>
               </li>
             ))
