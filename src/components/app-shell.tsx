@@ -19,7 +19,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { StationPicker } from "@/components/station-picker";
 import { DEFAULT_ICAO, getStation } from "@/lib/stations";
@@ -60,6 +59,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const icao = (search.get("icao") ?? DEFAULT_ICAO).toUpperCase();
   const station = getStation(icao);
   const zulu = useUtcClock();
+  const [navOpen, setNavOpen] = useState(false);
 
   function setIcao(next: string) {
     const params = new URLSearchParams(search.toString());
@@ -118,19 +118,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border/70 bg-background/80 px-4 py-3 backdrop-blur md:px-6">
-            <Sheet>
-              <SheetTrigger
-                render={
-                  <Button variant="outline" size="icon" className="md:hidden" aria-label="Open navigation" />
-                }
+            <Sheet open={navOpen} onOpenChange={setNavOpen}>
+              <Button
+                variant="outline"
+                size="icon"
+                className="md:hidden"
+                aria-label="Open navigation"
+                onClick={() => setNavOpen(true)}
               >
                 <Menu className="size-4" />
-              </SheetTrigger>
+              </Button>
               <SheetContent side="left" className="w-72">
                 <SheetHeader>
                   <SheetTitle>Heavenly Weather</SheetTitle>
                 </SheetHeader>
-                <div className="px-4 pb-4">{nav}</div>
+                <div className="px-4 pb-4" onClick={() => setNavOpen(false)}>
+                  {nav}
+                </div>
               </SheetContent>
             </Sheet>
             <div className="min-w-0 flex-1">

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { searchStations, type Station } from "@/lib/stations";
+import { searchStations, getStation, type Station } from "@/lib/stations";
 import { cn } from "@/lib/utils";
 
 export function StationPicker({
@@ -17,7 +17,7 @@ export function StationPicker({
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const matches = useMemo(() => searchStations(query).slice(0, 12), [query]);
-  const current = matches.find((s) => s.icao === value);
+  const current = getStation(value);
 
   function choose(station: Station) {
     onChange(station.icao);
@@ -37,6 +37,13 @@ export function StationPicker({
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && matches[0]) {
+            e.preventDefault();
+            choose(matches[0]);
+          }
+          if (e.key === "Escape") setOpen(false);
+        }}
         onBlur={() => {
           window.setTimeout(() => setOpen(false), 120);
         }}
