@@ -151,13 +151,13 @@ export function WeatherScene({
         });
 
         const focus = stations.find((s) => s.icao === focusIcao) ?? stations[0];
+        if (!cancelled) setStatus("ready");
         if (focus && !cancelled) {
-          await viewer.camera.flyTo({
+          void viewer.camera.flyTo({
             destination: Cesium.Cartesian3.fromDegrees(focus.lon, focus.lat, 1_350_000),
             duration: 1.4,
           });
         }
-        if (!cancelled) setStatus("ready");
       } catch (err) {
         if (cancelled) return;
         setStatus("error");
@@ -165,10 +165,18 @@ export function WeatherScene({
       }
     };
 
+    const timeout = window.setTimeout(() => {
+      if (!cancelled) {
+        setStatus((current) => (current === "loading" ? "error" : current));
+        setError((current) => current ?? "The Cesium globe did not finish starting.");
+      }
+    }, 10_000);
+
     void start();
 
     return () => {
       cancelled = true;
+      window.clearTimeout(timeout);
       viewerRef.current?.destroy();
       viewerRef.current = null;
     };

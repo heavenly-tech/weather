@@ -26,7 +26,15 @@ export function StationPicker({
   }
 
   return (
-    <div className={cn("relative w-full max-w-sm", className)}>
+    <form
+      className={cn("relative w-full max-w-sm", className)}
+      onSubmit={(e) => {
+        e.preventDefault();
+        const typed = query.trim().toUpperCase();
+        const exact = matches.find((s) => s.icao === typed) ?? matches[0];
+        if (exact) choose(exact);
+      }}
+    >
       <label className="mb-1 block text-[11px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
         Aerodrome
       </label>
@@ -38,14 +46,6 @@ export function StationPicker({
         }}
         onFocus={() => setOpen(true)}
         onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            const typed = query.trim().toUpperCase();
-            const exact = matches.find((s) => s.icao === typed) ?? matches[0];
-            if (exact) {
-              e.preventDefault();
-              choose(exact);
-            }
-          }
           if (e.key === "Escape") setOpen(false);
         }}
         onBlur={() => {
@@ -54,6 +54,7 @@ export function StationPicker({
         placeholder="SCEL · Santiago"
         aria-label="Search ICAO station"
         autoComplete="off"
+        name="icao"
       />
       {current && !open ? (
         <p className="mt-1 truncate text-xs text-muted-foreground">
@@ -88,6 +89,6 @@ export function StationPicker({
           )}
         </ul>
       ) : null}
-    </div>
+    </form>
   );
 }
