@@ -1,11 +1,12 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductEmpty } from "@/components/product-state";
 import { ProductMeta } from "@/components/product-meta";
-import { FIRS } from "@/lib/stations";
+import { DEFAULT_ICAO, FIRS } from "@/lib/stations";
 import type { ChileFirId, GametBulletin, ProductEnvelope } from "@/lib/types";
 import { formatUtc } from "@/lib/format";
 
@@ -17,13 +18,7 @@ export function GametDesk({
   envelope: ProductEnvelope<GametBulletin>;
 }) {
   const search = useSearchParams();
-  const router = useRouter();
-
-  function setFir(next: string) {
-    const params = new URLSearchParams(search.toString());
-    params.set("fir", next);
-    router.replace(`/gamet?${params.toString()}`);
-  }
+  const icao = (search.get("icao") ?? DEFAULT_ICAO).toUpperCase();
 
   return (
     <div className="space-y-6">
@@ -43,7 +38,7 @@ export function GametDesk({
             key={item.id}
             variant={item.id === fir ? "default" : "outline"}
             size="sm"
-            onClick={() => setFir(item.id)}
+            render={<Link href={`/gamet?icao=${icao}&fir=${item.id}`} scroll={false} />}
           >
             {item.label}
           </Button>

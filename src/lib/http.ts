@@ -2,7 +2,7 @@ export async function fetchJson<T>(
   url: string,
   init?: RequestInit & { timeoutMs?: number }
 ): Promise<{ ok: true; data: T; status: number } | { ok: false; status: number; error: string }> {
-  const timeoutMs = init?.timeoutMs ?? 9000;
+  const timeoutMs = init?.timeoutMs ?? 12_000;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -26,7 +26,14 @@ export async function fetchJson<T>(
     const data = (await res.json()) as T;
     return { ok: true, data, status: res.status };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Network error";
+    const aborted =
+      (error instanceof DOMException && error.name === "AbortError") ||
+      (error instanceof Error && (error.name === "AbortError" || /aborted/i.test(error.message)));
+    const message = aborted
+      ? `Timed out after ${Math.round(timeoutMs / 1000)}s waiting for the weather circuit.`
+      : error instanceof Error
+        ? error.message
+        : "Network error";
     return { ok: false, status: 0, error: message };
   } finally {
     clearTimeout(timer);

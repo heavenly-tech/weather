@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppShell } from "@/components/app-shell";
+import { ProductLoading } from "@/components/product-state";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,7 +31,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <TooltipProvider>
           <Suspense fallback={<div className="p-8 text-sm text-muted-foreground">Loading briefing desk…</div>}>
-            <AppShell>{children}</AppShell>
+            <AppShell>
+              <Suspense fallback={<ProductLoading rows={4} />}>{children}</Suspense>
+            </AppShell>
           </Suspense>
         </TooltipProvider>
       </body>

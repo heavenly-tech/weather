@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { ProductEmpty, ProductLoading } from "@/components/product-state";
+import { ProductEmpty } from "@/components/product-state";
 import { ProductMeta } from "@/components/product-meta";
 import type { ProductEnvelope, VizStation } from "@/lib/types";
 import { flightCategoryBg, formatTemp, formatWind } from "@/lib/format";
@@ -11,7 +11,11 @@ const WeatherScene = dynamic(
   () => import("@/components/weather-scene").then((m) => m.WeatherScene),
   {
     ssr: false,
-    loading: () => <ProductLoading rows={2} />,
+    loading: () => (
+      <div className="flex h-[520px] items-center justify-center rounded-xl bg-muted/30 text-sm text-muted-foreground ring-1 ring-foreground/10">
+        Loading Cesium globe over Chile…
+      </div>
+    ),
   }
 );
 
