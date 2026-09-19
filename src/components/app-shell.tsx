@@ -19,6 +19,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { StationPicker } from "@/components/station-picker";
 import { DEFAULT_ICAO, getStation } from "@/lib/stations";
@@ -64,7 +65,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   function setIcao(next: string) {
     const params = new URLSearchParams(search.toString());
     params.set("icao", next);
-    router.replace(`${pathname}?${params.toString()}`);
+    if (pathname === "/gramet") {
+      params.set("from", next);
+    }
+    if (pathname === "/gamet") {
+      const nextStation = getStation(next);
+      params.set(
+        "fir",
+        nextStation?.fir === "INTL" ? "SANTIAGO" : (nextStation?.fir ?? "SANTIAGO")
+      );
+    }
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   function hrefFor(href: string) {
@@ -119,15 +130,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border/70 bg-background/80 px-4 py-3 backdrop-blur md:px-6">
             <Sheet open={navOpen} onOpenChange={setNavOpen}>
-              <Button
-                variant="outline"
-                size="icon"
-                className="md:hidden"
-                aria-label="Open navigation"
-                onClick={() => setNavOpen(true)}
+              <SheetTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="md:hidden"
+                    aria-label="Open navigation"
+                  />
+                }
               >
                 <Menu className="size-4" />
-              </Button>
+              </SheetTrigger>
               <SheetContent side="left" className="w-72">
                 <SheetHeader>
                   <SheetTitle>Heavenly Weather</SheetTitle>

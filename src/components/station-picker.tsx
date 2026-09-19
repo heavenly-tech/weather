@@ -38,9 +38,13 @@ export function StationPicker({
         }}
         onFocus={() => setOpen(true)}
         onKeyDown={(e) => {
-          if (e.key === "Enter" && matches[0]) {
-            e.preventDefault();
-            choose(matches[0]);
+          if (e.key === "Enter") {
+            const typed = query.trim().toUpperCase();
+            const exact = matches.find((s) => s.icao === typed) ?? matches[0];
+            if (exact) {
+              e.preventDefault();
+              choose(exact);
+            }
           }
           if (e.key === "Escape") setOpen(false);
         }}

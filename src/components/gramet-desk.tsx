@@ -32,7 +32,7 @@ export function GrametDesk({
     params.set("from", nextFrom);
     params.set("to", nextTo);
     params.set("icao", nextFrom);
-    router.replace(`/gramet?${params.toString()}`);
+    router.push(`/gramet?${params.toString()}`, { scroll: false });
   }
 
   return (
