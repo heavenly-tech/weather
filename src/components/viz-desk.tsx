@@ -4,8 +4,8 @@ import dynamic from "next/dynamic";
 import { ProductEmpty } from "@/components/product-state";
 import { ProductMeta } from "@/components/product-meta";
 import type { ProductEnvelope, VizStation } from "@/lib/types";
-import { flightCategoryBg, formatTemp, formatWind } from "@/lib/format";
-import { Badge } from "@/components/ui/badge";
+import { formatTemp, formatWind } from "@/lib/format";
+import { FlightCategoryBadge } from "@/components/flight-category-badge";
 
 const WeatherScene = dynamic(
   () => import("@/components/weather-scene").then((m) => m.WeatherScene),
@@ -52,9 +52,7 @@ export function VizDesk({
                     {station.name} · {formatTemp(station.tempC)} · {formatWind(station.windDirDeg, station.windKt)}
                   </p>
                 </div>
-                <Badge className={flightCategoryBg(station.flightCategory)} variant="outline">
-                  {station.flightCategory}
-                </Badge>
+                <FlightCategoryBadge category={station.flightCategory} icao={station.icao} size="sm" />
               </div>
             ))}
           </div>

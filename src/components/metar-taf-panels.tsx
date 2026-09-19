@@ -1,18 +1,17 @@
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { flightCategoryBg, formatTemp, formatUtc, formatWind } from "@/lib/format";
+import { FlightCategoryBadge } from "@/components/flight-category-badge";
+import { formatTemp, formatUtc, formatWind } from "@/lib/format";
+import { formatVisM } from "@/lib/visibility";
 import type { MetarObservation, TafForecast } from "@/lib/types";
 
 export function MetarPanel({ metar }: { metar: MetarObservation }) {
   return (
     <Card>
       <CardHeader className="border-b">
-        <CardTitle className="flex flex-wrap items-center gap-2">
+        <CardTitle className="flex flex-wrap items-center gap-3">
           <span className="font-mono text-primary">{metar.icao}</span>
           <span>{metar.name}</span>
-          <Badge className={flightCategoryBg(metar.flightCategory)} variant="outline">
-            {metar.flightCategory}
-          </Badge>
+          <FlightCategoryBadge category={metar.flightCategory} icao={metar.icao} size="lg" />
         </CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-2">
@@ -27,7 +26,7 @@ export function MetarPanel({ metar }: { metar: MetarObservation }) {
           </div>
           <div>
             <dt className="text-muted-foreground">Visibility</dt>
-            <dd>{metar.visSm ?? "—"} SM</dd>
+            <dd>{formatVisM(metar.visM)}</dd>
           </div>
           <div>
             <dt className="text-muted-foreground">Temp / dewpoint</dt>
@@ -73,13 +72,17 @@ export function TafPanel({ taf }: { taf: TafForecast }) {
             <p className="text-sm text-muted-foreground">No decoded periods on this bulletin.</p>
           ) : (
             taf.periods.map((p, i) => (
-              <div key={`${p.from}-${i}`} className="grid gap-1 rounded-lg bg-muted/40 px-3 py-2 text-sm md:grid-cols-[8rem_1fr]">
+              <div
+                key={`${p.from}-${i}`}
+                className="grid gap-2 rounded-lg bg-muted/40 px-3 py-2 text-sm md:grid-cols-[7rem_auto_1fr] md:items-center"
+              >
                 <div className="font-mono text-xs text-primary">
                   {p.change ?? "BASE"}
                   {p.probability ? ` ${p.probability}%` : ""}
                 </div>
+                <FlightCategoryBadge category={p.flightCategory} icao={taf.icao} size="sm" />
                 <div className="text-muted-foreground">
-                  {formatUtc(p.from)} · {formatWind(p.windDirDeg, p.windKt)} · vis {p.visSm ?? "—"}
+                  {formatUtc(p.from)} · {formatWind(p.windDirDeg, p.windKt)} · vis {formatVisM(p.visM)}
                   {p.wx ? ` · ${p.wx}` : ""} ·{" "}
                   {p.clouds.map((c) => `${c.cover}${c.baseFt ?? ""}`).join(" ") || "NSC"}
                 </div>
