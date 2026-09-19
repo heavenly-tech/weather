@@ -28,8 +28,14 @@ export function normalizeIcao(value: string | string[] | undefined, fallback = "
   return (raw ?? fallback).split(",")[0].trim().toUpperCase() || fallback;
 }
 
+async function fetchJsonRetry<T>(url: string) {
+  const first = await fetchJson<T>(url);
+  if (first.ok || first.status !== 0) return first;
+  return fetchJson<T>(url);
+}
+
 export async function loadMetar(icao: string): Promise<ProductEnvelope<MetarObservation>> {
-  const result = await fetchJson<unknown[]>(
+  const result = await fetchJsonRetry<unknown[]>(
     `https://aviationweather.gov/api/data/metar?ids=${encodeURIComponent(icao)}&format=json`
   );
 
@@ -58,7 +64,7 @@ export async function loadMetar(icao: string): Promise<ProductEnvelope<MetarObse
 }
 
 export async function loadTaf(icao: string): Promise<ProductEnvelope<TafForecast>> {
-  const result = await fetchJson<unknown[]>(
+  const result = await fetchJsonRetry<unknown[]>(
     `https://aviationweather.gov/api/data/taf?ids=${encodeURIComponent(icao)}&format=json`
   );
 
