@@ -8,3 +8,9 @@ agent-tools
 .env*
 !.env.example
 deploy.sh
+# Generated Cesium static assets, re-created by scripts/copy-cesium.mjs
+public/cesium
+# Build / test leftovers
+out
+coverage
+*.log

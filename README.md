@@ -58,4 +58,8 @@ Health: `http://127.0.0.1:4310/api/health` inside the container.
 - Chile-first ICAO list (SCEL, SCFA, SCTE, SCCI, …) plus Lima and Ezeiza for international GRAMETs.
 - Every product card shows **Live / Fallback / Derived / Mock**.
 - 3D visualization is Cesium only (no Three.js).
+- The runtime image is a Next **standalone** build on `node:22-alpine`. `next.config.ts`
+  excludes `sharp`/`@img` and the `next/font` build-time metrics from the traced server
+  bundle, so the image does not ship the `next/image` optimizer. Re-enable them if the app
+  ever starts rendering `next/image`.
 - Not a certified flight-briefing source. Cross-check OPMET before you fly.
