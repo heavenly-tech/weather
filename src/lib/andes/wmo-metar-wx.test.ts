@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { annex3NscCeilingFtAgl } from "@/lib/andes/airfield-msa";
 import { ceilingFromHourly } from "@/lib/andes/ceiling";
-import { annex3NscEligible } from "@/lib/andes/wmo-metar-wx";
+import { annex3NscEligible, hasSignificantCloudBelowNscCeiling } from "@/lib/andes/wmo-metar-wx";
 import { generateModelMetar } from "@/lib/andes/wmo-metar";
 import { generateModelTaf } from "@/lib/andes/wmo-taf";
 import { cloudHeightHundredsFt, deriveMetarWxAndCloud } from "@/lib/andes/wmo-metar-wx";
+import { flightCategoryFromWx } from "@/lib/visibility";
 
 const unresolvedLowBkn = {
   cloud_cover_low: [90],
@@ -296,6 +298,231 @@ describe("deriveMetarWxAndCloud", () => {
     expect(taf.raw).toMatch(/TEMPO\s+\d{4}\/\d{4}\s+[^\n]*-SHRA\s+[^\n]*(?:FEW|SCT|BKN)\d{3}/);
   });
 
+  it("RA and DZ never share a group with NSC or NCD", () => {
+    const bare = {
+      cloud_cover_low: [5],
+      cloud_cover_mid: [10],
+      cloud_cover: [20],
+      surface_pressure: [980],
+      cloud_cover_925hPa: [5],
+      geopotential_height_925hPa: [2200],
+      cloud_cover_850hPa: [5],
+      geopotential_height_850hPa: [1600],
+    };
+    const hourly = {
+      time: ["2026-11-17T18:00"],
+      temperature_2m: [12],
+      dew_point_2m: [10],
+      relative_humidity_2m: [85],
+      precipitation: [0.4],
+      rain: [0.4],
+      showers: [0],
+      visibility: [8000],
+      pressure_msl: [1013],
+      wind_speed_10m: [12],
+      wind_direction_10m: [200],
+      wind_gusts_10m: [14],
+      ...bare,
+    };
+    const ceil = ceilingFromHourly(hourly, 0, 649);
+    const dropped = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 8000, false);
+    expect(dropped.clouds).toBe("NSC");
+    expect(dropped.weather).not.toMatch(/(?:^|\s)[+-]?(?:RA|DZ)(?:\s|$)/);
+    const metar = generateModelMetar({
+      icao: "SCTB",
+      elevM: 649,
+      model: "gfs_seamless",
+      runTime: "2026-11-17T18:00:00Z",
+      validTime: "2026-11-17T18:00:00Z",
+      hourly,
+      hourIndex: 0,
+    });
+    expectNoRaDzWithClearSky(metar.raw);
+
+    const n = 6;
+    const tafHourly = {
+      time: Array.from({ length: n }, (_, i) => `2026-11-17T${String(16 + i).padStart(2, "0")}:00`),
+      temperature_2m: Array(n).fill(12),
+      dew_point_2m: Array(n).fill(10),
+      relative_humidity_2m: Array(n).fill(85),
+      precipitation: [0, 0, 0.4, 0.4, 0, 0],
+      rain: [0, 0, 0.4, 0.4, 0, 0],
+      showers: Array(n).fill(0),
+      visibility: Array(n).fill(8000),
+      pressure_msl: Array(n).fill(1013),
+      wind_speed_10m: Array(n).fill(12),
+      wind_direction_10m: Array(n).fill(200),
+      wind_gusts_10m: Array(n).fill(14),
+      cloud_cover_low: Array(n).fill(5),
+      cloud_cover_mid: Array(n).fill(10),
+      cloud_cover: Array(n).fill(20),
+      surface_pressure: Array(n).fill(980),
+      cloud_cover_925hPa: Array(n).fill(5),
+      geopotential_height_925hPa: Array(n).fill(2200),
+    };
+    const taf = generateModelTaf({
+      icao: "SCTB",
+      elevM: 649,
+      model: "gfs_seamless",
+      runTime: "2026-11-17T16:00:00Z",
+      hourly: tafHourly,
+    });
+    expect("error" in taf).toBe(false);
+    if ("error" in taf) return;
+    expectNoRaDzWithClearSky(taf.raw);
+    expect(taf.raw).not.toMatch(/(?:^|\s)[+-]?(?:RA|DZ)\b/);
+  });
+
+  it("writes estimated BKN at 700 hPa when mid cloud backs rain", () => {
+    const gh = 3100;
+    const elev = 649;
+    const agl = (gh - elev) * 3.280839895;
+    const hourly = {
+      time: ["2026-11-17T18:00"],
+      temperature_2m: [12],
+      dew_point_2m: [10],
+      relative_humidity_2m: [85],
+      precipitation: [0.4],
+      rain: [0.4],
+      showers: [0],
+      visibility: [9000],
+      cloud_cover_low: [10],
+      cloud_cover_mid: [60],
+      cloud_cover: [40],
+      surface_pressure: [980],
+      cloud_cover_925hPa: [10],
+      geopotential_height_925hPa: [2200],
+      geopotential_height_700hPa: [gh],
+      pressure_msl: [1013],
+      wind_speed_10m: [12],
+      wind_direction_10m: [200],
+    };
+    const ceil = ceilingFromHourly(hourly, 0, elev);
+    const d = deriveMetarWxAndCloud(hourly, 0, elev, "SCTB", ceil, 9000, false);
+    expect(d.weather).toMatch(/-RA/);
+    expect(d.clouds).toBe(`BKN${String(cloudHeightHundredsFt(agl)).padStart(3, "0")}`);
+    expect(d.effectiveCeilFt).toBeCloseTo(agl, 4);
+    expect(d.rmkExtra).toContain("CLD EST");
+    expect(d.clouds).not.toMatch(/NSC|NCD/);
+  });
+
+  it("treats ECMWF rain as showers", () => {
+    const hourly = {
+      time: ["2026-11-17T18:00"],
+      temperature_2m: [14],
+      dew_point_2m: [12],
+      relative_humidity_2m: [80],
+      precipitation: [0.8],
+      rain: [0.8],
+      showers: [0],
+      visibility: [9000],
+      cloud_cover_low: [80],
+      surface_pressure: [980],
+      cloud_cover_925hPa: [80],
+      geopotential_height_925hPa: [900],
+    };
+    const ceil = ceilingFromHourly(hourly, 0, 649);
+    const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 9000, false, false, "ecmwf_ifs025");
+    expect(d.weather).toMatch(/SHRA/);
+    expect(d.weather).not.toMatch(/(?:^|\s)[+-]?RA(?:\s|$)/);
+    expect(d.clouds).toMatch(/^(?:FEW|SCT|BKN|OVC)/);
+  });
+
+  it("SCTB NSC includes 600 and 500 hPa when they are below the MSA ceiling", () => {
+    const threshold = annex3NscCeilingFtAgl("SCTB", 649);
+    const agl600 = (4200 - 649) * 3.280839895;
+    expect(agl600).toBeGreaterThan(5000);
+    expect(agl600).toBeLessThan(threshold);
+    const low = {
+      time: ["t"],
+      surface_pressure: [900],
+      cloud_cover_600hPa: [80],
+      geopotential_height_600hPa: [4200],
+    };
+    expect(hasSignificantCloudBelowNscCeiling(low, 0, 649, "SCTB")).toBe(true);
+    expect(annex3NscEligible(low, 0, 649, "SCTB")).toBe(false);
+    const above = 649 + (threshold + 800) / 3.280839895;
+    expect(
+      hasSignificantCloudBelowNscCeiling(
+        { ...low, geopotential_height_600hPa: [above] },
+        0,
+        649,
+        "SCTB"
+      )
+    ).toBe(false);
+    const at500 = {
+      time: ["t"],
+      surface_pressure: [900],
+      cloud_cover_500hPa: [70],
+      geopotential_height_500hPa: [5600],
+    };
+    const agl500 = (5600 - 649) * 3.280839895;
+    expect(agl500).toBeLessThan(threshold);
+    expect(hasSignificantCloudBelowNscCeiling(at500, 0, 649, "SCTB")).toBe(true);
+  });
+
+  it("keeps precip on an obscured sky, precipitation before FG", () => {
+    const hourly = {
+      time: ["2026-11-17T12:00"],
+      temperature_2m: [8],
+      dew_point_2m: [7.6],
+      relative_humidity_2m: [97],
+      precipitation: [0.6],
+      rain: [0],
+      showers: [0],
+      visibility: [400],
+      cloud_cover_low: [90],
+      surface_pressure: [980],
+      cloud_cover_925hPa: [40],
+      geopotential_height_925hPa: [900],
+      pressure_msl: [1014],
+      wind_speed_10m: [6],
+      wind_direction_10m: [180],
+      wind_gusts_10m: [8],
+    };
+    const ceil = ceilingFromHourly(hourly, 0, 649);
+    expect(ceil.obscured).toBe(true);
+    const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 400, false, false, "gfs_seamless");
+    expect(d.clouds).toBe("VV000");
+    expect(d.weather).toMatch(/^(-RA|-DZ) FG$/);
+    const metar = generateModelMetar({
+      icao: "SCTB",
+      elevM: 649,
+      model: "gfs_seamless",
+      runTime: "2026-11-17T12:00:00Z",
+      validTime: "2026-11-17T12:00:00Z",
+      hourly,
+      hourIndex: 0,
+    });
+    expect(metar.raw).toMatch(/\b0400\s+(-RA|-DZ)\s+FG\s+VV000\b/);
+  });
+
+  it("heavy-shower BKN sets the reported ceiling and flight category", () => {
+    const agl = 250 * 3.280839895;
+    const hourly = {
+      time: ["2026-11-17T18:00"],
+      temperature_2m: [14],
+      dew_point_2m: [12],
+      relative_humidity_2m: [80],
+      precipitation: [3],
+      showers: [3],
+      rain: [0],
+      visibility: [9999],
+      cloud_cover_low: [8],
+      surface_pressure: [980],
+      cloud_cover_925hPa: [5],
+      geopotential_height_925hPa: [2200],
+    };
+    const ceil = ceilingFromHourly(hourly, 0, 649);
+    expect(ceil.ceilingFtAgl).toBeNull();
+    const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 9999, false);
+    expect(d.clouds).toBe(`BKN${String(cloudHeightHundredsFt(agl)).padStart(3, "0")}`);
+    expect(d.effectiveCeilFt).toBeCloseTo(agl, 4);
+    expect(d.flightCategory).toBe(flightCategoryFromWx(9999, agl));
+    expect(d.flightCategory).toBe("IFR");
+    expect(d.weather).toMatch(/SHRA/);
+  });
+
   it("no FG with 9999 visibility", () => {
     const hourly = { time: ["t"], visibility: [10000], temperature_2m: [15], dew_point_2m: [14] };
     const ceil = ceilingFromHourly(hourly, 0, 100);
@@ -303,6 +530,19 @@ describe("deriveMetarWxAndCloud", () => {
     expect(d.weather).not.toContain("FG");
   });
 });
+
+function expectNoRaDzWithClearSky(raw: string) {
+  const body = raw.split(" RMK ")[0] ?? raw;
+  const parts = body.split(/\b(?:BECMG|TEMPO|FM|PROB30|PROB40)\b/);
+  for (const part of parts) {
+    if (/(?:^|\s)[+-]?(?:RA|DZ)\b/.test(part) && !/\bSHRA\b/.test(part)) {
+      expect(part).not.toMatch(/\b(?:NSC|NCD)\b/);
+    }
+    if (/\b(?:NSC|NCD)\b/.test(part)) {
+      expect(part).not.toMatch(/(?:^|\s)[+-]?(?:RA|DZ)\b/);
+    }
+  }
+}
 
 function expectNoShowerWithClearSky(raw: string) {
   const body = raw.split(" RMK ")[0] ?? raw;

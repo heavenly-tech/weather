@@ -86,7 +86,8 @@ export function generateModelMetar(opts: {
     ceil,
     visRounded,
     false,
-    resolved.estimated
+    resolved.estimated,
+    opts.model
   );
   const visM = derived.visM;
 
