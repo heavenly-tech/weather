@@ -10,8 +10,11 @@ function ddhhToMs(ddhh: string, anchor: Date): number {
   return d.getTime();
 }
 
-export function assertModelTafFormat(raw: string): { ok: true } | { ok: false; reasons: string[] } {
+export function assertModelTafFormat(
+  raw: string
+): { ok: true; warnings: string[] } | { ok: false; reasons: string[]; warnings: string[] } {
   const reasons: string[] = [];
+  const warnings: string[] = [];
   if (!raw.startsWith(STAMP)) reasons.push("stamp must be first line");
 
   const body = raw.split("\n").slice(1).join(" ").trim();
@@ -45,10 +48,15 @@ export function assertModelTafFormat(raw: string): { ok: true } | { ok: false; r
         reasons.push(`change group ${tag} ${from}/${toGroup} outside validity ${validFrom}/${validTo}`);
       }
     }
+    if (tag === "BECMG" && slashTo) {
+      const hours = (ddhhToMs(toGroup, anchor) - ddhhToMs(from, anchor)) / 3_600_000;
+      if (hours > 4) reasons.push(`BECMG ${from}/${toGroup} is ${hours} h (never over 4 h)`);
+      else if (hours > 2) warnings.push(`BECMG ${from}/${toGroup} is ${hours} h (normally 2 h or less)`);
+    }
   }
 
   const becmgCount = (body.match(/\bBECMG\b/g) ?? []).length;
   if (becmgCount > 6) reasons.push(`too many BECMG groups (${becmgCount})`);
 
-  return reasons.length ? { ok: false, reasons } : { ok: true };
+  return reasons.length ? { ok: false, reasons, warnings } : { ok: true, warnings };
 }

@@ -51,6 +51,35 @@ export type ResolvedVisibility = {
   estimated: boolean;
 };
 
+/**
+ * The RH-only RUC branch never falls below about 4.2 km, even at saturation.
+ * When the cloud base is at or below 100 ft AGL, the sky is obscured, or the
+ * surface is very moist with a low base, estimated visibility is capped below
+ * 1000 m so FG / VV rules can apply. Observed model visibility is left alone.
+ */
+export function capEstimatedVisForLowCloud(opts: {
+  visM: number | null;
+  estimated: boolean;
+  ceilingFtAgl: number | null;
+  obscured: boolean;
+  spreadC: number | null;
+  rhPct: number | null;
+  lowCoverPct: number | null;
+}): number | null {
+  if (!opts.estimated) return opts.visM;
+  const veryLowBase = opts.obscured || (opts.ceilingFtAgl != null && opts.ceilingFtAgl <= 100);
+  const saturated = opts.rhPct != null && opts.rhPct >= 95 && opts.spreadC != null && opts.spreadC <= 2;
+  const saturatedLow =
+    saturated &&
+    (veryLowBase ||
+      (opts.ceilingFtAgl != null && opts.ceilingFtAgl <= 500) ||
+      (opts.lowCoverPct != null && opts.lowCoverPct >= 62.5));
+  if (!veryLowBase && !saturatedLow) return opts.visM;
+  const fogVis = opts.obscured || (opts.spreadC != null && opts.spreadC <= 0.5) ? 400 : 800;
+  if (opts.visM == null) return fogVis;
+  return Math.min(opts.visM, fogVis);
+}
+
 export function resolveVisibilityMeters(
   hourly: Hourly,
   index: number,

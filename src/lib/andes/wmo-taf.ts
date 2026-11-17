@@ -1,7 +1,7 @@
 import { ceilingFromHourly } from "@/lib/andes/ceiling";
 import type { AndesModelId } from "@/lib/andes/models";
 import { parseUtcIso } from "@/lib/andes/parse-utc";
-import { wxSignificant, roundVisTaf } from "@/lib/andes/wmo-annex3";
+import { ceilSignificant, roundVisTaf, roundVisTafMeters, visSignificant, windSignificant, wxSignificant } from "@/lib/andes/wmo-annex3";
 import { deriveMetarWxAndCloud } from "@/lib/andes/wmo-metar-wx";
 import { formatModelWind, STAMP } from "@/lib/andes/wmo-metar";
 import { resolveVisibilityMeters } from "@/lib/andes/visibility-estimate";
@@ -65,15 +65,15 @@ type PeriodWx = {
 function periodWx(hourly: Hourly, index: number, elevM: number, model: AndesModelId, icao: string): PeriodWx {
   const ceil = ceilingFromHourly(hourly, index, elevM);
   const resolved = resolveVisibilityMeters(hourly, index, model);
-  const visM = resolved.visM;
-  const visRound = visM != null ? (visM >= 9990 ? 9999 : visM) : null;
+  const visRound = resolved.visM != null ? roundVisTafMeters(resolved.visM) : null;
   const wind = formatModelWind(
     numAt(hourly, "wind_direction_10m", index),
     numAt(hourly, "wind_speed_10m", index),
     numAt(hourly, "wind_gusts_10m", index)
   );
+  const derived = deriveMetarWxAndCloud(hourly, index, elevM, icao, ceil, visRound, true, resolved.estimated);
+  const visM = derived.visM ?? resolved.visM;
   const vis = visM != null ? roundVisTaf(visM) : "9999";
-  const derived = deriveMetarWxAndCloud(hourly, index, elevM, icao, ceil, visRound, true);
   return {
     wind,
     vis,
@@ -87,6 +87,28 @@ function periodWx(hourly: Hourly, index: number, elevM: number, model: AndesMode
     cldEstimated: derived.cldEstimated,
     midCloudBaseUnk: derived.midCloudBaseUnk,
   };
+}
+
+const CHURN_TOKENS = new Set(["BR", "HZ", "-RA", "-DZ"]);
+
+function hasShowerWx(wx: string): boolean {
+  return /(?:^|\s)[+-]?SH[A-Z]*/.test(wx);
+}
+
+/** Light rain and BR/HZ flips, with wind, visibility, and ceiling unchanged. */
+function lightWxChurnOnly(a: PeriodWx, b: PeriodWx): boolean {
+  if (windSignificant(a.dir, a.kt, b.dir, b.kt)) return false;
+  if (visSignificant(a.visM, b.visM)) return false;
+  if (ceilSignificant(a.ceilFt, b.ceilFt)) return false;
+  if ((a.wx ?? "") === (b.wx ?? "")) return false;
+  if (hasShowerWx(a.wx) || hasShowerWx(b.wx)) return false;
+  if (/\bFG\b/.test(a.wx) || /\bFG\b/.test(b.wx)) return false;
+  const ok = (w: string) =>
+    w
+      .split(/\s+/)
+      .filter(Boolean)
+      .every((t) => CHURN_TOKENS.has(t));
+  return ok(a.wx) && ok(b.wx);
 }
 
 function groupString(wx: PeriodWx, opts?: { priorWx?: string }): string {
@@ -131,6 +153,10 @@ export function generateModelTaf(opts: {
   const visEstimated = resolveVisibilityMeters(opts.hourly, baseIdx, opts.model).estimated;
   const header = `TAF ${opts.icao} ${tafDdhhmmZ(opts.runTime)} ${tafDdhh(validFrom.toISOString())}/${tafValidityEnd(validFrom, validTo)}`;
   const changes: { order: number; text: string }[] = [];
+  let cldEstimated = base.cldEstimated;
+  const noteCld = (...rows: PeriodWx[]) => {
+    if (rows.some((row) => row.cldEstimated)) cldEstimated = true;
+  };
 
   let prevailing = base;
   let i = baseIdx + 1;
@@ -139,6 +165,62 @@ export function generateModelTaf(opts: {
     if (!wxSignificant(toSignificant(prevailing), toSignificant(wx))) {
       i++;
       continue;
+    }
+
+    if (lightWxChurnOnly(prevailing, wx)) {
+      let runEnd = i;
+      while (runEnd + 1 <= endIdx) {
+        const next = periodWx(opts.hourly, runEnd + 1, opts.elevM, opts.model, opts.icao);
+        if (next.wx !== wx.wx || !lightWxChurnOnly(prevailing, next)) break;
+        runEnd++;
+      }
+      if (runEnd - i + 1 < 2) {
+        i++;
+        continue;
+      }
+      // Annex 3: a BECMG is normally 2 h and never the rest of a long run.
+      // Conditions are those at the end of that 2 h window. A later change is its own group.
+      const becmgEnd = Math.min(i + 2, runEnd);
+      const t0 = tafDdhh(times[i]!);
+      const t1 = tafDdhh(times[becmgEnd]!);
+      if (t0 !== t1 && parseUtcIso(times[becmgEnd]!).getTime() <= validTo.getTime()) {
+        const at = periodWx(opts.hourly, becmgEnd, opts.elevM, opts.model, opts.icao);
+        noteCld(wx, at);
+        changes.push({
+          order: parseUtcIso(times[i]!).getTime(),
+          text: `BECMG ${t0}/${t1} ${groupString(at, { priorWx: prevailing.wx })}`,
+        });
+        prevailing = at;
+        i = becmgEnd + 1;
+        continue;
+      }
+      i++;
+      continue;
+    }
+
+    if (hasShowerWx(wx.wx) && !hasShowerWx(prevailing.wx)) {
+      let runEnd = i;
+      while (runEnd + 1 <= endIdx) {
+        const next = periodWx(opts.hourly, runEnd + 1, opts.elevM, opts.model, opts.icao);
+        if (!hasShowerWx(next.wx)) break;
+        runEnd++;
+      }
+      const hours = runEnd - i + 1;
+      if (hours < 3 && runEnd < endIdx) {
+        let toIdx = runEnd;
+        if (tafDdhh(times[i]!) === tafDdhh(times[toIdx]!)) toIdx = Math.min(endIdx, runEnd + 1);
+        const t0 = tafDdhh(times[i]!);
+        const t1 = tafDdhh(times[toIdx]!);
+        if (t0 !== t1 && parseUtcIso(times[toIdx]!).getTime() <= validTo.getTime()) {
+          noteCld(wx);
+          changes.push({
+            order: parseUtcIso(times[i]!).getTime(),
+            text: `TEMPO ${t0}/${t1} ${groupString(wx)}`,
+          });
+        }
+        i = runEnd + 1;
+        continue;
+      }
     }
 
     let windowEndIdx = Math.min(i + 2, endIdx);
@@ -165,6 +247,7 @@ export function generateModelTaf(opts: {
       wxSignificant(toSignificant(prevailing), toSignificant(atEnd));
 
     if (persistent) {
+      noteCld(wx, atEnd);
       changes.push({
         order: parseUtcIso(times[i]!).getTime(),
         text: `BECMG ${t0}/${t1} ${groupString(atEnd, { priorWx: prevailing.wx })}`,
@@ -174,34 +257,36 @@ export function generateModelTaf(opts: {
       continue;
     }
 
-    if (i + 1 <= endIdx) {
-      const revert = periodWx(opts.hourly, i + 1, opts.elevM, opts.model, opts.icao);
-      if (wxSignificant(toSignificant(prevailing), toSignificant(wx)) && !wxSignificant(toSignificant(prevailing), toSignificant(revert))) {
-        const endI = Math.min(i + 1, endIdx);
-        const te0 = tafDdhh(times[i]!);
-        const te1 = tafDdhh(times[endI]!);
-        if (te0 !== te1 && parseUtcIso(times[endI]!).getTime() <= validTo.getTime()) {
-          changes.push({
-            order: parseUtcIso(times[i]!).getTime(),
-            text: `TEMPO ${te0}/${te1} ${groupString(wx)}`,
-          });
-        }
-      }
+    let runEnd = i;
+    while (runEnd + 1 <= endIdx) {
+      const next = periodWx(opts.hourly, runEnd + 1, opts.elevM, opts.model, opts.icao);
+      if (!wxSignificant(toSignificant(prevailing), toSignificant(next))) break;
+      runEnd++;
     }
-    i++;
+    const toIdx = Math.min(endIdx, runEnd + 1);
+    const te0 = tafDdhh(times[i]!);
+    const te1 = tafDdhh(times[toIdx]!);
+    if (te0 !== te1 && parseUtcIso(times[toIdx]!).getTime() <= validTo.getTime()) {
+      noteCld(wx);
+      changes.push({
+        order: parseUtcIso(times[i]!).getTime(),
+        text: `TEMPO ${te0}/${te1} ${groupString(wx)}`,
+      });
+    }
+    i = toIdx === i ? i + 1 : runEnd + 1;
   }
 
   changes.sort((a, b) => a.order - b.order);
   const body = [groupString(base), ...changes.map((c) => c.text)].filter(Boolean).join(" ");
   const rmkParts = [`GEN=${opts.runTime}`, `MODEL=${opts.model}`];
   if (visEstimated) rmkParts.push("VIS EST");
-  if (base.cldEstimated) rmkParts.push("CLD EST");
+  if (cldEstimated) rmkParts.push("CLD EST");
   const raw = `${STAMP}\n${header} ${body} RMK ${rmkParts.join(" ")}`;
   return {
     raw,
     stamp: STAMP,
     visEstimated: visEstimated || undefined,
-    cldEstimated: base.cldEstimated || undefined,
+    cldEstimated: cldEstimated || undefined,
     midCloudBaseUnk: base.midCloudBaseUnk || undefined,
   };
 }

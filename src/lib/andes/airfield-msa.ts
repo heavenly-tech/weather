@@ -1,75 +1,103 @@
 /**
- * Conservative minimum-sector altitude (MSA) assumptions for Annex 3 NSC.
- * **NOT official AIP data** — desk / model-product assumptions only.
+ * Minimum sector altitude used for Annex 3 NSC gating.
  *
- * Sources: not fetched from AIP in this build. Values are deliberately
- * conservative (higher MSA = harder to claim NSC) for terrain near each field.
- * Replace with chart-cited values when AIP extracts land in repo.
+ * Published figures are the single MSA value printed in the 25 NM circle on
+ * the DGAC AIP Chile approach chart (not a sector split). Where the AIP has
+ * no instrument approach and no MSA, the previous conservative assumption is
+ * kept and labelled.
+ *
+ * Charts read from https://aipchile.dgac.gob.cl/ (AIP Chile VOL II / AD 3 VAC).
  */
 
 import { ANDES_AIRFIELDS } from "@/lib/andes/airfields";
 
 const M_TO_FT = 3.280839895;
 
-/** Annex 3: NSC only if no significant cloud below max(5000 ft, MSA). */
+/**
+ * Annex 3 NSC floor: no significant cloud below the greater of 1500 m (5000 ft)
+ * and the aerodrome's 25 NM MSA. Compared in feet AGL.
+ */
 export const ANNEX3_NSC_MIN_FT = 5000;
 
-export type AirfieldMsaAssumption = {
+export type AirfieldMsaRecord = {
   icao: string;
-  /** Conservative MSA AMSL in feet (assumed, not from live AIP fetch). */
-  msaFtAmslAssumed: number;
-  note: string;
+  /** MSA AMSL in feet. Published AIP value, or a labelled assumption. */
+  msaFtAmsl: number;
+  /** True when DGAC has not published an MSA for this aerodrome. */
+  assumption: boolean;
+  /** AIP chart or VAC, amendment, and effective date. */
+  citation: string;
 };
 
 /**
- * ASSUMPTION table — conservative MSA (ft AMSL) for low-cloud / NSC gating.
- *
- * TODO: Replace every row with cited AIP / approach-chart MSA values once extracts
- * are committed in-repo (ICAO doc 8697 Annex 3 NSC gating).
+ * SCTB, SCEL, and SCVM use the MSA printed on the current AIP approach chart.
+ * SCVH and SCPD are VFR AD 3 aerodromes with a VAC and no IAC, so no MSA.
  */
-export const AIRFIELD_MSA_ASSUMPTIONS: AirfieldMsaAssumption[] = [
+export const AIRFIELD_MSA: AirfieldMsaRecord[] = [
   {
     icao: "SCTB",
-    msaFtAmslAssumed: 11_500,
-    note: "ASSUMPTION: Santiago cordillera sector; Tobalaba private strip — not an AIP MSA extract.",
+    // SCTB IAC 1 RNP RWY 01 (LNAV only), MSA 25 NM RW01. DGAC AMDT 100, effective 07 AUG 2025.
+    msaFtAmsl: 20_000,
+    assumption: false,
+    citation:
+      "AIP Chile VOL II SCTB IAC 1 RNP RWY 01 (LNAV only): MSA 25 NM RW01 = 20000 ft. DGAC AMDT 100, effective 07 AUG 2025. https://aipchile.dgac.gob.cl/dasa/aip_chile_con_contenido/aipmap/SCTB/SCTB%20IAC1.pdf",
   },
   {
     icao: "SCEL",
-    msaFtAmslAssumed: 6_200,
-    note: "ASSUMPTION: SCEL basin; higher terrain east within MSA ring.",
+    // SCEL IAC 2 ILS Z RWY 17R, MSA 25 NM AMB. DGAC AMDT 103, effective 06 AUG 2026.
+    msaFtAmsl: 19_000,
+    assumption: false,
+    citation:
+      "AIP Chile VOL II SCEL IAC 2 ILS Z RWY 17R: MSA 25 NM AMB = 19000 ft. DGAC AMDT 103, effective 06 AUG 2026. Same figure on SCEL IAC 1. https://aipchile.dgac.gob.cl/dasa/aip_chile_con_contenido/aipmap/SCEL/SCEL%20IAC2.pdf",
   },
   {
     icao: "SCVM",
-    msaFtAmslAssumed: 5_200,
-    note: "ASSUMPTION: Coastal aerodrome; MSA slightly above 5 000 ft floor.",
+    // SCVM IAC 2 ILS Y o LOC Y RWY 05, MSA 25 NM SAL. DGAC AMDT 98, effective 28 NOV 2024.
+    msaFtAmsl: 9_500,
+    assumption: false,
+    citation:
+      "AIP Chile VOL II SCVM IAC 2 ILS Y o LOC Y RWY 05: MSA 25 NM SAL = 9500 ft. DGAC AMDT 98, effective 28 NOV 2024. Same figure on SCVM IAC 1. https://aipchile.dgac.gob.cl/dasa/aip_chile_con_contenido/aipmap/SCVM/SCVM%20IAC2.pdf",
   },
   {
     icao: "SCVH",
-    msaFtAmslAssumed: 9_500,
-    note:
-      "ASSUMPTION (conservative): inland Chacabuco valley; same sector as SCPD — coastal range (Cerro El Roble ~2 200 m) west, Andes east.",
+    // No IAC. Assumption only — VAC AMDT 62, effective 28 NOV 2024, publishes no MSA.
+    msaFtAmsl: 9_500,
+    assumption: true,
+    citation:
+      "ASSUMPTION — no published MSA. AIP Chile AD 3 La Victoria de Chacabuco (SCVH) is VFR; VAC AMDT 62 effective 28 NOV 2024 has terrain and circuit altitudes only, and aipmap has no SCVH IAC. 9500 ft AMSL kept as a conservative sector (Andes east of the Chacabuco valley). https://aipchile.dgac.gob.cl/dasa/aip_chile_con_contenido/ais/3%20AD%20Parte%203/AD%203%20VAC/04%20VAC%20SCVH%20AD%20La%20Victoria%20de%20Chacabuco%20-%20Colina.pdf",
   },
   {
     icao: "SCPD",
-    msaFtAmslAssumed: 9_500,
-    note: "ASSUMPTION (conservative): Peldehue piedmont; pre-cordillera sector.",
+    // No IAC. Assumption only — VAC AMDT 67, effective 06 AUG 2026, publishes no MSA.
+    msaFtAmsl: 9_500,
+    assumption: true,
+    citation:
+      "ASSUMPTION — no published MSA. AIP Chile AD 3 Peldehue (SCPD) is VFR; VAC AMDT 67 effective 06 AUG 2026 has no MSA circle, and aipmap has no SCPD IAC. 9500 ft AMSL kept for the same pre-cordillera sector as SCVH. https://ftp2.dgac.gob.cl/dasa/aip_chile_con_contenido/ais/3%20AD%20Parte%203/AD%203%20VAC/05%20VAC%20SCPD%20AD%20Peldehue%20-%20Colina.pdf",
   },
 ];
 
-const MSA_BY_ICAO = new Map(AIRFIELD_MSA_ASSUMPTIONS.map((r) => [r.icao, r]));
+/** @deprecated Use AIRFIELD_MSA. Kept so older imports still resolve. */
+export const AIRFIELD_MSA_ASSUMPTIONS = AIRFIELD_MSA;
 
-/** Lowest altitude (ft AGL) below which Annex 3 NSC requires no BKN/OVC. */
+const MSA_BY_ICAO = new Map(AIRFIELD_MSA.map((row) => [row.icao, row]));
+
+/** Ft AGL below which BKN/OVC blocks NSC: max(1500 m / 5000 ft, 25 NM MSA). */
 export function annex3NscCeilingFtAgl(icao: string, elevM: number): number {
   const row = MSA_BY_ICAO.get(icao.toUpperCase());
-  const msaAmsl = row?.msaFtAmslAssumed ?? ANNEX3_NSC_MIN_FT;
+  const msaAmsl = row?.msaFtAmsl ?? ANNEX3_NSC_MIN_FT;
   const msaAgl = Math.max(0, msaAmsl - elevM * M_TO_FT);
   return Math.max(ANNEX3_NSC_MIN_FT, msaAgl);
 }
 
-export function airfieldMsaAssumption(icao: string): AirfieldMsaAssumption | undefined {
+export function airfieldMsa(icao: string): AirfieldMsaRecord | undefined {
   return MSA_BY_ICAO.get(icao.toUpperCase());
 }
 
-export function allAirfieldMsaAssumptions(): AirfieldMsaAssumption[] {
-  return ANDES_AIRFIELDS.map((a) => MSA_BY_ICAO.get(a.icao)).filter(Boolean) as AirfieldMsaAssumption[];
+/** @deprecated Use airfieldMsa. */
+export function airfieldMsaAssumption(icao: string): AirfieldMsaRecord | undefined {
+  return airfieldMsa(icao);
+}
+
+export function allAirfieldMsaAssumptions(): AirfieldMsaRecord[] {
+  return ANDES_AIRFIELDS.map((field) => MSA_BY_ICAO.get(field.icao)).filter((row): row is AirfieldMsaRecord => row != null);
 }

@@ -1,11 +1,15 @@
 const VIS_THRESHOLDS_M = [150, 350, 600, 800, 1500, 3000, 5000] as const;
 const CEIL_THRESHOLDS_FT = [100, 200, 500, 1000, 1500, 3000] as const;
 
+export function roundVisTafMeters(m: number): number {
+  if (m >= 9990) return 9999;
+  if (m < 800) return Math.floor(m / 50) * 50;
+  if (m < 5000) return Math.floor(m / 100) * 100;
+  return Math.min(9999, Math.floor(m / 1000) * 1000);
+}
+
 export function roundVisTaf(m: number): string {
-  if (m >= 9990) return "9999";
-  if (m < 800) return String(Math.floor(m / 50) * 50).padStart(4, "0");
-  if (m < 5000) return String(Math.floor(m / 100) * 100).padStart(4, "0");
-  return String(Math.min(9999, Math.floor(m / 1000) * 1000)).padStart(4, "0");
+  return String(roundVisTafMeters(m)).padStart(4, "0");
 }
 
 export function visCategory(m: number | null): number {

@@ -66,6 +66,27 @@ describe("ceilingFromHourly", () => {
     expect(s.cloudBaseMslM).not.toBe(1200);
   });
 
+  it("ICON CAPE alone is FEW/SCT, not a BKN ceiling", () => {
+    const hourly = {
+      time: ["t"],
+      surface_pressure: [955],
+      convective_cloud_base: [1200],
+      cape: [250],
+      showers: [0],
+      rain: [0],
+      precipitation: [0],
+      cloud_cover_low: [10],
+      cloud_cover_850hPa: [5],
+      geopotential_height_850hPa: [1600],
+    };
+    const s = ceilingFromHourly(hourly, 0, 474);
+    expect(s.ceilingFtAgl).toBeNull();
+    expect(s.cloudBaseMslM).toBeNull();
+    expect(s.capeOnlyLayer?.cover).toBe("FEW");
+    expect(s.capeOnlyLayer?.ftAgl).toBeGreaterThan(2000);
+    expect(s.capeOnlyLayer?.ftAgl).toBeLessThan(2600);
+  });
+
   it("ICON convective base used when showers >= 0.1 mm/h", () => {
     const hourly = {
       time: ["t"],

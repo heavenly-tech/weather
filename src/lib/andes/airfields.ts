@@ -10,7 +10,10 @@ export type AndesAirfield = {
   lon: number;
   elevM: number;
   hasMetar: boolean;
-  /** When false, timelines use nearestMetarIcao */
+  /**
+   * Observation used when this field has no METAR.
+   * Omit for a model-only field that is not checked against an observation.
+   */
   nearestMetarIcao?: string;
 };
 
@@ -41,13 +44,16 @@ export const ANDES_AIRFIELDS: AndesAirfield[] = [
     hasMetar: true,
   },
   {
+    // ARP 33°03'03"S 70°42'32"W, elev 2139 ft / 652 m.
+    // DGAC AIP Chile VAC SCVH, AD La Victoria de Chacabuco (AD 3), AMDT 62, effective 28 NOV 2024.
+    // https://aipchile.dgac.gob.cl/dasa/aip_chile_con_contenido/ais/3%20AD%20Parte%203/AD%203%20VAC/04%20VAC%20SCVH%20AD%20La%20Victoria%20de%20Chacabuco%20-%20Colina.pdf
+    // No METAR: model-only, not verified against an observation. About 26 NM north of SCTB.
     icao: "SCVH",
-    name: "Viña del Mar heliport",
-    lat: -33.045,
-    lon: -71.541,
-    elevM: 120,
+    name: "La Victoria de Chacabuco",
+    lat: -(33 + 3 / 60 + 3 / 3600),
+    lon: -(70 + 42 / 60 + 32 / 3600),
+    elevM: 652,
     hasMetar: false,
-    nearestMetarIcao: "SCVM",
   },
   {
     icao: "SCPD",
