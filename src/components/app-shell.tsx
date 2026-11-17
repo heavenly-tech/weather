@@ -33,6 +33,7 @@ const NAV = [
   { href: "/forecast", label: "WRF point", icon: Mountain },
   { href: "/synoptic", label: "Synoptic", icon: Map },
   { href: "/viz", label: "3D field", icon: Layers3 },
+  { href: "/andes", label: "Andes ceiling", icon: Mountain },
 ];
 
 function formatZulu(d: Date) {

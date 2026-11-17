@@ -10,6 +10,7 @@
 
 # testing
 /coverage
+/data/product-log.jsonl
 
 # next.js
 /.next/

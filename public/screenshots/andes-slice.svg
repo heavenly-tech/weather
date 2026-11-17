@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="200" viewBox="0 0 800 200">
+  <rect fill="#0b1220" width="800" height="200"/>
+  <text x="20" y="30" fill="#fde68a" font-family="monospace">850 hPa temperature slice (placeholder)</text>
+  <linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#1d4ed8"/>
+    <stop offset="100%" stop-color="#f87171"/>
+  </linearGradient>
+  <rect x="20" y="50" width="760" height="120" fill="url(#g)" opacity="0.7"/>
+</svg>

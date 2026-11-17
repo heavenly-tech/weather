@@ -21,12 +21,13 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=4310
 ENV HOSTNAME=0.0.0.0
-RUN addgroup --system --gid 1001 nodejs \
-  && adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 65534 nogroup \
+  && adduser --system --uid 65534 --ingroup nogroup app
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-USER nextjs
+COPY --from=builder --chown=65534:65534 /app/.next/standalone ./
+COPY --from=builder --chown=65534:65534 /app/.next/static ./.next/static
+RUN mkdir -p /app/data && chown 65534:65534 /app/data
+USER 65534
 EXPOSE 4310
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:4310/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"

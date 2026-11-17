@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <rect fill="#0b1220" width="800" height="450"/>
+  <text x="40" y="50" fill="#7dd3fc" font-family="monospace" font-size="20">Andes ceiling map (screenshot placeholder)</text>
+  <rect x="80" y="100" width="640" height="280" fill="#1e293b" stroke="#334155"/>
+  <rect x="120" y="180" width="120" height="80" fill="#22c55e" opacity="0.8"/>
+  <rect x="280" y="160" width="120" height="100" fill="#38bdf8" opacity="0.8"/>
+  <rect x="440" y="200" width="120" height="60" fill="#78716c" opacity="0.9"/>
+  <text x="40" y="420" fill="#94a3b8" font-size="14">VFR / MVFR / mountain obscuration</text>
+</svg>
