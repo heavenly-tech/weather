@@ -27,13 +27,36 @@ export function tafDdhh(iso: string): string {
   return `${String(d.getUTCDate()).padStart(2, "0")}${String(d.getUTCHours()).padStart(2, "0")}`;
 }
 
-export function tafValidityEnd(from: Date, to: Date): string {
-  if (to.getUTCHours() === 0) {
-    const endCal = new Date(to);
+/** Midnight is hour 24 of the previous day, never 00 of the next day (1824, not 1900). */
+export function tafEndToken(at: Date): string {
+  if (at.getUTCHours() === 0 && at.getUTCMinutes() === 0 && at.getUTCSeconds() === 0) {
+    const endCal = new Date(at);
     endCal.setUTCDate(endCal.getUTCDate() - 1);
     return `${String(endCal.getUTCDate()).padStart(2, "0")}24`;
   }
-  return tafDdhh(to.toISOString());
+  return `${String(at.getUTCDate()).padStart(2, "0")}${String(at.getUTCHours()).padStart(2, "0")}`;
+}
+
+export function tafValidityEnd(_from: Date, to: Date): string {
+  return tafEndToken(to);
+}
+
+/**
+ * BECMG/TEMPO/PROB window inside the TAF validity.
+ * The end is clamped to the validity end, and midnight is DD24.
+ * A BECMG left shorter than an hour by that clamp (1823/1824) is kept.
+ * The group is omitted only when it would start at or after the validity end.
+ */
+function changeWindow(startIso: string, endIso: string, validTo: Date): string | null {
+  const start = parseUtcIso(startIso);
+  if (start.getTime() >= validTo.getTime()) return null;
+  const endRaw = parseUtcIso(endIso);
+  const end = endRaw.getTime() > validTo.getTime() ? validTo : endRaw;
+  if (end.getTime() <= start.getTime()) return null;
+  const from = tafDdhh(start.toISOString());
+  const to = tafEndToken(end);
+  if (from === to) return null;
+  return `${from}/${to}`;
 }
 
 export function validityFromIssue(issue: Date): { from: Date; to: Date } {
@@ -181,14 +204,13 @@ export function generateModelTaf(opts: {
       // Annex 3: a BECMG is normally 2 h and never the rest of a long run.
       // Conditions are those at the end of that 2 h window. A later change is its own group.
       const becmgEnd = Math.min(i + 2, runEnd);
-      const t0 = tafDdhh(times[i]!);
-      const t1 = tafDdhh(times[becmgEnd]!);
-      if (t0 !== t1 && parseUtcIso(times[becmgEnd]!).getTime() <= validTo.getTime()) {
+      const window = changeWindow(times[i]!, times[becmgEnd]!, validTo);
+      if (window) {
         const at = periodWx(opts.hourly, becmgEnd, opts.elevM, opts.model, opts.icao);
         noteCld(wx, at);
         changes.push({
           order: parseUtcIso(times[i]!).getTime(),
-          text: `BECMG ${t0}/${t1} ${groupString(at, { priorWx: prevailing.wx })}`,
+          text: `BECMG ${window} ${groupString(at, { priorWx: prevailing.wx })}`,
         });
         prevailing = at;
         i = becmgEnd + 1;
@@ -209,13 +231,12 @@ export function generateModelTaf(opts: {
       if (hours < 3 && runEnd < endIdx) {
         let toIdx = runEnd;
         if (tafDdhh(times[i]!) === tafDdhh(times[toIdx]!)) toIdx = Math.min(endIdx, runEnd + 1);
-        const t0 = tafDdhh(times[i]!);
-        const t1 = tafDdhh(times[toIdx]!);
-        if (t0 !== t1 && parseUtcIso(times[toIdx]!).getTime() <= validTo.getTime()) {
+        const window = changeWindow(times[i]!, times[toIdx]!, validTo);
+        if (window) {
           noteCld(wx);
           changes.push({
             order: parseUtcIso(times[i]!).getTime(),
-            text: `TEMPO ${t0}/${t1} ${groupString(wx)}`,
+            text: `TEMPO ${window} ${groupString(wx)}`,
           });
         }
         i = runEnd + 1;
@@ -235,9 +256,8 @@ export function generateModelTaf(opts: {
       if (windowEndIdx <= i) break;
     }
 
-    const t0 = tafDdhh(times[i]!);
-    const t1 = tafDdhh(times[windowEndIdx]!);
-    if (t0 === t1) {
+    const window = changeWindow(times[i]!, times[windowEndIdx]!, validTo);
+    if (!window) {
       i++;
       continue;
     }
@@ -250,7 +270,7 @@ export function generateModelTaf(opts: {
       noteCld(wx, atEnd);
       changes.push({
         order: parseUtcIso(times[i]!).getTime(),
-        text: `BECMG ${t0}/${t1} ${groupString(atEnd, { priorWx: prevailing.wx })}`,
+        text: `BECMG ${window} ${groupString(atEnd, { priorWx: prevailing.wx })}`,
       });
       prevailing = atEnd;
       i = windowEndIdx + 1;
@@ -264,13 +284,12 @@ export function generateModelTaf(opts: {
       runEnd++;
     }
     const toIdx = Math.min(endIdx, runEnd + 1);
-    const te0 = tafDdhh(times[i]!);
-    const te1 = tafDdhh(times[toIdx]!);
-    if (te0 !== te1 && parseUtcIso(times[toIdx]!).getTime() <= validTo.getTime()) {
+    const tempo = changeWindow(times[i]!, times[toIdx]!, validTo);
+    if (tempo) {
       noteCld(wx);
       changes.push({
         order: parseUtcIso(times[i]!).getTime(),
-        text: `TEMPO ${te0}/${te1} ${groupString(wx)}`,
+        text: `TEMPO ${tempo} ${groupString(wx)}`,
       });
     }
     i = toIdx === i ? i + 1 : runEnd + 1;

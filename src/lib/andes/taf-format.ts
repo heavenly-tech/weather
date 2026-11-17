@@ -2,6 +2,10 @@ import { parseUtcIso } from "@/lib/andes/parse-utc";
 
 const STAMP = "MODEL OUTPUT — NOT OFFICIAL";
 
+function endHour(ddhh: string): number {
+  return Number(ddhh.slice(2, 4));
+}
+
 function ddhhToMs(ddhh: string, anchor: Date): number {
   const day = Number(ddhh.slice(0, 2));
   const hour = Number(ddhh.slice(2, 4));
@@ -26,6 +30,10 @@ export function assertModelTafFormat(
   const anchor = issueIso ? parseUtcIso(`2026-01-${issueIso.slice(0, 2)}T${issueIso.slice(2, 4)}:00:00Z`) : new Date();
   const validFrom = header?.[3];
   const validTo = header?.[4];
+  // Hour 00 as an end is midnight of the previous day. TAF writes that as DD24, never the next day's 00.
+  if (validTo && endHour(validTo) === 0) {
+    reasons.push(`validity end ${validFrom}/${validTo} codes midnight as 00; write hour 24 on the previous day`);
+  }
 
   const groups = [...body.matchAll(/\b(BECMG|TEMPO|PROB30|PROB40)\s+(\d{4})(\/(\d{4}))?/g)];
   for (const g of groups) {
@@ -38,6 +46,9 @@ export function assertModelTafFormat(
     const toGroup = slashTo ?? from;
     if (slashTo && from === toGroup) {
       reasons.push(`${tag} zero-length window ${from}/${toGroup}`);
+    }
+    if (slashTo && endHour(toGroup) === 0) {
+      reasons.push(`${tag} ${from}/${toGroup} codes midnight as 00; write hour 24 on the previous day`);
     }
     if (validFrom && validTo) {
       const vf = ddhhToMs(validFrom, anchor);
