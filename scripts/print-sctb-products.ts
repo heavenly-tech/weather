@@ -32,7 +32,7 @@ async function run(model: AndesModelId) {
 }
 
 async function main() {
-  for (const m of ["ecmwf_ifs025", "icon_seamless"] as AndesModelId[]) {
+  for (const m of ["gfs_seamless", "ecmwf_ifs025", "icon_seamless", "gem_seamless"] as AndesModelId[]) {
     await run(m);
   }
 }

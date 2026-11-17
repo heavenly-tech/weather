@@ -4,6 +4,7 @@ import { parseUtcIso } from "@/lib/andes/parse-utc";
 import { wxSignificant, roundVisTaf } from "@/lib/andes/wmo-annex3";
 import { deriveMetarWxAndCloud } from "@/lib/andes/wmo-metar-wx";
 import { formatModelWind, STAMP } from "@/lib/andes/wmo-metar";
+import { resolveVisibilityMeters } from "@/lib/andes/visibility-estimate";
 import { kmhToKt } from "@/lib/format";
 import type { FlightCategory } from "@/lib/types";
 
@@ -59,16 +60,17 @@ type PeriodWx = {
   visM: number | null;
 };
 
-function periodWx(hourly: Hourly, index: number, elevM: number): PeriodWx {
+function periodWx(hourly: Hourly, index: number, elevM: number, model: AndesModelId): PeriodWx {
   const ceil = ceilingFromHourly(hourly, index, elevM);
-  const visM = numAt(hourly, "visibility", index);
+  const resolved = resolveVisibilityMeters(hourly, index, model);
+  const visM = resolved.visM;
   const visRound = visM != null ? (visM >= 9990 ? 9999 : visM) : null;
   const wind = formatModelWind(
     numAt(hourly, "wind_direction_10m", index),
     numAt(hourly, "wind_speed_10m", index),
     numAt(hourly, "wind_gusts_10m", index)
   );
-  const vis = roundVisTaf(visM);
+  const vis = visM != null ? roundVisTaf(visM) : "9999";
   const derived = deriveMetarWxAndCloud(hourly, index, elevM, ceil, visRound, true);
   return {
     wind,
@@ -83,19 +85,19 @@ function periodWx(hourly: Hourly, index: number, elevM: number): PeriodWx {
   };
 }
 
-function groupString(wx: PeriodWx): string {
+function groupString(wx: PeriodWx, opts?: { priorWx?: string }): string {
   const parts = [wx.wind, wx.vis];
   if (wx.wx) parts.push(wx.wx);
   if (wx.visM != null && wx.visM < 5000 && !wx.wx) {
-    const derived = wx.wx || (wx.visM < 1000 ? "FG" : "BR");
-    parts.push(derived);
+    parts.push(wx.visM < 1000 ? "FG" : "BR");
   }
+  if (opts?.priorWx && !wx.wx) parts.push("NSW");
   parts.push(wx.cloud);
   return parts.filter(Boolean).join(" ");
 }
 
 function toSignificant(a: PeriodWx) {
-  return { dir: a.dir, kt: a.kt, visM: a.visM, ceilFt: a.ceilFt };
+  return { dir: a.dir, kt: a.kt, visM: a.visM, ceilFt: a.ceilFt, wx: a.wx };
 }
 
 function lastIndexBefore(times: string[], end: Date): number {
@@ -112,7 +114,7 @@ export function generateModelTaf(opts: {
   model: AndesModelId;
   runTime: string;
   hourly: Hourly;
-}): { raw: string; stamp: string } | { error: string } {
+}): { raw: string; stamp: string; visEstimated?: boolean } | { error: string } {
   const times = (opts.hourly.time ?? []) as string[];
   if (times.length < 2) return { error: "Insufficient model hours for TAF" };
 
@@ -124,14 +126,15 @@ export function generateModelTaf(opts: {
   const endIdx = lastIndexBefore(times, validTo);
   if (endIdx <= baseIdx) return { error: "Validity window outside model hours" };
 
-  const base = periodWx(opts.hourly, baseIdx, opts.elevM);
+  const base = periodWx(opts.hourly, baseIdx, opts.elevM, opts.model);
+  const visEstimated = resolveVisibilityMeters(opts.hourly, baseIdx, opts.model).estimated;
   const header = `TAF ${opts.icao} ${tafDdhhmmZ(opts.runTime)} ${tafDdhh(validFrom.toISOString())}/${tafValidityEnd(validFrom, validTo)}`;
   const changes: { order: number; text: string }[] = [];
 
   let prevailing = base;
   let i = baseIdx + 1;
   while (i <= endIdx) {
-    const wx = periodWx(opts.hourly, i, opts.elevM);
+    const wx = periodWx(opts.hourly, i, opts.elevM, opts.model);
     if (!wxSignificant(toSignificant(prevailing), toSignificant(wx))) {
       i++;
       continue;
@@ -142,7 +145,7 @@ export function generateModelTaf(opts: {
       i++;
       continue;
     }
-    const atEnd = periodWx(opts.hourly, windowEndIdx, opts.elevM);
+    const atEnd = periodWx(opts.hourly, windowEndIdx, opts.elevM, opts.model);
     const windowEndTime = parseUtcIso(times[windowEndIdx]!);
     if (windowEndTime.getTime() > validTo.getTime()) {
       windowEndIdx = Math.max(i, endIdx - 1);
@@ -161,14 +164,17 @@ export function generateModelTaf(opts: {
       wxSignificant(toSignificant(prevailing), toSignificant(atEnd));
 
     if (persistent) {
-      changes.push({ order: parseUtcIso(times[i]!).getTime(), text: `BECMG ${t0}/${t1} ${groupString(atEnd)}` });
+      changes.push({
+        order: parseUtcIso(times[i]!).getTime(),
+        text: `BECMG ${t0}/${t1} ${groupString(atEnd, { priorWx: prevailing.wx })}`,
+      });
       prevailing = atEnd;
       i = windowEndIdx + 1;
       continue;
     }
 
     if (i + 1 <= endIdx) {
-      const revert = periodWx(opts.hourly, i + 1, opts.elevM);
+      const revert = periodWx(opts.hourly, i + 1, opts.elevM, opts.model);
       if (wxSignificant(toSignificant(prevailing), toSignificant(wx)) && !wxSignificant(toSignificant(prevailing), toSignificant(revert))) {
         const endI = Math.min(i + 1, endIdx);
         const te0 = tafDdhh(times[i]!);
@@ -186,6 +192,8 @@ export function generateModelTaf(opts: {
 
   changes.sort((a, b) => a.order - b.order);
   const body = [groupString(base), ...changes.map((c) => c.text)].filter(Boolean).join(" ");
-  const raw = `${STAMP}\n${header} ${body} RMK GEN=${opts.runTime} MODEL=${opts.model}`;
-  return { raw, stamp: STAMP };
+  const rmkParts = [`GEN=${opts.runTime}`, `MODEL=${opts.model}`];
+  if (visEstimated) rmkParts.push("VIS EST");
+  const raw = `${STAMP}\n${header} ${body} RMK ${rmkParts.join(" ")}`;
+  return { raw, stamp: STAMP, visEstimated: visEstimated || undefined };
 }

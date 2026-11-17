@@ -29,6 +29,7 @@ export function AndesDesk() {
   const [coherence, setCoherence] = useState<CoherencePayload | null>(null);
   const [generatedMetar, setGeneratedMetar] = useState<string | null>(null);
   const [generatedTaf, setGeneratedTaf] = useState<string | null>(null);
+  const [visEstimated, setVisEstimated] = useState(false);
   const [gridWarning, setGridWarning] = useState<string | null>(null);
   const [gridShape, setGridShape] = useState({ rows: 44, cols: 32 });
   const [sliceHeightM, setSliceHeightM] = useState<number | null>(null);
@@ -123,6 +124,7 @@ export function AndesDesk() {
         [m.raw, mVh.raw].filter(Boolean).join("\n\n---\n\n") || null
       );
       setGeneratedTaf(t.raw ?? null);
+      setVisEstimated(Boolean(m.visEstimated || t.visEstimated));
     });
   }, [state.model]);
 
@@ -195,14 +197,28 @@ export function AndesDesk() {
         <div className="rounded-xl border border-border/60 p-4">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-sm font-medium">Generated METAR (SCTB + SCVH)</h3>
-            <ModelOutputStamp />
+            <div className="flex items-center gap-2">
+              {visEstimated ? (
+                <span className="rounded bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                  VIS EST
+                </span>
+              ) : null}
+              <ModelOutputStamp />
+            </div>
           </div>
           <pre className="whitespace-pre-wrap font-mono text-xs">{generatedMetar ?? "Loading…"}</pre>
         </div>
         <div className="rounded-xl border border-border/60 p-4">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-sm font-medium">Generated TAF (SCTB)</h3>
-            <ModelOutputStamp />
+            <div className="flex items-center gap-2">
+              {visEstimated ? (
+                <span className="rounded bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                  VIS EST
+                </span>
+              ) : null}
+              <ModelOutputStamp />
+            </div>
           </div>
           <pre className="whitespace-pre-wrap font-mono text-xs">{generatedTaf ?? "Loading…"}</pre>
         </div>

@@ -31,6 +31,12 @@ function hours(n: number, start = "2026-11-17T12:00") {
     hourly.geopotential_height_850hPa!.push(1600);
     hourly.surface_pressure!.push(980);
     hourly.precipitation!.push(0);
+    if (!hourly.relative_humidity_2m) hourly.relative_humidity_2m = [];
+    hourly.relative_humidity_2m!.push(55);
+    if (!hourly.rain) hourly.rain = [];
+    hourly.rain!.push(0);
+    if (!hourly.showers) hourly.showers = [];
+    hourly.showers!.push(0);
   }
   return { time, ...hourly };
 }

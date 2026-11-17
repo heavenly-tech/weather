@@ -1,8 +1,7 @@
 const VIS_THRESHOLDS_M = [150, 350, 600, 800, 1500, 3000, 5000] as const;
 const CEIL_THRESHOLDS_FT = [100, 200, 500, 1000, 1500, 3000] as const;
 
-export function roundVisTaf(m: number | null): string {
-  if (m == null) return "////";
+export function roundVisTaf(m: number): string {
   if (m >= 9990) return "9999";
   if (m < 800) return String(Math.floor(m / 50) * 50).padStart(4, "0");
   if (m < 5000) return String(Math.floor(m / 100) * 100).padStart(4, "0");
@@ -53,12 +52,13 @@ export function ceilSignificant(aFt: number | null, bFt: number | null): boolean
 }
 
 export function wxSignificant(
-  a: { dir: number | null; kt: number | null; visM: number | null; ceilFt: number | null },
-  b: { dir: number | null; kt: number | null; visM: number | null; ceilFt: number | null }
+  a: { dir: number | null; kt: number | null; visM: number | null; ceilFt: number | null; wx?: string },
+  b: { dir: number | null; kt: number | null; visM: number | null; ceilFt: number | null; wx?: string }
 ): boolean {
   return (
     windSignificant(a.dir, a.kt, b.dir, b.kt) ||
     visSignificant(a.visM, b.visM) ||
-    ceilSignificant(a.ceilFt, b.ceilFt)
+    ceilSignificant(a.ceilFt, b.ceilFt) ||
+    (a.wx ?? "") !== (b.wx ?? "")
   );
 }

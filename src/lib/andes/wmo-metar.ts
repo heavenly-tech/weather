@@ -1,6 +1,7 @@
 import { ceilingFromHourly } from "@/lib/andes/ceiling";
 import type { AndesModelId } from "@/lib/andes/models";
 import { parseUtcIso } from "@/lib/andes/parse-utc";
+import { resolveVisibilityMeters } from "@/lib/andes/visibility-estimate";
 import { deriveMetarWxAndCloud } from "@/lib/andes/wmo-metar-wx";
 import { kmhToKt } from "@/lib/format";
 
@@ -35,18 +36,17 @@ export function formatModelWind(dir: number | null, speedKmh: number | null, gus
   if (kt == null) return "/////KT";
   if (kt < 1) return "00000KT";
   const gustKt = gustKmh != null ? kmhToKt(gustKmh) : null;
-  if (dir == null) {
+  const hasGust = gustKt != null && gustKt >= kt + 10;
+  const gustSuffix = hasGust ? `G${String(Math.round(gustKt!)).padStart(2, "0")}` : "";
+
+  if (kt < 3 || dir == null) {
     const base = `VRB${String(Math.round(kt)).padStart(2, "0")}`;
-    if (gustKt != null && gustKt >= kt + 10) return `${base}G${String(Math.round(gustKt)).padStart(2, "0")}KT`;
-    return `${base}KT`;
+    return hasGust ? `${base}${gustSuffix}KT` : `${base}KT`;
   }
   const deg = Math.round(dir / 10) * 10 || 360;
   const ddd = String(deg === 0 ? 360 : deg).padStart(3, "0");
   const ff = String(Math.round(kt)).padStart(2, "0");
-  if (gustKt != null && gustKt >= kt + 10) {
-    return `${ddd}${ff}G${String(Math.round(gustKt)).padStart(2, "0")}KT`;
-  }
-  return `${ddd}${ff}KT`;
+  return hasGust ? `${ddd}${ff}${gustSuffix}KT` : `${ddd}${ff}KT`;
 }
 
 function formatTempGroup(tempC: number | null, dewC: number | null): string {
@@ -72,10 +72,10 @@ export function generateModelMetar(opts: {
   validTime: string;
   hourly: Hourly;
   hourIndex: number;
-}): { raw: string; stamp: string } {
+}): { raw: string; stamp: string; visEstimated?: boolean } {
   const i = opts.hourIndex;
-  const visRaw = numAt(opts.hourly, "visibility", i);
-  const visM = visRaw != null ? roundVisM(visRaw) : null;
+  const resolved = resolveVisibilityMeters(opts.hourly, i, opts.model);
+  const visM = resolved.visM != null ? roundVisM(resolved.visM) : null;
   const qnh = numAt(opts.hourly, "pressure_msl", i);
   const ceil = ceilingFromHourly(opts.hourly, i, opts.elevM);
   const derived = deriveMetarWxAndCloud(opts.hourly, i, opts.elevM, ceil, visM, false);
@@ -103,6 +103,7 @@ export function generateModelMetar(opts: {
     .join(" ");
 
   const rmkParts = [`GEN=${opts.runTime}`, `MODEL=${opts.model}`, ...derived.rmkExtra];
+  if (resolved.estimated) rmkParts.push("VIS EST");
   const raw = `${STAMP}\nMETAR ${body} RMK ${rmkParts.join(" ")}`;
-  return { raw, stamp: STAMP };
+  return { raw, stamp: STAMP, visEstimated: resolved.estimated || undefined };
 }

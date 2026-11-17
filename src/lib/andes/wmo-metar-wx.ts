@@ -38,7 +38,6 @@ export function deriveMetarWxAndCloud(
   const dew = numAt(hourly, "dew_point_2m", index);
   const rh = numAt(hourly, "relative_humidity_2m", index);
   const spread = temp != null && dew != null ? temp - dew : null;
-  const precip = numAt(hourly, "precipitation", index) ?? 0;
   const rain = numAt(hourly, "rain", index) ?? 0;
   const showers = numAt(hourly, "showers", index) ?? 0;
   const snow = numAt(hourly, "snowfall", index) ?? 0;
@@ -46,10 +45,16 @@ export function deriveMetarWxAndCloud(
   const cape = numAt(hourly, "cape", index);
   const convBase = numAt(hourly, "convective_cloud_base", index);
 
-  const prevPrecip = index > 0 ? (numAt(hourly, "precipitation", index - 1) ?? 0) : 0;
-  const nextPrecip = index + 1 < (hourly.time?.length ?? 0) ? (numAt(hourly, "precipitation", index + 1) ?? 0) : 0;
-  const hourlyRate = precip;
-  const hasAdjacent = prevPrecip > 0 || nextPrecip > 0;
+  const liquidRate = (i: number) =>
+    Math.max(
+      numAt(hourly, "precipitation", i) ?? 0,
+      numAt(hourly, "rain", i) ?? 0,
+      numAt(hourly, "showers", i) ?? 0
+    );
+  const prevPrecip = index > 0 ? liquidRate(index - 1) : 0;
+  const nextPrecip = index + 1 < (hourly.time?.length ?? 0) ? liquidRate(index + 1) : 0;
+  const hourlyRate = liquidRate(index);
+  const hasAdjacent = prevPrecip >= 0.1 || nextPrecip >= 0.1;
 
   let effectiveCeilFt = ceil.ceilingFtAgl;
   const rmkExtra: string[] = [];
