@@ -30,7 +30,27 @@ describe("deriveMetarWxAndCloud", () => {
     const ceil = ceilingFromHourly(hourly, 0, 649);
     const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 9999, false);
     expect(d.weather).not.toMatch(/DZ/);
+    expect(d.weather).toContain("-SHRA");
     expect(d.clouds).toMatch(/^BKN\d{3}$/);
+  });
+
+  it("orders precipitation before obscuration (-DZ BR)", () => {
+    const hourly = {
+      time: ["a", "b", "c"],
+      temperature_2m: [11, 11, 11],
+      dew_point_2m: [9, 9, 9],
+      relative_humidity_2m: [85, 85, 85],
+      precipitation: [0.2, 0.2, 0.2],
+      rain: [0, 0, 0],
+      showers: [0, 0, 0],
+      cloud_cover_low: [80, 80, 80],
+      surface_pressure: [980, 980, 980],
+      cloud_cover_925hPa: [80, 80, 80],
+      geopotential_height_925hPa: [900, 900, 900],
+    };
+    const ceil = ceilingFromHourly(hourly, 1, 649);
+    const d = deriveMetarWxAndCloud(hourly, 1, 649, "SCTB", ceil, 3000, false);
+    expect(d.weather).toBe("-DZ BR");
   });
 
   it("20/09 unresolved low cloud → BKN045 + CLD EST", () => {
@@ -83,6 +103,9 @@ describe("deriveMetarWxAndCloud", () => {
       hourIndex: 0,
     });
     expect(metar.raw).toMatch(/BKN\/\/\//);
+    expect(metar.raw).toMatch(/RMK\b.*CLD BASE UNK/);
+    expect(metarDerived.rmkExtra).toContain("CLD BASE UNK");
+    expect((metar.raw.match(/\bRMK\b/g) ?? []).length).toBe(1);
 
     const taf = generateModelTaf({
       icao: "SCTB",
@@ -131,6 +154,28 @@ describe("deriveMetarWxAndCloud", () => {
     const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 8000, false);
     expect(d.clouds).toMatch(/^(BKN|OVC)\d{3}$/);
     expect(d.cldEstimated).toBe(false);
+  });
+
+  it("CAPE-only ICON base is FEW, not a ceiling", () => {
+    const hourly = {
+      time: ["t"],
+      temperature_2m: [22],
+      dew_point_2m: [8],
+      relative_humidity_2m: [40],
+      surface_pressure: [955],
+      convective_cloud_base: [2000],
+      cape: [250],
+      showers: [0],
+      rain: [0],
+      precipitation: [0],
+      cloud_cover_low: [8],
+      cloud_cover_850hPa: [5],
+      geopotential_height_850hPa: [2200],
+    };
+    const ceil = ceilingFromHourly(hourly, 0, 649);
+    const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 9999, false);
+    expect(d.clouds).toMatch(/^FEW\d{3}$/);
+    expect(d.effectiveCeilFt).toBeNull();
   });
 
   it("no FG with 9999 visibility", () => {

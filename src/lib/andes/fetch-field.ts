@@ -29,12 +29,22 @@ export type CeilingCell = {
   obscured: boolean;
   cloudBaseMslM?: number | null;
   lowCloudUnresolved?: boolean;
+  /** Highest liquid precip rate (mm/h) in the coarse neighbourhood. */
+  precipMmH?: number | null;
 };
 
 export type SliceField = {
   pressureHpa: number;
   values: { lat: number; lon: number; tempC: number | null; cloudPct: number | null }[];
 };
+
+function liquidPrecipMmH(hourly: Record<string, Array<number | null> | string[]>, index: number): number {
+  const read = (key: string) => {
+    const value = hourly[key]?.[index];
+    return typeof value === "number" && Number.isFinite(value) ? value : 0;
+  };
+  return Math.max(read("precipitation"), read("rain"), read("showers"));
+}
 
 const probeCache = new Map<string, { at: number; data: ModelAvailability[] }>();
 const PROBE_TTL_MS = 15 * 60 * 1000;
@@ -93,6 +103,7 @@ export async function fetchCeilingGrid(
     baseMslM: number | null;
     obscured: boolean;
     lowCloudUnresolved: boolean;
+    precipMmH: number | null;
   }[] = [];
 
   const targetDate = validTime ? parseUtcIso(validTime) : new Date();
@@ -109,6 +120,7 @@ export async function fetchCeilingGrid(
       baseMslM: sample.cloudBaseMslM,
       obscured: sample.obscured,
       lowCloudUnresolved: sample.lowCloudUnresolved,
+      precipMmH: liquidPrecipMmH(hourly, index),
     });
   });
 

@@ -11,9 +11,10 @@
  *    when cloud cover at that level is **missing**. The surface floor uses cover **0**,
  *    never the column-integrated `cloud_cover_low`.
  * 3. **ICON `convective_cloud_base`** — Documented as **m ASL** (not AGL). Values
- *    ≤ 0 or ≤ −500 are ignored. Never added to terrain. Does **not** override the
- *    pressure-level scan; we take the **lower** (more conservative) base MSL when
- *    both exist and convective cover is BKN+.
+ *    ≤ 0 are ignored. Never added to terrain. A convective base becomes a BKN/OVC
+ *    ceiling only when precipitation or model cloud cover (≥ 62.5 %) backs it;
+ *    CAPE alone is FEW/SCT (`capeOnlyLayer`) or omitted. When both a backed
+ *    convective base and a stratiform base exist, we take the **lower** base MSL.
  * 4. **AGL** — `(baseMslM - terrainElevM)`, never negative for category; **null** = no ceiling.
  * 5. **Obscuration** — True when interpolated base MSL ≤ terrain elevation (peak inside cloud).
  * 6. **Map category** — Uses ceiling ft AGL **and** model visibility when available
@@ -45,6 +46,11 @@ export type CeilingSample = {
   lowCloudUnresolved: boolean;
   method: "cloud_base_field" | "pressure_level" | "interpolated" | "unlimited" | "fog";
   visM: number | null;
+  /**
+   * CAPE-derived convective cloud that is not a ceiling.
+   * Cover is FEW or SCT only — never BKN/OVC.
+   */
+  capeOnlyLayer: { ftAgl: number; cover: "FEW" | "SCT" } | null;
 };
 
 type Hourly = Record<string, Array<number | null> | string[]>;
@@ -147,16 +153,32 @@ export function interpolateCloudBaseMsl(
   return { baseMslM: null, method: "unlimited", lowCloudUnresolved: lowUnresolved };
 }
 
-function iconConvectiveBaseMsl(hourly: Hourly, index: number): number | null {
+type IconConvective =
+  | { role: "ceiling"; mslM: number }
+  | { role: "layer"; ftAgl: number; cover: "FEW" | "SCT" }
+  | null;
+
+/**
+ * CAPE alone must not manufacture a BKN/OVC ceiling.
+ * Precipitation or low-cloud cover ≥ BKN may. Otherwise FEW/SCT, or nothing.
+ */
+function iconConvective(hourly: Hourly, index: number, terrainElevM: number): IconConvective {
   const cb = numAt(hourly, "convective_cloud_base", index);
-  if (cb == null || cb <= 0 || cb <= -500) return null;
+  if (cb == null || cb <= 0) return null;
   const showers = numAt(hourly, "showers", index) ?? 0;
-  const cape = numAt(hourly, "cape", index);
+  const rain = numAt(hourly, "rain", index) ?? 0;
+  const precip = numAt(hourly, "precipitation", index) ?? 0;
   const low = numAt(hourly, "cloud_cover_low", index) ?? 0;
-  const convective =
-    showers >= 0.1 || (cape != null && cape >= 100) || low >= BKN_CLOUD_COVER_PCT;
-  if (!convective) return null;
-  return cb;
+  const cape = numAt(hourly, "cape", index);
+  const backedByPrecip = showers >= 0.1 || rain >= 0.1 || precip >= 0.1;
+  const backedByCover = low >= BKN_CLOUD_COVER_PCT;
+  if (backedByPrecip || backedByCover) return { role: "ceiling", mslM: cb };
+  if (cape == null || cape < 100) return null;
+  const aglM = cb - terrainElevM;
+  if (aglM <= 30) return null;
+  const ftAgl = aglM * M_TO_FT;
+  const cover: "FEW" | "SCT" = cape >= 800 || low >= 37.5 ? "SCT" : "FEW";
+  return { role: "layer", ftAgl, cover };
 }
 
 function visibilityM(hourly: Hourly, index: number): number | null {
@@ -190,22 +212,25 @@ export function ceilingFromHourly(hourly: Hourly, index: number, terrainElevM: n
   const visM = visibilityM(hourly, index);
 
   const strat = interpolateCloudBaseMsl(hourly, index, terrainElevM, surfaceHpa);
-  const convMsl = iconConvectiveBaseMsl(hourly, index);
+  const conv = iconConvective(hourly, index, terrainElevM);
   const fogMsl = fogBaseMsl(hourly, index, terrainElevM, surfaceHpa, visM);
 
   let cloudBaseMslM: number | null = strat.baseMslM;
   let method: CeilingSample["method"] = strat.method;
+  let capeOnlyLayer: CeilingSample["capeOnlyLayer"] = null;
 
   if (fogMsl != null && (cloudBaseMslM == null || fogMsl < cloudBaseMslM)) {
     cloudBaseMslM = fogMsl;
     method = "fog";
   }
 
-  if (convMsl != null) {
-    if (cloudBaseMslM == null || convMsl < cloudBaseMslM) {
-      cloudBaseMslM = convMsl;
+  if (conv?.role === "ceiling") {
+    if (cloudBaseMslM == null || conv.mslM < cloudBaseMslM) {
+      cloudBaseMslM = conv.mslM;
       method = "cloud_base_field";
     }
+  } else if (conv?.role === "layer") {
+    capeOnlyLayer = { ftAgl: conv.ftAgl, cover: conv.cover };
   }
 
   if (cloudBaseMslM == null) {
@@ -217,6 +242,7 @@ export function ceilingFromHourly(hourly: Hourly, index: number, terrainElevM: n
       lowCloudUnresolved: strat.lowCloudUnresolved,
       method: "unlimited",
       visM,
+      capeOnlyLayer,
     };
   }
 
@@ -234,6 +260,7 @@ export function ceilingFromHourly(hourly: Hourly, index: number, terrainElevM: n
     lowCloudUnresolved: false,
     method,
     visM,
+    capeOnlyLayer: null,
   };
 }
 

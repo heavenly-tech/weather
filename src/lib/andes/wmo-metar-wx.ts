@@ -1,6 +1,7 @@
 import { annex3NscCeilingFtAgl } from "@/lib/andes/airfield-msa";
 import type { CeilingSample } from "@/lib/andes/ceiling";
 import { BKN_CLOUD_COVER_PCT, surfacePressureHpa } from "@/lib/andes/ceiling";
+import { capEstimatedVisForLowCloud } from "@/lib/andes/visibility-estimate";
 import { visObscurationWx } from "@/lib/andes/wmo-vis-wx";
 
 type Hourly = Record<string, Array<number | null> | string[]>;
@@ -32,6 +33,8 @@ export type MetarProductContext = {
   lowCloudUnresolved: boolean;
   cldEstimated: boolean;
   midCloudBaseUnk: boolean;
+  /** Visibility used for the body, after the low-cloud / fog cap. */
+  visM: number | null;
 };
 
 /** Round base height down to the Annex 3 100 ft cloud group (e.g. 4511 ft → 45 → BKN045). */
@@ -85,7 +88,8 @@ export function deriveMetarWxAndCloud(
   icao: string,
   ceil: CeilingSample,
   visRoundM: number | null,
-  forTaf = false
+  forTaf = false,
+  visEstimated = false
 ): MetarProductContext {
   const temp = numAt(hourly, "temperature_2m", index);
   const dew = numAt(hourly, "dew_point_2m", index);
@@ -95,8 +99,6 @@ export function deriveMetarWxAndCloud(
   const showers = numAt(hourly, "showers", index) ?? 0;
   const snow = numAt(hourly, "snowfall", index) ?? 0;
   const coverLow = numAt(hourly, "cloud_cover_low", index);
-  const cape = numAt(hourly, "cape", index);
-  const convBase = numAt(hourly, "convective_cloud_base", index);
 
   const liquidRate = (i: number) =>
     Math.max(
@@ -114,37 +116,6 @@ export function deriveMetarWxAndCloud(
   let lowUnresolved = ceil.lowCloudUnresolved;
   let cldEstimated = false;
   const cover925 = numAt(hourly, "cloud_cover_925hPa", index);
-
-  const weather: string[] = [];
-  const visWx = visObscurationWx(visRoundM, rh);
-  if (visWx) weather.push(visWx);
-
-  const dryAir = spread != null && spread > 5;
-  const stratCeil = effectiveCeilFt != null && effectiveCeilFt <= 3000;
-
-  if (!dryAir && hourlyRate >= 0.1 && (hasAdjacent || hourlyRate >= 0.25)) {
-    if (showers >= 0.1 && (convBase != null && convBase > 0 || (cape != null && cape >= 100) || (coverLow != null && coverLow >= 62.5))) {
-      const p = showers < 2.5 ? "-" : showers <= 7.6 ? "" : "+";
-      weather.push(`${p}SHRA`);
-    } else if (rain >= 0.1 && showers < 0.1) {
-      const p = rain < 2.5 ? "-" : rain <= 7.6 ? "" : "+";
-      weather.push(`${p}RA`);
-    } else if (
-      stratCeil &&
-      spread != null &&
-      spread <= 3 &&
-      showers < 0.1 &&
-      hourlyRate < 0.5 &&
-      rain < 0.1
-    ) {
-      const p = hourlyRate < 0.25 ? "-" : hourlyRate <= 0.5 ? "" : "+";
-      weather.push(`${p}DZ`);
-    }
-  }
-
-  if (snow >= 0.1 && temp != null && temp <= 2) {
-    weather.push(snow < 2 ? "-SN" : snow <= 5 ? "SN" : "+SN");
-  }
 
   const lclM = lclHeightM(temp, dew);
   const lclFt = lclM != null ? lclM * M_TO_FT : null;
@@ -164,7 +135,11 @@ export function deriveMetarWxAndCloud(
       cover925 >= BKN_CLOUD_COVER_PCT);
 
   let clouds = "NSC";
-  if (effectiveCeilFt != null && effectiveCeilFt > 0) {
+  if (ceil.obscured) {
+    clouds = "VV000";
+    effectiveCeilFt = 0;
+    lowUnresolved = false;
+  } else if (effectiveCeilFt != null && effectiveCeilFt > 0) {
     const h = cloudHeightHundredsFt(effectiveCeilFt);
     const code = coverLow != null && coverLow >= 87.5 ? "OVC" : "BKN";
     clouds = `${code}${String(h).padStart(3, "0")}`;
@@ -183,8 +158,15 @@ export function deriveMetarWxAndCloud(
       if (forTaf) {
         cldEstimated = true;
         rmkExtra.push("CLD EST");
+      } else {
+        rmkExtra.push("CLD BASE UNK");
       }
     }
+  } else if (ceil.capeOnlyLayer) {
+    const h = cloudHeightHundredsFt(ceil.capeOnlyLayer.ftAgl);
+    clouds = `${ceil.capeOnlyLayer.cover}${String(h).padStart(3, "0")}`;
+    effectiveCeilFt = null;
+    lowUnresolved = false;
   } else if (
     coverLow != null &&
     coverLow < BKN_CLOUD_COVER_PCT &&
@@ -193,13 +175,51 @@ export function deriveMetarWxAndCloud(
     clouds = midLevelCloudGroup();
   }
 
+  const visM = capEstimatedVisForLowCloud({
+    visM: visRoundM,
+    estimated: visEstimated,
+    ceilingFtAgl: effectiveCeilFt,
+    obscured: ceil.obscured,
+    spreadC: spread,
+    rhPct: rh,
+    lowCoverPct: coverLow,
+  });
+
+  if (!ceil.obscured && effectiveCeilFt != null && effectiveCeilFt > 0 && effectiveCeilFt <= 100 && visM != null && visM < 1000) {
+    const h = effectiveCeilFt < 50 ? 0 : cloudHeightHundredsFt(effectiveCeilFt);
+    clouds = `VV${String(h).padStart(3, "0")}`;
+  }
+
+  const dryAir = spread != null && spread > 5;
+  const stratCeil = effectiveCeilFt != null && effectiveCeilFt <= 3000;
+  const precipWx: string[] = [];
+  if (showers >= 0.1) {
+    const p = showers < 2.5 ? "-" : showers <= 7.6 ? "" : "+";
+    precipWx.push(`${p}SHRA`);
+  } else if (!dryAir && hourlyRate >= 0.1 && (hasAdjacent || hourlyRate >= 0.25)) {
+    if (rain >= 0.1) {
+      const p = rain < 2.5 ? "-" : rain <= 7.6 ? "" : "+";
+      precipWx.push(`${p}RA`);
+    } else if (stratCeil && spread != null && spread <= 3 && hourlyRate < 0.5) {
+      const p = hourlyRate < 0.25 ? "-" : hourlyRate <= 0.5 ? "" : "+";
+      precipWx.push(`${p}DZ`);
+    }
+  }
+  if (snow >= 0.1 && temp != null && temp <= 2) {
+    precipWx.push(snow < 2 ? "-SN" : snow <= 5 ? "SN" : "+SN");
+  }
+
+  const visWx = visObscurationWx(visM, rh);
+  const weather = [...precipWx, visWx].filter(Boolean).join(" ").trim();
+
   return {
     clouds,
-    weather: weather.join(" ").trim(),
+    weather,
     rmkExtra,
     effectiveCeilFt,
     lowCloudUnresolved: lowUnresolved,
     cldEstimated,
     midCloudBaseUnk: false,
+    visM,
   };
 }

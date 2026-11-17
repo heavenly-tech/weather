@@ -8,19 +8,38 @@ const OBSC_EPS_M = 5;
 
 const SUBDIV = Number(process.env.ANDES_RENDER_SUBDIV ?? 4);
 
-function bilinear(q11: number, q21: number, q12: number, q22: number, tx: number, ty: number): number {
-  const a = q11 * (1 - tx) + q21 * tx;
-  const b = q12 * (1 - tx) + q22 * tx;
-  return a * (1 - ty) + b * ty;
-}
-
 type CoarseSample = {
   lat: number;
   lon: number;
   baseMslM: number | null;
   obscured: boolean;
   lowCloudUnresolved: boolean;
+  /** Liquid precipitation rate (mm/h) at this coarse point, when the grid fetch has it. */
+  precipMmH?: number | null;
 };
+
+/**
+ * Isolated cells disappear under bilinear interpolation: a single low base is
+ * dropped unless two corners agree, and a shower is averaged toward zero.
+ * Inside the coarse-cell neighbourhood, keep the lowest cloud base and the
+ * highest precipitation rate.
+ */
+export function neighbourhoodBaseAndPrecip(corners: Array<CoarseSample | null | undefined>): {
+  baseMslM: number | null;
+  precipMmH: number | null;
+  lowCloudUnresolved: boolean;
+} {
+  const present = corners.filter((sample): sample is CoarseSample => sample != null);
+  const bases = present.map((sample) => sample.baseMslM).filter((base): base is number => base != null);
+  const precips = present
+    .map((sample) => sample.precipMmH)
+    .filter((rate): rate is number => rate != null && Number.isFinite(rate));
+  return {
+    baseMslM: bases.length ? Math.min(...bases) : null,
+    precipMmH: precips.length ? Math.max(...precips) : null,
+    lowCloudUnresolved: present.some((sample) => sample.lowCloudUnresolved),
+  };
+}
 
 function buildCoarseMatrix(
   cells: CoarseSample[],
@@ -84,29 +103,11 @@ export async function refineCeilingGrid(
       const c0 = Math.floor(gc);
       const r1 = Math.min(coarseRows - 1, r0 + 1);
       const c1 = Math.min(coarseCols - 1, c0 + 1);
-      const ty = gr - r0;
-      const tx = gc - c0;
 
       const corners = [matrix[r0]?.[c0], matrix[r0]?.[c1], matrix[r1]?.[c0], matrix[r1]?.[c1]];
-      const present = corners.filter((s) => s?.baseMslM != null);
-      const lowCloudUnresolved = corners.some((s) => s?.lowCloudUnresolved);
-
-      let baseMslM: number | null = null;
-      if (present.length === 4) {
-        const v11 = corners[0]!.baseMslM!;
-        const v21 = corners[1]!.baseMslM!;
-        const v12 = corners[2]!.baseMslM!;
-        const v22 = corners[3]!.baseMslM!;
-        baseMslM = bilinear(v11, v21, v12, v22, tx, ty);
-      } else if (present.length >= 2) {
-        const nearest = corners.reduce<{ d: number; b: number } | null>((best, s, ci) => {
-          if (s?.baseMslM == null) return best;
-          const dist = (ci % 2 === 0 ? tx : 1 - tx) + (ci < 2 ? ty : 1 - ty);
-          if (!best || dist < best.d) return { d: dist, b: s.baseMslM };
-          return best;
-        }, null);
-        baseMslM = nearest?.b ?? null;
-      }
+      const neighbourhood = neighbourhoodBaseAndPrecip(corners);
+      const baseMslM = neighbourhood.baseMslM;
+      const lowCloudUnresolved = neighbourhood.lowCloudUnresolved;
 
       let ceilingFtAgl: number | null = null;
       let obscured = false;
@@ -126,6 +127,7 @@ export async function refineCeilingGrid(
         obscured,
         cloudBaseMslM: baseMslM,
         lowCloudUnresolved: lowCloudUnresolved && ceilingFtAgl == null,
+        precipMmH: neighbourhood.precipMmH,
       });
     }
   }

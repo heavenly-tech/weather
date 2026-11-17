@@ -75,10 +75,20 @@ export function generateModelMetar(opts: {
 }): { raw: string; stamp: string; visEstimated?: boolean; cldEstimated?: boolean; midCloudBaseUnk?: boolean } {
   const i = opts.hourIndex;
   const resolved = resolveVisibilityMeters(opts.hourly, i, opts.model);
-  const visM = resolved.visM != null ? roundVisM(resolved.visM) : null;
+  const visRounded = resolved.visM != null ? roundVisM(resolved.visM) : null;
   const qnh = numAt(opts.hourly, "pressure_msl", i);
   const ceil = ceilingFromHourly(opts.hourly, i, opts.elevM);
-  const derived = deriveMetarWxAndCloud(opts.hourly, i, opts.elevM, opts.icao, ceil, visM, false);
+  const derived = deriveMetarWxAndCloud(
+    opts.hourly,
+    i,
+    opts.elevM,
+    opts.icao,
+    ceil,
+    visRounded,
+    false,
+    resolved.estimated
+  );
+  const visM = derived.visM;
 
   const visG = visM != null ? String(visM).padStart(4, "0") : "////";
   const wind = formatModelWind(

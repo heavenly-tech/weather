@@ -1,3 +1,4 @@
+import { cachedFetchUrl } from "@/lib/andes/open-meteo-cache";
 import { LEVEL_FL, kmhToKt, mToKm } from "./format";
 import { fetchJson } from "./http";
 import type { ForecastHour, PointForecast, PressureLevel, VerticalSample } from "./types";
@@ -113,6 +114,15 @@ export function extractLevels(hourly: OpenMeteoHourly, index: number): VerticalS
 }
 
 export async function fetchOpenMeteo(url: string) {
+  if (url.includes("://api.open-meteo.com/")) {
+    const res = await cachedFetchUrl(url);
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return { ok: false as const, status: res.status, error: text.slice(0, 200) || res.statusText };
+    }
+    const data = (await res.json()) as OpenMeteoResponse | OpenMeteoResponse[];
+    return { ok: true as const, data, status: res.status };
+  }
   return fetchJson<OpenMeteoResponse | OpenMeteoResponse[]>(url);
 }
 

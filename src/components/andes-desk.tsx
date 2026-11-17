@@ -215,7 +215,7 @@ export function AndesDesk() {
               {midCloudBaseUnk ? (
                 <span
                   className="rounded bg-violet-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-violet-900 dark:text-violet-300"
-                  title="MSA assumptions — not official AIP data"
+                  title="Cloud base not resolved; NSC uses AIP MSA where published"
                 >
                   MID CLD BASE UNK
                 </span>
@@ -242,7 +242,7 @@ export function AndesDesk() {
               {midCloudBaseUnk ? (
                 <span
                   className="rounded bg-violet-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-violet-900 dark:text-violet-300"
-                  title="MSA assumptions — not official AIP data"
+                  title="Cloud base not resolved; NSC uses AIP MSA where published"
                 >
                   MID CLD BASE UNK
                 </span>
@@ -251,8 +251,9 @@ export function AndesDesk() {
             </div>
           </div>
           <p className="mb-2 text-[10px] text-muted-foreground">
-            NSC gating uses conservative MSA <strong>ASSUMPTIONS</strong> in{" "}
-            <code className="text-[10px]">airfield-msa.ts</code> (not live AIP extracts).
+            NSC gating uses AIP Chile MSA for SCTB, SCEL, and SCVM. SCVH and SCPD have no
+            published MSA; those two stay labelled assumptions in{" "}
+            <code className="text-[10px]">airfield-msa.ts</code>.
           </p>
           <pre className="whitespace-pre-wrap font-mono text-xs">{generatedTaf ?? "Loading…"}</pre>
         </div>

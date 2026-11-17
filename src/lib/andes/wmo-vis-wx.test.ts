@@ -3,6 +3,9 @@ import { generateModelTaf } from "@/lib/andes/wmo-taf";
 import { deriveMetarWxAndCloud } from "@/lib/andes/wmo-metar-wx";
 import { visObscurationWx } from "@/lib/andes/wmo-vis-wx";
 import { ceilingFromHourly } from "@/lib/andes/ceiling";
+import { estimateVisibilityMeters } from "@/lib/andes/visibility-estimate";
+import { assertEstOnlyInTrailingRmk } from "@/lib/andes/product-rmk";
+import { generateModelMetar } from "@/lib/andes/wmo-metar";
 
 describe("visObscurationWx", () => {
   it("800 m → FG", () => {
@@ -106,5 +109,43 @@ describe("METAR/TAF vis wx integration", () => {
     expect("error" in taf).toBe(false);
     if ("error" in taf) return;
     expect(taf.raw).toMatch(/BECMG[^\n]*NSW/);
+  });
+
+  it("drops the ~4.2 km RH floor when the base is at the surface", () => {
+    const hourly = {
+      time: ["t"],
+      temperature_2m: [10],
+      dew_point_2m: [9.7],
+      relative_humidity_2m: [98],
+      cloud_cover_low: [95],
+      surface_pressure: [980],
+      cloud_cover_925hPa: [90],
+      geopotential_height_925hPa: [649 + 20],
+      precipitation: [0],
+      rain: [0],
+      showers: [0],
+    };
+    const floor = estimateVisibilityMeters(98, 0);
+    expect(floor).toBeGreaterThan(4000);
+    const ceil = ceilingFromHourly(hourly, 0, 649);
+    expect(ceil.obscured).toBe(true);
+    const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, Math.round(floor), false, true);
+    expect(d.visM).toBeLessThan(1000);
+    expect(d.weather).toBe("FG");
+    expect(d.clouds).toMatch(/^VV\d{3}$/);
+    const metar = generateModelMetar({
+      icao: "SCTB",
+      elevM: 649,
+      model: "ecmwf_ifs025",
+      runTime: "2026-11-17T12:00:00Z",
+      validTime: "2026-11-17T12:00:00Z",
+      hourly,
+      hourIndex: 0,
+    });
+    expect(metar.raw).toMatch(/\b0[0-8]\d{2}\b/);
+    expect(metar.raw).toContain("FG");
+    expect(metar.raw).toMatch(/VV\d{3}/);
+    expect(metar.raw).not.toMatch(/\b4[0-9]{3}\b/);
+    expect(() => assertEstOnlyInTrailingRmk(metar.raw)).not.toThrow();
   });
 });

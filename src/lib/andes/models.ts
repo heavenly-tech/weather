@@ -47,7 +47,8 @@ export const ANDES_MODELS: AndesModelMeta[] = [
     query: "icon_seamless",
     pressureLevels: true,
     cloudBaseField: "convective_cloud_base",
-    notes: "convective_cloud_base is metres AMSL; gated on showers/cape/low cloud, not convective_cloud_cover.",
+    notes:
+      "convective_cloud_base is metres AMSL. It is a BKN/OVC ceiling only with precipitation or cloud cover ≥ 62.5%; CAPE alone is FEW/SCT.",
   },
   {
     id: "gem_seamless",
@@ -151,7 +152,10 @@ export function openMeteoMultiUrl(points: { lat: number; lon: number }[], model:
     ...GRID_PRESSURE_LEVELS.map((hpa) => `cloud_cover_${hpa}hPa`),
     ...GRID_PRESSURE_LEVELS.map((hpa) => `geopotential_height_${hpa}hPa`),
     "surface_pressure",
-    ...(model === "icon_seamless" ? ["convective_cloud_base"] : ["cloud_cover_low"]),
+    "precipitation",
+    "rain",
+    "showers",
+    ...(model === "icon_seamless" ? ["convective_cloud_base", "cloud_cover_low"] : ["cloud_cover_low"]),
   ];
   const params = new URLSearchParams({
     latitude: points.map((p) => p.lat.toFixed(4)).join(","),
