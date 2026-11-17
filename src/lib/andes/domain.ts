@@ -15,13 +15,25 @@ export type TimelineAirfield = (typeof TIMELINE_AIRFIELDS)[number];
 
 export type GridPoint = { lat: number; lon: number; elevM: number };
 
-/** Coarse grid for map overlays (Open-Meteo multi-point limits apply). */
-export function domainGrid(rows = 9, cols = 10): GridPoint[] {
+/** Default ~0.1° spacing (27×18 ≈ 486 points). Override via ANDES_GRID_ROWS / ANDES_GRID_COLS. */
+export function defaultGridShape(): { rows: number; cols: number } {
+  const rows = Number(process.env.ANDES_GRID_ROWS ?? 18);
+  const cols = Number(process.env.ANDES_GRID_COLS ?? 27);
+  return {
+    rows: Number.isFinite(rows) && rows >= 4 ? rows : 18,
+    cols: Number.isFinite(cols) && cols >= 4 ? cols : 27,
+  };
+}
+
+export function domainGrid(rows?: number, cols?: number): GridPoint[] {
+  const shape = defaultGridShape();
+  const r = rows ?? shape.rows;
+  const c = cols ?? shape.cols;
   const points: GridPoint[] = [];
-  for (let r = 0; r < rows; r++) {
-    const lat = ANDES_DOMAIN.latMax + (r / Math.max(1, rows - 1)) * (ANDES_DOMAIN.latMin - ANDES_DOMAIN.latMax);
-    for (let c = 0; c < cols; c++) {
-      const lon = ANDES_DOMAIN.lonMin + (c / Math.max(1, cols - 1)) * (ANDES_DOMAIN.lonMax - ANDES_DOMAIN.lonMin);
+  for (let ri = 0; ri < r; ri++) {
+    const lat = ANDES_DOMAIN.latMax + (ri / Math.max(1, r - 1)) * (ANDES_DOMAIN.latMin - ANDES_DOMAIN.latMax);
+    for (let ci = 0; ci < c; ci++) {
+      const lon = ANDES_DOMAIN.lonMin + (ci / Math.max(1, c - 1)) * (ANDES_DOMAIN.lonMax - ANDES_DOMAIN.lonMin);
       points.push({ lat, lon, elevM: 0 });
     }
   }

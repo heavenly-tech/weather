@@ -3,11 +3,12 @@ import {
   type AndesModelId,
   modelById,
   openMeteoForecastUrl,
-  openMeteoMultiUrl,
 } from "@/lib/andes/models";
 import { ceilingFromHourly } from "@/lib/andes/ceiling";
-import { domainGrid } from "@/lib/andes/domain";
-import { asList, asSingle, fetchOpenMeteo, pickHourIndex } from "@/lib/open-meteo";
+import { defaultGridShape, domainGrid } from "@/lib/andes/domain";
+import { fetchMultiBatched } from "@/lib/andes/batch-fetch";
+import { cachedFetchUrl } from "@/lib/andes/open-meteo-cache";
+import { asSingle, fetchOpenMeteo, pickHourIndex } from "@/lib/open-meteo";
 import type { FlightCategory } from "@/lib/types";
 
 export type ModelAvailability = {
@@ -55,18 +56,23 @@ export async function probeModels(lat: number, lon: number): Promise<ModelAvaila
 export async function fetchCeilingGrid(
   model: AndesModelId,
   validTime?: string
-): Promise<{ cells: CeilingCell[]; modelRun: string | null; unavailable?: string }> {
+): Promise<{
+  cells: CeilingCell[];
+  modelRun: string | null;
+  gridShape: { rows: number; cols: number };
+  unavailable?: string;
+}> {
   const meta = modelById(model);
-  if (!meta) return { cells: [], modelRun: null, unavailable: "Unknown model" };
+  if (!meta) return { cells: [], modelRun: null, gridShape: defaultGridShape(), unavailable: "Unknown model" };
 
-  const grid = domainGrid(8, 9);
-  const url = openMeteoMultiUrl(grid, model, 1);
-  const res = await fetchOpenMeteo(url);
-  if (!res.ok) {
-    return { cells: [], modelRun: null, unavailable: res.error ?? "Model fetch failed" };
+  const gridShape = defaultGridShape();
+  const grid = domainGrid();
+  const batched = await fetchMultiBatched(grid, model, 1);
+  if (!batched.ok) {
+    return { cells: [], modelRun: null, gridShape, unavailable: batched.error };
   }
 
-  const list = asList(res.data);
+  const list = batched.list;
   const metaCloud = meta.cloudBaseField;
   const cells: CeilingCell[] = [];
 
@@ -91,15 +97,17 @@ export async function fetchCeilingGrid(
   const index = validTime ? pickHourIndex(times, new Date(validTime)) : pickHourIndex(times);
   const modelRun = times[index] ?? null;
 
-  return { cells, modelRun };
+  return { cells, modelRun, gridShape };
 }
 
 export async function fetchPointHourly(model: AndesModelId, lat: number, lon: number, days = 2) {
   const meta = modelById(model);
   const url = openMeteoForecastUrl(lat, lon, model, days);
-  const res = await fetchOpenMeteo(url);
-  if (!res.ok) return { ok: false as const, error: res.error, meta };
-  const body = asSingle(res.data);
+  const cached = await cachedFetchUrl(url, model);
+  if (!cached.ok) {
+    return { ok: false as const, error: `HTTP ${cached.status}`, meta };
+  }
+  const body = asSingle((await cached.json()) as import("@/lib/open-meteo").OpenMeteoResponse);
   return {
     ok: true as const,
     hourly: body.hourly ?? {},

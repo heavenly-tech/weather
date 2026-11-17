@@ -6,7 +6,7 @@ const LEVELS: PressureLevel[] = [1000, 925, 850, 700, 500, 300];
 
 type OpenMeteoHourly = Record<string, Array<number | null> | string[]>;
 
-type OpenMeteoResponse = {
+export type OpenMeteoResponse = {
   latitude: number;
   longitude: number;
   elevation?: number;

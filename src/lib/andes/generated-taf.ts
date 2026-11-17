@@ -51,21 +51,39 @@ export function generateModelTaf(opts: {
   }
 
   const start = times[0];
-  const end = times[Math.min(times.length - 1, 23)] ?? start;
-  const header = `TAF ${opts.icao} ${tafTime(opts.runTime)}Z ${tafTime(start)}/${tafTime(end)}`;
+  let end = times[Math.min(times.length - 1, 23)] ?? start;
+  let validTo = tafTime(end);
 
   const groups: string[] = [periodGroup(opts.hourly, 0, opts.elevM, opts.cloudBaseKey)];
 
   const step = 6;
   for (let i = step; i < Math.min(times.length, 24); i += step) {
     const change = i >= 12 ? "TEMPO" : "BECMG";
-    groups.push(`${change} ${tafTime(times[i])}/${tafTime(times[Math.min(i + 3, times.length - 1)])} ${periodGroup(opts.hourly, i, opts.elevM, opts.cloudBaseKey)}`);
+    const toIdx = Math.min(i + 3, times.length - 1);
+    groups.push(
+      `${change} ${tafTime(times[i])}/${tafTime(times[toIdx])} ${periodGroup(opts.hourly, i, opts.elevM, opts.cloudBaseKey)}`
+    );
+    const endToken = tafTime(times[toIdx]);
+    if (endToken > validTo) {
+      validTo = endToken;
+      end = times[toIdx];
+    }
   }
 
-  if (numAt(opts.hourly, "precipitation", 12) != null && (numAt(opts.hourly, "precipitation", 12) ?? 0) > 0.2) {
-    groups.push(`PROB30 ${tafTime(times[12])}/${tafTime(times[15])} ${periodGroup(opts.hourly, 12, opts.elevM, opts.cloudBaseKey)}`);
+  const precip = numAt(opts.hourly, "precipitation", Math.min(12, times.length - 1));
+  if (precip != null && precip > 0.2 && times.length > 15) {
+    groups.push(
+      `PROB30 ${tafTime(times[12])}/${tafTime(times[15])} ${periodGroup(opts.hourly, 12, opts.elevM, opts.cloudBaseKey)}`
+    );
+    const endToken = tafTime(times[15]);
+    if (endToken > validTo) {
+      validTo = endToken;
+      end = times[15];
+    }
   }
+
+  const headerFixed = `TAF ${opts.icao} ${tafTime(opts.runTime)}Z ${tafTime(start)}/${tafTime(end)}`;
 
   const remark = `RMK ${STAMP} MODEL=${opts.model} RUN=${opts.runTime}`;
-  return { raw: `${header} ${groups.join(" ")} ${remark}`, stamp: STAMP };
+  return { raw: `${headerFixed} ${groups.join(" ")} ${remark}`, stamp: STAMP };
 }

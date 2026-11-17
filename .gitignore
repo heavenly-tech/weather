@@ -45,3 +45,4 @@ next-env.d.ts
 
 # generated Cesium static assets
 /public/cesium/
+public/screenshots/andes-slider-frames/

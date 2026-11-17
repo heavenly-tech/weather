@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="220" viewBox="0 0 800 220">
-  <rect fill="#0f172a" width="800" height="220"/>
-  <text x="20" y="28" fill="#e2e8f0" font-family="sans-serif" font-size="16">SCEL ceiling  model vs METAR (placeholder)</text>
-  <polyline points="40,180 160,140 280,150 400,90 520,120 640,100 760,130" fill="none" stroke="#38bdf8" stroke-width="2"/>
-  <polyline points="40,170 160,165 280,155 400,100 520,125 640,95 760,125" fill="none" stroke="#a78bfa" stroke-width="2"/>
-  <circle cx="160" cy="165" r="4" fill="#22c55e"/>
-  <circle cx="400" cy="100" r="4" fill="#fbbf24"/>
-</svg>

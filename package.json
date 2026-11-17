@@ -11,7 +11,9 @@
     "start": "next start --port 4310 --hostname 0.0.0.0",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "validate:ceilings": "tsx scripts/validate-ceilings.ts",
+    "capture:andes": "node scripts/capture-andes-screenshots.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -34,6 +36,8 @@
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "tsx": "^4.20.3",
+    "playwright": "^1.56.1"
   }
 }

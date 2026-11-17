@@ -104,14 +104,17 @@ export function openMeteoForecastUrl(
 
 export function openMeteoMultiUrl(points: { lat: number; lon: number }[], model: AndesModelId, days = 1): string {
   const meta = modelById(model)!;
+  const hourly = [
+    ...PRESSURE_LEVELS.map((hpa) => `cloud_cover_${hpa}hPa`),
+    ...PRESSURE_LEVELS.map((hpa) => `geopotential_height_${hpa}hPa`),
+    ...PRESSURE_LEVELS.map((hpa) => `relative_humidity_${hpa}hPa`),
+    "temperature_2m",
+  ];
+  if (meta.cloudBaseField) hourly.push(meta.cloudBaseField);
   const params = new URLSearchParams({
     latitude: points.map((p) => p.lat.toFixed(4)).join(","),
     longitude: points.map((p) => p.lon.toFixed(4)).join(","),
-    hourly: [
-      ...PRESSURE_LEVELS.map((hpa) => `cloud_cover_${hpa}hPa`),
-      ...PRESSURE_LEVELS.map((hpa) => `geopotential_height_${hpa}hPa`),
-      "temperature_2m",
-    ].join(","),
+    hourly: hourly.join(","),
     forecast_days: String(days),
     models: meta.query,
     timezone: "UTC",

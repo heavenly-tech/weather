@@ -10,7 +10,9 @@ type SliceValue = { lat: number; lon: number; tempC: number | null; cloudPct: nu
 
 function cellsToCanvas(
   cells: CeilingCell[] | SliceValue[],
-  mode: "ceiling" | "slice"
+  mode: "ceiling" | "slice",
+  gridCols: number,
+  gridRows: number
 ): { dataUrl: string; rectangle: [number, number, number, number] } {
   const lats = cells.map((c) => c.lat);
   const lons = cells.map((c) => c.lon);
@@ -19,8 +21,8 @@ function cellsToCanvas(
   const south = Math.min(...lats);
   const north = Math.max(...lats);
 
-  const cols = 9;
-  const rows = 8;
+  const cols = gridCols;
+  const rows = gridRows;
   const canvas = document.createElement("canvas");
   canvas.width = cols;
   canvas.height = rows;
@@ -53,11 +55,15 @@ export function AndesScene({
   sliceValues,
   showSlice,
   pressureHpa,
+  gridRows,
+  gridCols,
 }: {
   ceilingCells: CeilingCell[];
   sliceValues: SliceValue[];
   showSlice: boolean;
   pressureHpa: number;
+  gridRows: number;
+  gridCols: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<Viewer | null>(null);
@@ -162,7 +168,7 @@ export function AndesScene({
     v.entities.removeById(`${id}-slice`);
     v.entities.removeById(`${id}-plane`);
 
-    const { dataUrl, rectangle } = cellsToCanvas(ceilingCells, "ceiling");
+    const { dataUrl, rectangle } = cellsToCanvas(ceilingCells, "ceiling", gridCols, gridRows);
     v.entities.add({
       id,
       name: "Ceiling (ft AGL)",
@@ -187,7 +193,7 @@ export function AndesScene({
       });
 
     if (showSlice && sliceValues.length) {
-      const sliceImg = cellsToCanvas(sliceValues, "slice");
+      const sliceImg = cellsToCanvas(sliceValues, "slice", gridCols, gridRows);
       v.entities.add({
         id: `${id}-slice`,
         rectangle: {
@@ -208,7 +214,7 @@ export function AndesScene({
     return () => {
       cancelled = true;
     };
-  }, [ceilingCells, sliceValues, showSlice, pressureHpa]);
+  }, [ceilingCells, sliceValues, showSlice, pressureHpa, gridCols, gridRows]);
 
   return (
     <div className="relative h-[560px] w-full overflow-hidden rounded-xl ring-1 ring-foreground/10">

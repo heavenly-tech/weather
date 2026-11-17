@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { fetchPointHourly, sliceAtPressure } from "@/lib/andes/fetch-field";
 import type { AndesModelId } from "@/lib/andes/models";
-import { domainGrid } from "@/lib/andes/domain";
-import { asList, fetchOpenMeteo, pickHourIndex } from "@/lib/open-meteo";
-import { openMeteoMultiUrl } from "@/lib/andes/models";
+import { defaultGridShape, domainGrid } from "@/lib/andes/domain";
+import { fetchMultiBatched } from "@/lib/andes/batch-fetch";
+import { pickHourIndex } from "@/lib/open-meteo";
 
 export const dynamic = "force-dynamic";
 
@@ -13,14 +13,13 @@ export async function GET(request: Request) {
   const hpa = Number(searchParams.get("hpa") ?? "850");
   const validTime = searchParams.get("validTime");
 
-  const grid = domainGrid(8, 9);
-  const url = openMeteoMultiUrl(grid, model, 1);
-  const res = await fetchOpenMeteo(url);
-  if (!res.ok) {
-    return NextResponse.json({ unavailable: res.error, values: [] });
+  const grid = domainGrid();
+  const batched = await fetchMultiBatched(grid, model, 1);
+  if (!batched.ok) {
+    return NextResponse.json({ unavailable: batched.error, values: [], gridShape: defaultGridShape() });
   }
 
-  const list = asList(res.data);
+  const list = batched.list;
   const values = list.map((point) => {
     const hourly = point.hourly ?? {};
     const times = (hourly.time ?? []) as string[];
@@ -33,6 +32,7 @@ export async function GET(request: Request) {
   return NextResponse.json({
     pressureHpa: hpa,
     values,
+    gridShape: defaultGridShape(),
     validTime: validTime ?? (center.ok ? center.runTimes[0] : null),
   });
 }

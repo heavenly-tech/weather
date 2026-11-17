@@ -1,0 +1,2169 @@
+[
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T18:54:52.208Z",
+    "obsTime": 1794942000,
+    "reportTime": "2026-11-17T19:00:00.000Z",
+    "temp": 25,
+    "dewp": 11,
+    "wdir": 210,
+    "wspd": 13,
+    "visib": "6+",
+    "altim": 1012,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 171900Z 21013KT 170V250 9999 SCT080 25/11 Q1012 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 8000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T17:55:13.808Z",
+    "obsTime": 1794938400,
+    "reportTime": "2026-11-17T18:00:00.000Z",
+    "temp": 24,
+    "dewp": 11,
+    "wdir": 200,
+    "wspd": 12,
+    "visib": "6+",
+    "altim": 1012,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 171800Z 20012KT 160V240 9999 FEW050 24/11 Q1012 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "FEW",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 5000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T16:54:21.066Z",
+    "obsTime": 1794934800,
+    "reportTime": "2026-11-17T17:00:00.000Z",
+    "temp": 24,
+    "dewp": 11,
+    "wdir": 150,
+    "wspd": 10,
+    "visib": "6+",
+    "altim": 1013,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 171700Z 15010KT 130V220 9999 FEW050 24/11 Q1013 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "FEW",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 5000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T15:54:44.433Z",
+    "obsTime": 1794931200,
+    "reportTime": "2026-11-17T16:00:00.000Z",
+    "temp": 23,
+    "dewp": 11,
+    "wdir": 220,
+    "wspd": 7,
+    "visib": "6+",
+    "altim": 1013,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 171600Z 22007KT 160V280 9999 FEW050 23/11 Q1013 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "FEW",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 5000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T14:54:49.087Z",
+    "obsTime": 1794927600,
+    "reportTime": "2026-11-17T15:00:00.000Z",
+    "temp": 21,
+    "dewp": 12,
+    "wdir": 190,
+    "wspd": 8,
+    "visib": "6+",
+    "altim": 1014,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 171500Z 19008KT 150V220 9999 SCT030 21/12 Q1014 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 3000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T13:54:06.805Z",
+    "obsTime": 1794924000,
+    "reportTime": "2026-11-17T14:00:00.000Z",
+    "temp": 20,
+    "dewp": 11,
+    "wdir": "VRB",
+    "wspd": 3,
+    "visib": "6+",
+    "altim": 1014,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 171400Z VRB03KT 9999 BKN030 20/11 Q1014 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 3000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T12:54:53.333Z",
+    "obsTime": 1794920400,
+    "reportTime": "2026-11-17T13:00:00.000Z",
+    "temp": 18,
+    "dewp": 12,
+    "wdir": 180,
+    "wspd": 4,
+    "visib": "6+",
+    "altim": 1014,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 171300Z 18004KT 080V220 9999 BKN030 18/12 Q1014 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 3000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T11:55:09.035Z",
+    "obsTime": 1794916800,
+    "reportTime": "2026-11-17T12:00:00.000Z",
+    "temp": 17,
+    "dewp": 12,
+    "wdir": "VRB",
+    "wspd": 2,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 171200Z VRB02KT 9999 BKN030 17/12 Q1015 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 3000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T10:57:33.704Z",
+    "obsTime": 1794913200,
+    "reportTime": "2026-11-17T11:00:00.000Z",
+    "temp": 16,
+    "dewp": 11,
+    "wdir": 130,
+    "wspd": 3,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 171100Z 13003KT 080V220 9999 BKN020 BKN040 16/11 Q1015 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 2000
+      },
+      {
+        "cover": "BKN",
+        "base": 4000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T09:54:40.683Z",
+    "obsTime": 1794909600,
+    "reportTime": "2026-11-17T10:00:00.000Z",
+    "temp": 15,
+    "dewp": 11,
+    "wdir": 130,
+    "wspd": 4,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 171000Z 13004KT 9999 OVC030 15/11 Q1015 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "OVC",
+    "clouds": [
+      {
+        "cover": "OVC",
+        "base": 3000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T08:52:58.205Z",
+    "obsTime": 1794906000,
+    "reportTime": "2026-11-17T09:00:00.000Z",
+    "temp": 15,
+    "dewp": 12,
+    "wdir": 140,
+    "wspd": 5,
+    "visib": "6+",
+    "altim": 1014,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 170900Z 14005KT 9999 OVC020 15/12 Q1014 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "OVC",
+    "clouds": [
+      {
+        "cover": "OVC",
+        "base": 2000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T07:54:50.732Z",
+    "obsTime": 1794902400,
+    "reportTime": "2026-11-17T08:00:00.000Z",
+    "temp": 15,
+    "dewp": 11,
+    "wdir": 160,
+    "wspd": 4,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 170800Z 16004KT 9999 BKN020 15/11 Q1015 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 2000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T06:54:54.316Z",
+    "obsTime": 1794898800,
+    "reportTime": "2026-11-17T07:00:00.000Z",
+    "temp": 16,
+    "dewp": 11,
+    "wdir": 150,
+    "wspd": 5,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 170700Z 15005KT 9999 BKN020 16/11 Q1015 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 2000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T05:57:17.966Z",
+    "obsTime": 1794895200,
+    "reportTime": "2026-11-17T06:00:00.000Z",
+    "temp": 15,
+    "dewp": 12,
+    "wdir": 160,
+    "wspd": 6,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 170600Z 16006KT 9999 BKN030 15/12 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 3000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T04:55:54.845Z",
+    "obsTime": 1794891600,
+    "reportTime": "2026-11-17T05:00:00.000Z",
+    "temp": 15,
+    "dewp": 11,
+    "wdir": 160,
+    "wspd": 7,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 170500Z 16007KT 9999 BKN030 15/11 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 3000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T03:55:22.381Z",
+    "obsTime": 1794888000,
+    "reportTime": "2026-11-17T04:00:00.000Z",
+    "temp": 15,
+    "dewp": 11,
+    "wdir": 150,
+    "wspd": 7,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 170400Z 15007KT 9999 BKN050 BKN150 15/11 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 5000
+      },
+      {
+        "cover": "BKN",
+        "base": 15000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T02:53:29.211Z",
+    "obsTime": 1794884400,
+    "reportTime": "2026-11-17T03:00:00.000Z",
+    "temp": 16,
+    "dewp": 11,
+    "wdir": 150,
+    "wspd": 7,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 170300Z 15007KT 9999 SCT040 BKN140 16/11 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 4000
+      },
+      {
+        "cover": "BKN",
+        "base": 14000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T01:55:36.023Z",
+    "obsTime": 1794880800,
+    "reportTime": "2026-11-17T02:00:00.000Z",
+    "temp": 16,
+    "dewp": 12,
+    "wdir": 150,
+    "wspd": 7,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 170200Z 15007KT 9999 SCT040 BKN150 16/12 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 4000
+      },
+      {
+        "cover": "BKN",
+        "base": 15000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T00:56:54.389Z",
+    "obsTime": 1794877200,
+    "reportTime": "2026-11-17T01:00:00.000Z",
+    "temp": 18,
+    "dewp": 11,
+    "wdir": 180,
+    "wspd": 8,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 170100Z 18008KT 9999 SCT030 BKN050 18/11 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 3000
+      },
+      {
+        "cover": "BKN",
+        "base": 5000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T23:55:59.337Z",
+    "obsTime": 1794873600,
+    "reportTime": "2026-11-17T00:00:00.000Z",
+    "temp": 18,
+    "dewp": 11,
+    "wdir": 180,
+    "wspd": 10,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 170000Z 18010KT 9999 SCT030 BKN050 18/11 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 3000
+      },
+      {
+        "cover": "BKN",
+        "base": 5000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T22:55:21.570Z",
+    "obsTime": 1794870000,
+    "reportTime": "2026-11-16T23:00:00.000Z",
+    "temp": 19,
+    "dewp": 12,
+    "wdir": 200,
+    "wspd": 13,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 162300Z 20013KT 9999 SCT050 BKN170 19/12 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 5000
+      },
+      {
+        "cover": "BKN",
+        "base": 17000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T21:57:50.953Z",
+    "obsTime": 1794866400,
+    "reportTime": "2026-11-16T22:00:00.000Z",
+    "temp": 21,
+    "dewp": 12,
+    "wdir": 190,
+    "wspd": 13,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 162200Z 19013KT 9999 FEW050 SCT170 21/12 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 5000
+      },
+      {
+        "cover": "SCT",
+        "base": 17000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T20:55:49.074Z",
+    "obsTime": 1794862800,
+    "reportTime": "2026-11-16T21:00:00.000Z",
+    "temp": 22,
+    "dewp": 12,
+    "wdir": 200,
+    "wspd": 12,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 162100Z 20012KT 180V240 9999 FEW050 BKN170 22/12 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 5000
+      },
+      {
+        "cover": "BKN",
+        "base": 17000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T19:56:38.833Z",
+    "obsTime": 1794859200,
+    "reportTime": "2026-11-16T20:00:00.000Z",
+    "temp": 22,
+    "dewp": 12,
+    "wdir": 170,
+    "wspd": 9,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 162000Z 17009KT 150V210 9999 FEW050 SCT180 22/12 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 5000
+      },
+      {
+        "cover": "SCT",
+        "base": 18000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T18:57:13.455Z",
+    "obsTime": 1794855600,
+    "reportTime": "2026-11-16T19:00:00.000Z",
+    "temp": 22,
+    "dewp": 12,
+    "wdir": 150,
+    "wspd": 9,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 161900Z 15009KT 100V210 9999 FEW050 SCT150 22/12 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 5000
+      },
+      {
+        "cover": "SCT",
+        "base": 15000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T17:53:44.264Z",
+    "obsTime": 1794852000,
+    "reportTime": "2026-11-16T18:00:00.000Z",
+    "temp": 20,
+    "dewp": 12,
+    "wdir": 190,
+    "wspd": 10,
+    "visib": "6+",
+    "altim": 1018,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 161800Z 19010KT 160V240 9999 FEW030 SCT050 20/12 Q1018 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 3000
+      },
+      {
+        "cover": "SCT",
+        "base": 5000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T16:58:38.408Z",
+    "obsTime": 1794848400,
+    "reportTime": "2026-11-16T17:00:00.000Z",
+    "temp": 20,
+    "dewp": 12,
+    "wdir": 160,
+    "wspd": 8,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 161700Z 16008KT 110V210 9999 BKN030 BKN050 20/12 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 3000
+      },
+      {
+        "cover": "BKN",
+        "base": 5000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T15:55:50.927Z",
+    "obsTime": 1794844800,
+    "reportTime": "2026-11-16T16:00:00.000Z",
+    "temp": 19,
+    "dewp": 12,
+    "wdir": 180,
+    "wspd": 7,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 161600Z 18007KT 120V240 9999 FEW030 BKN160 19/12 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 3000
+      },
+      {
+        "cover": "BKN",
+        "base": 16000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T14:57:36.474Z",
+    "obsTime": 1794841200,
+    "reportTime": "2026-11-16T15:00:00.000Z",
+    "temp": 19,
+    "dewp": 12,
+    "wdir": 180,
+    "wspd": 10,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 161500Z 18010KT 9999 SCT010 BKN160 19/12 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 1000
+      },
+      {
+        "cover": "BKN",
+        "base": 16000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T13:57:11.272Z",
+    "obsTime": 1794837600,
+    "reportTime": "2026-11-16T14:00:00.000Z",
+    "temp": 18,
+    "dewp": 12,
+    "wdir": 200,
+    "wspd": 12,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 161400Z 20012KT 9999 FEW020 BKN150 18/12 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 2000
+      },
+      {
+        "cover": "BKN",
+        "base": 15000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T12:56:43.417Z",
+    "obsTime": 1794834000,
+    "reportTime": "2026-11-16T13:00:00.000Z",
+    "temp": 17,
+    "dewp": 12,
+    "wdir": "VRB",
+    "wspd": 3,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 161300Z VRB03KT 9999 FEW020 BKN150 17/12 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 2000
+      },
+      {
+        "cover": "BKN",
+        "base": 15000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T11:57:54.199Z",
+    "obsTime": 1794830400,
+    "reportTime": "2026-11-16T12:00:00.000Z",
+    "temp": 16,
+    "dewp": 12,
+    "wdir": "VRB",
+    "wspd": 4,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 161200Z VRB04KT 9999 BKN020 BKN140 16/12 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 2000
+      },
+      {
+        "cover": "BKN",
+        "base": 14000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T10:58:34.194Z",
+    "obsTime": 1794826800,
+    "reportTime": "2026-11-16T11:00:00.000Z",
+    "temp": 16,
+    "dewp": 12,
+    "wdir": "VRB",
+    "wspd": 2,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 161100Z VRB02KT 9999 SCT030 OVC140 16/12 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "OVC",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 3000
+      },
+      {
+        "cover": "OVC",
+        "base": 14000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T09:59:18.555Z",
+    "obsTime": 1794823200,
+    "reportTime": "2026-11-16T10:00:00.000Z",
+    "temp": 15,
+    "dewp": 12,
+    "wdir": 80,
+    "wspd": 7,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 161000Z 08007KT 020V110 9999 FEW015 BKN120 BKN150 15/12 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 1500
+      },
+      {
+        "cover": "BKN",
+        "base": 12000
+      },
+      {
+        "cover": "BKN",
+        "base": 15000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T08:57:39.185Z",
+    "obsTime": 1794819600,
+    "reportTime": "2026-11-16T09:00:00.000Z",
+    "temp": 15,
+    "dewp": 12,
+    "wdir": 210,
+    "wspd": 9,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 160900Z 21009KT 9999 SCT030 BKN150 15/12 Q1015 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 3000
+      },
+      {
+        "cover": "BKN",
+        "base": 15000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T07:56:32.051Z",
+    "obsTime": 1794816000,
+    "reportTime": "2026-11-16T08:00:00.000Z",
+    "temp": 15,
+    "dewp": 11,
+    "wdir": 20,
+    "wspd": 4,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 160800Z 02004KT 340V130 9999 FEW040 BKN150 15/11 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 4000
+      },
+      {
+        "cover": "BKN",
+        "base": 15000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T06:57:08.948Z",
+    "obsTime": 1794812400,
+    "reportTime": "2026-11-16T07:00:00.000Z",
+    "temp": 15,
+    "dewp": 11,
+    "wdir": 240,
+    "wspd": 3,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 160700Z 24003KT 210V290 9999 SCT040 BKN150 15/11 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 4000
+      },
+      {
+        "cover": "BKN",
+        "base": 15000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T05:58:36.995Z",
+    "obsTime": 1794808800,
+    "reportTime": "2026-11-16T06:00:00.000Z",
+    "temp": 16,
+    "dewp": 11,
+    "wdir": 150,
+    "wspd": 7,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 160600Z 15007KT 9999 SCT040 BKN170 16/11 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 4000
+      },
+      {
+        "cover": "BKN",
+        "base": 17000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T04:59:15.567Z",
+    "obsTime": 1794805200,
+    "reportTime": "2026-11-16T05:00:00.000Z",
+    "temp": 16,
+    "dewp": 11,
+    "wdir": 160,
+    "wspd": 8,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 160500Z 16008KT 9999 FEW040 BKN150 BKN170 16/11 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 4000
+      },
+      {
+        "cover": "BKN",
+        "base": 15000
+      },
+      {
+        "cover": "BKN",
+        "base": 17000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T03:59:19.004Z",
+    "obsTime": 1794801600,
+    "reportTime": "2026-11-16T04:00:00.000Z",
+    "temp": 17,
+    "dewp": 11,
+    "wdir": 140,
+    "wspd": 5,
+    "visib": "6+",
+    "altim": 1018,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 160400Z 14005KT 110V170 9999 SCT040 SCT120 BKN170 17/11 Q1018 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 4000
+      },
+      {
+        "cover": "SCT",
+        "base": 12000
+      },
+      {
+        "cover": "BKN",
+        "base": 17000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T02:58:47.946Z",
+    "obsTime": 1794798000,
+    "reportTime": "2026-11-16T03:00:00.000Z",
+    "temp": 17,
+    "dewp": 11,
+    "wdir": 150,
+    "wspd": 7,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 160300Z 15007KT 9999 SCT040 BKN170 17/11 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 4000
+      },
+      {
+        "cover": "BKN",
+        "base": 17000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T01:58:46.792Z",
+    "obsTime": 1794794400,
+    "reportTime": "2026-11-16T02:00:00.000Z",
+    "temp": 17,
+    "dewp": 10,
+    "wdir": 140,
+    "wspd": 8,
+    "visib": "6+",
+    "altim": 1018,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 160200Z 14008KT 9999 SCT150 BKN170 17/10 Q1018 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 15000
+      },
+      {
+        "cover": "BKN",
+        "base": 17000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-16T00:55:17.361Z",
+    "obsTime": 1794790800,
+    "reportTime": "2026-11-16T01:00:00.000Z",
+    "temp": 18,
+    "dewp": 10,
+    "wdir": 150,
+    "wspd": 8,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 160100Z 15008KT 9999 FEW050 BKN180 18/10 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 5000
+      },
+      {
+        "cover": "BKN",
+        "base": 18000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T23:59:35.253Z",
+    "obsTime": 1794787200,
+    "reportTime": "2026-11-16T00:00:00.000Z",
+    "temp": 19,
+    "dewp": 11,
+    "wdir": 160,
+    "wspd": 7,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 160000Z 16007KT 130V200 9999 SCT050 BKN170 19/11 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 5000
+      },
+      {
+        "cover": "BKN",
+        "base": 17000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T22:58:23.996Z",
+    "obsTime": 1794783600,
+    "reportTime": "2026-11-15T23:00:00.000Z",
+    "temp": 20,
+    "dewp": 11,
+    "wdir": 190,
+    "wspd": 14,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 152300Z 19014KT 9999 SCT050 BKN200 20/11 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 5000
+      },
+      {
+        "cover": "BKN",
+        "base": 20000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T21:56:51.904Z",
+    "obsTime": 1794780000,
+    "reportTime": "2026-11-15T22:00:00.000Z",
+    "temp": 21,
+    "dewp": 12,
+    "wdir": 200,
+    "wspd": 15,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 152200Z 20015KT 9999 FEW050 BKN200 21/12 Q1015 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 5000
+      },
+      {
+        "cover": "BKN",
+        "base": 20000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T20:54:32.461Z",
+    "obsTime": 1794776400,
+    "reportTime": "2026-11-15T21:00:00.000Z",
+    "temp": 23,
+    "dewp": 12,
+    "wdir": 200,
+    "wspd": 15,
+    "visib": "6+",
+    "altim": 1014,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 152100Z 20015KT 9999 FEW030 BKN200 23/12 Q1014 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 3000
+      },
+      {
+        "cover": "BKN",
+        "base": 20000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T19:55:27.010Z",
+    "obsTime": 1794772800,
+    "reportTime": "2026-11-15T20:00:00.000Z",
+    "temp": 24,
+    "dewp": 12,
+    "wdir": 200,
+    "wspd": 8,
+    "visib": "6+",
+    "altim": 1014,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 152000Z 20008KT 150V250 9999 FEW040 BKN200 24/12 Q1014 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 4000
+      },
+      {
+        "cover": "BKN",
+        "base": 20000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T18:55:54.311Z",
+    "obsTime": 1794769200,
+    "reportTime": "2026-11-15T19:00:00.000Z",
+    "temp": 25,
+    "dewp": 12,
+    "wdir": "VRB",
+    "wspd": 2,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 151900Z VRB02KT 9999 BKN160 25/12 Q1015 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 16000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T17:55:52.237Z",
+    "obsTime": 1794765600,
+    "reportTime": "2026-11-15T18:00:00.000Z",
+    "temp": 24,
+    "dewp": 12,
+    "wdir": 40,
+    "wspd": 5,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 151800Z 04005KT 330V110 9999 SCT040 BKN150 24/12 Q1015 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 4000
+      },
+      {
+        "cover": "BKN",
+        "base": 15000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T16:55:47.098Z",
+    "obsTime": 1794762000,
+    "reportTime": "2026-11-15T17:00:00.000Z",
+    "temp": 21,
+    "dewp": 13,
+    "wdir": "VRB",
+    "wspd": 3,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 151700Z VRB03KT 9999 FEW030 SCT120 BKN200 21/13 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 3000
+      },
+      {
+        "cover": "SCT",
+        "base": 12000
+      },
+      {
+        "cover": "BKN",
+        "base": 20000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T15:56:36.452Z",
+    "obsTime": 1794758400,
+    "reportTime": "2026-11-15T16:00:00.000Z",
+    "temp": 20,
+    "dewp": 13,
+    "wdir": "VRB",
+    "wspd": 4,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 151600Z VRB04KT 9999 BKN020 BKN040 20/13 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 2000
+      },
+      {
+        "cover": "BKN",
+        "base": 4000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T14:58:56.020Z",
+    "obsTime": 1794754800,
+    "reportTime": "2026-11-15T15:00:00.000Z",
+    "temp": 19,
+    "dewp": 14,
+    "wdir": 100,
+    "wspd": 4,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 151500Z 10004KT 010V160 9999 SCT020 BKN040 19/14 Q1017 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 2000
+      },
+      {
+        "cover": "BKN",
+        "base": 4000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T13:56:58.696Z",
+    "obsTime": 1794751200,
+    "reportTime": "2026-11-15T14:00:00.000Z",
+    "temp": 16,
+    "dewp": 14,
+    "wdir": 150,
+    "wspd": 5,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 151400Z 15005KT 100V180 9999 SCT010 BKN030 16/14 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 1000
+      },
+      {
+        "cover": "BKN",
+        "base": 3000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T12:55:18.628Z",
+    "obsTime": 1794747600,
+    "reportTime": "2026-11-15T13:00:00.000Z",
+    "temp": 15,
+    "dewp": 14,
+    "wdir": 140,
+    "wspd": 5,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "wxString": "-DZ",
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 151300Z 14005KT 9999 -DZ SCT010 OVC020 15/14 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "OVC",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 1000
+      },
+      {
+        "cover": "OVC",
+        "base": 2000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T11:57:23.677Z",
+    "obsTime": 1794744000,
+    "reportTime": "2026-11-15T12:00:00.000Z",
+    "temp": 15,
+    "dewp": 14,
+    "wdir": 140,
+    "wspd": 5,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 151200Z 14005KT 090V170 9999 SCT010 OVC030 15/14 Q1016 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "OVC",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 1000
+      },
+      {
+        "cover": "OVC",
+        "base": 3000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T10:56:38.014Z",
+    "obsTime": 1794740400,
+    "reportTime": "2026-11-15T11:00:00.000Z",
+    "temp": 15,
+    "dewp": 13,
+    "wdir": 160,
+    "wspd": 8,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 151100Z 16008KT 9999 FEW004 SCT020 OVC030 15/13 Q1015 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "OVC",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 400
+      },
+      {
+        "cover": "SCT",
+        "base": 2000
+      },
+      {
+        "cover": "OVC",
+        "base": 3000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T09:57:46.783Z",
+    "obsTime": 1794736800,
+    "reportTime": "2026-11-15T10:00:00.000Z",
+    "temp": 15,
+    "dewp": 14,
+    "wdir": 160,
+    "wspd": 5,
+    "visib": "6+",
+    "altim": 1014,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 151000Z 16005KT 9999 FEW004 SCT015 OVC030 15/14 Q1014 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "OVC",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 400
+      },
+      {
+        "cover": "SCT",
+        "base": 1500
+      },
+      {
+        "cover": "OVC",
+        "base": 3000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T08:57:30.357Z",
+    "obsTime": 1794733200,
+    "reportTime": "2026-11-15T09:00:00.000Z",
+    "temp": 15,
+    "dewp": 14,
+    "wdir": 210,
+    "wspd": 5,
+    "visib": "6+",
+    "altim": 1014,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 150900Z 21005KT 9999 FEW006 SCT010 BKN040 15/14 Q1014 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 600
+      },
+      {
+        "cover": "SCT",
+        "base": 1000
+      },
+      {
+        "cover": "BKN",
+        "base": 4000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T07:59:01.238Z",
+    "obsTime": 1794729600,
+    "reportTime": "2026-11-15T08:00:00.000Z",
+    "temp": 15,
+    "dewp": 14,
+    "wdir": 170,
+    "wspd": 3,
+    "visib": "6+",
+    "altim": 1014,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 150800Z 17003KT 9999 FEW006 BKN010 OVC030 15/14 Q1014 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "OVC",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 600
+      },
+      {
+        "cover": "BKN",
+        "base": 1000
+      },
+      {
+        "cover": "OVC",
+        "base": 3000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T06:57:24.513Z",
+    "obsTime": 1794726000,
+    "reportTime": "2026-11-15T07:00:00.000Z",
+    "temp": 14,
+    "dewp": 14,
+    "wdir": 120,
+    "wspd": 5,
+    "visib": 4.35,
+    "altim": 1015,
+    "qcField": 16,
+    "wxString": "-DZ",
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 150700Z 12005KT 7000 -DZ BKN004 OVC015 14/14 Q1015 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "OVC",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 400
+      },
+      {
+        "cover": "OVC",
+        "base": 1500
+      }
+    ],
+    "fltCat": "LIFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T05:58:44.503Z",
+    "obsTime": 1794722400,
+    "reportTime": "2026-11-15T06:00:00.000Z",
+    "temp": 15,
+    "dewp": 14,
+    "wdir": 160,
+    "wspd": 7,
+    "visib": 3.73,
+    "altim": 1015,
+    "qcField": 16,
+    "wxString": "DZ",
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 150600Z 16007KT 130V190 6000 DZ BKN005 OVC010 15/14 Q1015 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "OVC",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 500
+      },
+      {
+        "cover": "OVC",
+        "base": 1000
+      }
+    ],
+    "fltCat": "IFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T04:58:27.667Z",
+    "obsTime": 1794718800,
+    "reportTime": "2026-11-15T05:00:00.000Z",
+    "temp": 15,
+    "dewp": 14,
+    "wdir": 160,
+    "wspd": 9,
+    "visib": 4.97,
+    "altim": 1014,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 150500Z 16009KT 8000 SCT008 BKN010 OVC020 15/14 Q1014 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "OVC",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 800
+      },
+      {
+        "cover": "BKN",
+        "base": 1000
+      },
+      {
+        "cover": "OVC",
+        "base": 2000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T03:58:46.198Z",
+    "obsTime": 1794715200,
+    "reportTime": "2026-11-15T04:00:00.000Z",
+    "temp": 16,
+    "dewp": 14,
+    "wdir": 160,
+    "wspd": 7,
+    "visib": 4.35,
+    "altim": 1014,
+    "qcField": 16,
+    "wxString": "-DZ",
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 150400Z 16007KT 130V210 7000 -DZ BKN010 OVC020 16/14 Q1014 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "OVC",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 1000
+      },
+      {
+        "cover": "OVC",
+        "base": 2000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T02:56:41.149Z",
+    "obsTime": 1794711600,
+    "reportTime": "2026-11-15T03:00:00.000Z",
+    "temp": 16,
+    "dewp": 13,
+    "wdir": 180,
+    "wspd": 11,
+    "visib": 4.97,
+    "altim": 1013,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 150300Z 18011KT 8000 FEW012 OVC015 16/13 Q1013 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "OVC",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 1200
+      },
+      {
+        "cover": "OVC",
+        "base": 1500
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T01:55:59.535Z",
+    "obsTime": 1794708000,
+    "reportTime": "2026-11-15T02:00:00.000Z",
+    "temp": 18,
+    "dewp": 14,
+    "wdir": 210,
+    "wspd": 7,
+    "visib": 4.97,
+    "altim": 1013,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 150200Z 21007KT 8000 FEW012 BKN016 18/14 Q1013 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 1200
+      },
+      {
+        "cover": "BKN",
+        "base": 1600
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-15T00:54:45.508Z",
+    "obsTime": 1794704400,
+    "reportTime": "2026-11-15T01:00:00.000Z",
+    "temp": 18,
+    "dewp": 15,
+    "wdir": 170,
+    "wspd": 8,
+    "visib": 4.97,
+    "altim": 1013,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 150100Z 17008KT 150V220 8000 SCT015 BKN020 18/15 Q1013 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 1500
+      },
+      {
+        "cover": "BKN",
+        "base": 2000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-14T23:56:33.147Z",
+    "obsTime": 1794700800,
+    "reportTime": "2026-11-15T00:00:00.000Z",
+    "temp": 18,
+    "dewp": 15,
+    "wdir": 190,
+    "wspd": 8,
+    "visib": "6+",
+    "altim": 1012,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 150000Z 19008KT CAVOK 18/15 Q1012 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "CAVOK",
+    "clouds": [],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-14T22:55:34.231Z",
+    "obsTime": 1794697200,
+    "reportTime": "2026-11-14T23:00:00.000Z",
+    "temp": 19,
+    "dewp": 15,
+    "wdir": 200,
+    "wspd": 11,
+    "visib": "6+",
+    "altim": 1012,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 142300Z 20011KT CAVOK 19/15 Q1012 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "CAVOK",
+    "clouds": [],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-14T21:53:31.318Z",
+    "obsTime": 1794693600,
+    "reportTime": "2026-11-14T22:00:00.000Z",
+    "temp": 22,
+    "dewp": 16,
+    "wdir": 170,
+    "wspd": 13,
+    "visib": "6+",
+    "altim": 1012,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 142200Z 17013KT CAVOK 22/16 Q1012 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "CAVOK",
+    "clouds": [],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-14T20:58:30.611Z",
+    "obsTime": 1794690000,
+    "reportTime": "2026-11-14T21:00:00.000Z",
+    "temp": 22,
+    "dewp": 16,
+    "wdir": 160,
+    "wspd": 15,
+    "visib": "6+",
+    "altim": 1012,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 142100Z 16015KT CAVOK 22/16 Q1012 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "CAVOK",
+    "clouds": [],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
+    "receiptTime": "2026-11-14T19:53:47.279Z",
+    "obsTime": 1794686400,
+    "reportTime": "2026-11-14T20:00:00.000Z",
+    "temp": 24,
+    "dewp": 16,
+    "wdir": 210,
+    "wspd": 15,
+    "visib": "6+",
+    "altim": 1012,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 142000Z 21015KT CAVOK 24/16 Q1012 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "CAVOK",
+    "clouds": [],
+    "fltCat": "VFR"
+  }
+]

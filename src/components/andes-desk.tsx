@@ -30,6 +30,7 @@ export function AndesDesk() {
   const [generatedMetar, setGeneratedMetar] = useState<string | null>(null);
   const [generatedTaf, setGeneratedTaf] = useState<string | null>(null);
   const [gridWarning, setGridWarning] = useState<string | null>(null);
+  const [gridShape, setGridShape] = useState({ rows: 18, cols: 27 });
 
   const patch = useCallback((p: Partial<AndesControlsState>) => {
     setState((s) => ({ ...s, ...p }));
@@ -57,6 +58,7 @@ export function AndesDesk() {
       .then((r) => r.json())
       .then((d) => {
         setCells(d.cells ?? []);
+        if (d.gridShape) setGridShape(d.gridShape);
         setGridWarning(d.unavailable ?? null);
         if (d.modelRun && !state.validIso) patch({ validIso: d.modelRun });
       })
@@ -145,6 +147,8 @@ export function AndesDesk() {
         sliceValues={sliceValues}
         showSlice
         pressureHpa={state.pressureHpa}
+        gridRows={gridShape.rows}
+        gridCols={gridShape.cols}
       />
 
       <section className="space-y-4">
