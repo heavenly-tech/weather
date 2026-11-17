@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { annex3NscCeilingFtAgl, ANNEX3_NSC_MIN_FT } from "@/lib/andes/airfield-msa";
+import { airfieldMsaAssumption, annex3NscCeilingFtAgl, ANNEX3_NSC_MIN_FT } from "@/lib/andes/airfield-msa";
 import { ceilingFromHourly } from "@/lib/andes/ceiling";
 import { annex3NscEligible, deriveMetarWxAndCloud } from "@/lib/andes/wmo-metar-wx";
 
@@ -8,6 +8,16 @@ describe("airfield MSA assumptions", () => {
     const ft = annex3NscCeilingFtAgl("SCTB", 649);
     expect(ft).toBeGreaterThan(ANNEX3_NSC_MIN_FT);
     expect(ft).toBeGreaterThanOrEqual(9_000);
+  });
+
+  it("SCVH MSA 9 500 ft AMSL (Chacabuco ASSUMPTION, not coastal SCVM)", () => {
+    const row = airfieldMsaAssumption("SCVH");
+    expect(row?.msaFtAmslAssumed).toBe(9_500);
+    expect(row?.note).toMatch(/Chacabuco|SCPD/i);
+    expect(row?.note).not.toMatch(/SCVM|coastal sector as SCVM/i);
+    const ft = annex3NscCeilingFtAgl("SCVH", 120);
+    expect(ft).toBeGreaterThan(ANNEX3_NSC_MIN_FT);
+    expect(ft).toBeGreaterThanOrEqual(8_000);
   });
 
   it("dry spread with BKN low cloud at SCTB → MID CLD BASE UNK, not NSC", () => {

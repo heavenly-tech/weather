@@ -23,10 +23,9 @@ export type AirfieldMsaAssumption = {
 
 /**
  * ASSUMPTION table — conservative MSA (ft AMSL) for low-cloud / NSC gating.
- * SCTB: Andes within ~15 NM → assume 11 500 ft sector (above default 5 000 ft).
- * SCEL: basin floor, cordillera east → 6 200 ft assumed.
- * SCVM / SCVH: coastal Valparaíso sector → 5 200 ft (slightly above 5 000 ft default).
- * SCPD: piedmont / Peldehue → 9 500 ft assumed.
+ *
+ * TODO: Replace every row with cited AIP / approach-chart MSA values once extracts
+ * are committed in-repo (ICAO doc 8697 Annex 3 NSC gating).
  */
 export const AIRFIELD_MSA_ASSUMPTIONS: AirfieldMsaAssumption[] = [
   {
@@ -46,13 +45,14 @@ export const AIRFIELD_MSA_ASSUMPTIONS: AirfieldMsaAssumption[] = [
   },
   {
     icao: "SCVH",
-    msaFtAmslAssumed: 5_200,
-    note: "ASSUMPTION: Viña heliport — same conservative coastal sector as SCVM.",
+    msaFtAmslAssumed: 9_500,
+    note:
+      "ASSUMPTION (conservative): inland Chacabuco valley; same sector as SCPD — coastal range (Cerro El Roble ~2 200 m) west, Andes east.",
   },
   {
     icao: "SCPD",
     msaFtAmslAssumed: 9_500,
-    note: "ASSUMPTION: Peldehue piedmont; pre-cordillera sector.",
+    note: "ASSUMPTION (conservative): Peldehue piedmont; pre-cordillera sector.",
   },
 ];
 
