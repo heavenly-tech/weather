@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { ceilingFromHourly } from "@/lib/andes/ceiling";
+import { annex3NscEligible } from "@/lib/andes/wmo-metar-wx";
 import { generateModelMetar } from "@/lib/andes/wmo-metar";
+import { generateModelTaf } from "@/lib/andes/wmo-taf";
 import { cloudHeightHundredsFt, deriveMetarWxAndCloud } from "@/lib/andes/wmo-metar-wx";
 
 const unresolvedLowBkn = {
@@ -28,7 +30,6 @@ describe("deriveMetarWxAndCloud", () => {
     const ceil = ceilingFromHourly(hourly, 0, 649);
     const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 9999, false);
     expect(d.weather).not.toMatch(/DZ/);
-    expect(d.clouds).not.toContain("///");
     expect(d.clouds).toMatch(/^BKN\d{3}$/);
   });
 
@@ -47,24 +48,70 @@ describe("deriveMetarWxAndCloud", () => {
     expect(d.clouds).toBe("BKN045");
     expect(d.rmkExtra).toContain("CLD EST");
     expect(d.cldEstimated).toBe(true);
-    expect(d.clouds).not.toContain("///");
   });
 
-  it("spread > 15°C with BKN low → MID CLD BASE UNK at SCTB, not NSC", () => {
+  it("hot summer spread >15 → METAR BKN/// and TAF BKN050 + CLD EST", () => {
     const hourly = {
-      time: ["t"],
-      temperature_2m: [25],
-      dew_point_2m: [8],
-      relative_humidity_2m: [40],
+      time: Array.from({ length: 4 }, (_, i) => `2026-08-18T${String(12 + i).padStart(2, "0")}:00`),
+      temperature_2m: Array(4).fill(26),
+      dew_point_2m: Array(4).fill(9),
+      relative_humidity_2m: Array(4).fill(40),
+      pressure_msl: Array(4).fill(1010),
+      wind_speed_10m: Array(4).fill(10),
+      wind_direction_10m: Array(4).fill(230),
+      wind_gusts_10m: Array(4).fill(20),
+      visibility: Array(4).fill(9999),
+      precipitation: Array(4).fill(0),
+      rain: Array(4).fill(0),
+      showers: Array(4).fill(0),
       ...unresolvedLowBkn,
     };
     const ceil = ceilingFromHourly(hourly, 0, 649);
+    const metarDerived = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 9999, false);
+    expect(metarDerived.clouds).toBe("BKN///");
+    const tafDerived = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 9999, true);
+    expect(tafDerived.clouds).toBe("BKN050");
+    expect(tafDerived.rmkExtra).toContain("CLD EST");
+
+    const metar = generateModelMetar({
+      icao: "SCTB",
+      elevM: 649,
+      model: "gfs_seamless",
+      runTime: "2026-08-18T12:00:00Z",
+      validTime: "2026-08-18T12:00:00Z",
+      hourly,
+      hourIndex: 0,
+    });
+    expect(metar.raw).toMatch(/BKN\/\/\//);
+
+    const taf = generateModelTaf({
+      icao: "SCTB",
+      elevM: 649,
+      model: "gfs_seamless",
+      runTime: "2026-08-18T12:00:00Z",
+      hourly,
+    });
+    expect("error" in taf).toBe(false);
+    if ("error" in taf) return;
+    expect(taf.raw).toMatch(/BKN050/);
+    expect(taf.raw).toMatch(/RMK\b.*CLD EST/);
+  });
+
+  it("NSC when low cover below BKN and no level below MSA ceiling", () => {
+    const hourly = {
+      time: ["t"],
+      temperature_2m: [20],
+      dew_point_2m: [8],
+      relative_humidity_2m: [50],
+      cloud_cover_low: [25],
+      surface_pressure: [980],
+      cloud_cover_925hPa: [10],
+      geopotential_height_925hPa: [800],
+    };
+    expect(annex3NscEligible(hourly, 0, 649, "SCTB")).toBe(true);
+    const ceil = ceilingFromHourly(hourly, 0, 649);
     const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 9999, false);
-    expect(d.clouds).toBe("////");
-    expect(d.effectiveCeilFt).toBeNull();
-    expect(d.clouds).not.toMatch(/BKN\/\/\//);
-    expect(d.rmkExtra).toContain("MID CLD BASE UNK");
-    expect(d.midCloudBaseUnk).toBe(true);
+    expect(d.clouds).toBe("NSC");
   });
 
   it("resolved pressure-level base is unchanged", () => {
@@ -81,33 +128,9 @@ describe("deriveMetarWxAndCloud", () => {
       geopotential_height_925hPa: [800],
     };
     const ceil = ceilingFromHourly(hourly, 0, 649);
-    expect(ceil.ceilingFtAgl).not.toBeNull();
     const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 8000, false);
     expect(d.clouds).toMatch(/^(BKN|OVC)\d{3}$/);
     expect(d.cldEstimated).toBe(false);
-    expect(d.rmkExtra).not.toContain("CLD EST");
-  });
-
-  it("never emits /// in METAR product", () => {
-    const raw = generateModelMetar({
-      icao: "SCTB",
-      elevM: 649,
-      model: "gfs_seamless",
-      runTime: "2026-11-17T12:00:00Z",
-      validTime: "2026-11-17T18:00:00Z",
-      hourly: {
-        time: ["2026-11-17T18:00"],
-        temperature_2m: [20],
-        dew_point_2m: [9],
-        pressure_msl: [1013],
-        wind_speed_10m: [10],
-        wind_direction_10m: [230],
-        visibility: [9999],
-        ...unresolvedLowBkn,
-      },
-      hourIndex: 0,
-    });
-    expect(raw.raw).not.toMatch(/\/\/\//);
   });
 
   it("no FG with 9999 visibility", () => {

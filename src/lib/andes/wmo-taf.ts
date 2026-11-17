@@ -92,9 +92,6 @@ function periodWx(hourly: Hourly, index: number, elevM: number, model: AndesMode
 function groupString(wx: PeriodWx, opts?: { priorWx?: string }): string {
   const parts = [wx.wind, wx.vis];
   if (wx.wx) parts.push(wx.wx);
-  if (wx.visM != null && wx.visM < 5000 && !wx.wx) {
-    parts.push(wx.visM < 1000 ? "FG" : "BR");
-  }
   if (opts?.priorWx && !wx.wx) parts.push("NSW");
   parts.push(wx.cloud);
   return parts.filter(Boolean).join(" ");
@@ -199,7 +196,6 @@ export function generateModelTaf(opts: {
   const rmkParts = [`GEN=${opts.runTime}`, `MODEL=${opts.model}`];
   if (visEstimated) rmkParts.push("VIS EST");
   if (base.cldEstimated) rmkParts.push("CLD EST");
-  if (base.midCloudBaseUnk) rmkParts.push("MID CLD BASE UNK");
   const raw = `${STAMP}\n${header} ${body} RMK ${rmkParts.join(" ")}`;
   return {
     raw,
