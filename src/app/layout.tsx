@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     "METAR, TAF, GRAMET, GAMET, MeteoChile WRF point forecasts, synoptic charts, and a 3D weather field for Chilean aerodromes.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"

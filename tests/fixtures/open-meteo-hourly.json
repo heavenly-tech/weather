@@ -1,0 +1,12 @@
+{
+  "hourly": {
+    "time": ["2026-11-17T12:00", "2026-11-17T13:00"],
+    "surface_pressure": [1015, 1015],
+    "cloud_cover_1000hPa": [80, 20],
+    "cloud_cover_925hPa": [70, 10],
+    "relative_humidity_1000hPa": [90, 50],
+    "relative_humidity_925hPa": [50, 50],
+    "geopotential_height_1000hPa": [120, 120],
+    "geopotential_height_925hPa": [820, 820]
+  }
+}

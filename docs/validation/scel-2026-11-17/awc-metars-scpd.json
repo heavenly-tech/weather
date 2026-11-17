@@ -1,0 +1,1012 @@
+[
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-17T20:00:14.314Z",
+    "obsTime": 1794945600,
+    "reportTime": "2026-11-17T20:00:00.000Z",
+    "temp": 24,
+    "dewp": 12,
+    "wdir": 200,
+    "wspd": 10,
+    "visib": "6+",
+    "altim": 1013,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 172000Z 20010KT 9999 SCT050 BKN070 24/12 Q1013",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 5000
+      },
+      {
+        "cover": "BKN",
+        "base": 7000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-17T19:00:13.787Z",
+    "obsTime": 1794942000,
+    "reportTime": "2026-11-17T19:00:00.000Z",
+    "temp": 25,
+    "dewp": 11,
+    "wdir": 180,
+    "wspd": 10,
+    "visib": "6+",
+    "altim": 1013,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 171900Z 18010KT 9999 FEW050 SCT100 25/11 Q1013",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 5000
+      },
+      {
+        "cover": "SCT",
+        "base": 10000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-17T18:00:17.310Z",
+    "obsTime": 1794938400,
+    "reportTime": "2026-11-17T18:00:00.000Z",
+    "temp": 26,
+    "dewp": 12,
+    "wdir": 220,
+    "wspd": 6,
+    "visib": "6+",
+    "altim": 1013,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 171800Z 22006KT 160V270 9999 SCT100 26/12 Q1013",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 10000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-17T17:00:13.800Z",
+    "obsTime": 1794934800,
+    "reportTime": "2026-11-17T17:00:00.000Z",
+    "temp": 25,
+    "dewp": 12,
+    "wdir": 280,
+    "wspd": 9,
+    "visib": "6+",
+    "altim": 1013,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 171700Z 28009KT 9999 SCT060 25/12 Q1013",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 6000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-17T16:00:13.165Z",
+    "obsTime": 1794931200,
+    "reportTime": "2026-11-17T16:00:00.000Z",
+    "temp": 24,
+    "dewp": 12,
+    "wdir": "VRB",
+    "wspd": 5,
+    "visib": "6+",
+    "altim": 1013,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 171600Z VRB05KT 9999 FEW060 24/12 Q1013",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "FEW",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 6000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-17T15:00:06.464Z",
+    "obsTime": 1794927600,
+    "reportTime": "2026-11-17T15:00:00.000Z",
+    "temp": 21,
+    "dewp": 13,
+    "wdir": "VRB",
+    "wspd": 4,
+    "visib": "6+",
+    "altim": 1014,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 171500Z VRB04KT 9999 FEW060 21/13 Q1014",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "FEW",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 6000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-17T14:00:11.845Z",
+    "obsTime": 1794924000,
+    "reportTime": "2026-11-17T14:00:00.000Z",
+    "temp": 21,
+    "dewp": 13,
+    "wdir": 180,
+    "wspd": 5,
+    "visib": "6+",
+    "altim": 1014,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 171400Z 18005KT 110V240 9999 SCT050 21/13 Q1014",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 5000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-17T13:00:24.656Z",
+    "obsTime": 1794920400,
+    "reportTime": "2026-11-17T13:00:00.000Z",
+    "temp": 17,
+    "dewp": 13,
+    "wdir": "VRB",
+    "wspd": 3,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 171300Z VRB03KT 9999 SCT025 BKN045 17/13 Q1015",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 2500
+      },
+      {
+        "cover": "BKN",
+        "base": 4500
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-17T12:00:15.569Z",
+    "obsTime": 1794916800,
+    "reportTime": "2026-11-17T12:00:00.000Z",
+    "temp": 16,
+    "dewp": 12,
+    "wdir": 0,
+    "wspd": 0,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 171200Z 00000KT 9999 SCT020 BKN045 16/12 Q1015",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 2000
+      },
+      {
+        "cover": "BKN",
+        "base": 4500
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-16T23:00:11.050Z",
+    "obsTime": 1794870000,
+    "reportTime": "2026-11-16T23:00:00.000Z",
+    "temp": 19,
+    "dewp": 13,
+    "wdir": 180,
+    "wspd": 10,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 162300Z 18010KT 9999 SCT040 19/13 Q1017",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 4000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-16T22:00:05.095Z",
+    "obsTime": 1794866400,
+    "reportTime": "2026-11-16T22:00:00.000Z",
+    "temp": 22,
+    "dewp": 13,
+    "wdir": 180,
+    "wspd": 12,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 162200Z 18012KT 9999 SCT040 SCT070 22/13 Q1016",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 4000
+      },
+      {
+        "cover": "SCT",
+        "base": 7000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-16T21:00:11.439Z",
+    "obsTime": 1794862800,
+    "reportTime": "2026-11-16T21:00:00.000Z",
+    "temp": 23,
+    "dewp": 13,
+    "wdir": 160,
+    "wspd": 5,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 162100Z 16005KT 9999 SCT030 SCT070 23/13 Q1016",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 3000
+      },
+      {
+        "cover": "SCT",
+        "base": 7000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-16T20:00:17.053Z",
+    "obsTime": 1794859200,
+    "reportTime": "2026-11-16T20:00:00.000Z",
+    "temp": 23,
+    "dewp": 13,
+    "wdir": 160,
+    "wspd": 7,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 162000Z 16007KT 120V200 9999 SCT060 23/13 Q1016",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 6000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-16T19:00:06.588Z",
+    "obsTime": 1794855600,
+    "reportTime": "2026-11-16T19:00:00.000Z",
+    "temp": 21,
+    "dewp": 13,
+    "wdir": 180,
+    "wspd": 12,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 161900Z 18012KT 9999 SCT060 21/13 Q1017",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 6000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-16T18:00:15.692Z",
+    "obsTime": 1794852000,
+    "reportTime": "2026-11-16T18:00:00.000Z",
+    "temp": 21,
+    "dewp": 13,
+    "wdir": 190,
+    "wspd": 10,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 161800Z 19010KT 160V220 9999 BKN060 21/13 Q1017",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 6000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-16T17:00:06.778Z",
+    "obsTime": 1794848400,
+    "reportTime": "2026-11-16T17:00:00.000Z",
+    "temp": 21,
+    "dewp": 13,
+    "wdir": 200,
+    "wspd": 5,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 161700Z 20005KT 9999 SCT030 BKN080 21/13 Q1017",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 3000
+      },
+      {
+        "cover": "BKN",
+        "base": 8000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-16T16:00:22.271Z",
+    "obsTime": 1794844800,
+    "reportTime": "2026-11-16T16:00:00.000Z",
+    "temp": 20,
+    "dewp": 13,
+    "wdir": 170,
+    "wspd": 8,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 161600Z 17008KT 9999 BKN070 20/13 Q1017",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 7000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-16T15:00:20.858Z",
+    "obsTime": 1794841200,
+    "reportTime": "2026-11-16T15:00:00.000Z",
+    "temp": 19,
+    "dewp": 12,
+    "wdir": 230,
+    "wspd": 3,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 161500Z 23003KT 9999 BKN070 19/12 Q1017",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 7000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-16T14:00:18.649Z",
+    "obsTime": 1794837600,
+    "reportTime": "2026-11-16T14:00:00.000Z",
+    "temp": 17,
+    "dewp": 13,
+    "wdir": "VRB",
+    "wspd": 2,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 161400Z VRB02KT 9999 FEW009 BKN060 17/13 Q1016",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 900
+      },
+      {
+        "cover": "BKN",
+        "base": 6000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-16T13:00:29.053Z",
+    "obsTime": 1794834000,
+    "reportTime": "2026-11-16T13:00:00.000Z",
+    "temp": 16,
+    "dewp": 13,
+    "wdir": "VRB",
+    "wspd": 3,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 161300Z VRB03KT 9999 BKN050 BKN120 16/13 Q1016",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 5000
+      },
+      {
+        "cover": "BKN",
+        "base": 12000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-16T12:00:23.101Z",
+    "obsTime": 1794830400,
+    "reportTime": "2026-11-16T12:00:00.000Z",
+    "temp": 16,
+    "dewp": 12,
+    "wdir": "VRB",
+    "wspd": 2,
+    "visib": "6+",
+    "altim": 1017,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 161200Z VRB02KT 9999 BKN040 OVC140 16/12 Q1017",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "OVC",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 4000
+      },
+      {
+        "cover": "OVC",
+        "base": 14000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-15T23:00:13.680Z",
+    "obsTime": 1794783600,
+    "reportTime": "2026-11-15T23:00:00.000Z",
+    "temp": 20,
+    "dewp": 13,
+    "wdir": 190,
+    "wspd": 8,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 152300Z 19008KT 9999 BKN110 20/13 Q1016",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 11000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-15T22:00:12.611Z",
+    "obsTime": 1794780000,
+    "reportTime": "2026-11-15T22:00:00.000Z",
+    "temp": 22,
+    "dewp": 13,
+    "wdir": "VRB",
+    "wspd": 8,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 152200Z VRB08KT 9999 SCT060 BKN120 22/13 Q1015",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 6000
+      },
+      {
+        "cover": "BKN",
+        "base": 12000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-15T21:00:11.734Z",
+    "obsTime": 1794776400,
+    "reportTime": "2026-11-15T21:00:00.000Z",
+    "temp": 24,
+    "dewp": 14,
+    "wdir": 180,
+    "wspd": 7,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 152100Z 18007KT 150V230 9999 SCT060 BKN140 24/14 Q1015",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 6000
+      },
+      {
+        "cover": "BKN",
+        "base": 14000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-15T20:00:17.757Z",
+    "obsTime": 1794772800,
+    "reportTime": "2026-11-15T20:00:00.000Z",
+    "temp": 24,
+    "dewp": 15,
+    "wdir": 160,
+    "wspd": 7,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 152000Z 16007KT 110V200 9999 FEW060 BKN130 24/15 Q1015",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 6000
+      },
+      {
+        "cover": "BKN",
+        "base": 13000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-15T19:00:22.876Z",
+    "obsTime": 1794769200,
+    "reportTime": "2026-11-15T19:00:00.000Z",
+    "temp": 23,
+    "dewp": 14,
+    "wdir": "VRB",
+    "wspd": 4,
+    "visib": "6+",
+    "altim": 1015,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 151900Z VRB04KT 9999 SCT060 BKN110 23/14 Q1015",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 6000
+      },
+      {
+        "cover": "BKN",
+        "base": 11000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-15T18:00:17.635Z",
+    "obsTime": 1794765600,
+    "reportTime": "2026-11-15T18:00:00.000Z",
+    "temp": 22,
+    "dewp": 15,
+    "wdir": 160,
+    "wspd": 5,
+    "visib": "6+",
+    "altim": 1016,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 151800Z 16005KT 060V210 9999 SCT060 BKN090 22/15 Q1016",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 6000
+      },
+      {
+        "cover": "BKN",
+        "base": 9000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-15T17:00:15.620Z",
+    "obsTime": 1794762000,
+    "reportTime": "2026-11-15T17:00:00.000Z",
+    "temp": 20,
+    "dewp": 15,
+    "wdir": 160,
+    "wspd": 6,
+    "visib": 4.97,
+    "altim": 1017,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 151700Z 16006KT 120V210 8000 SCT050 BKN070 20/15 Q1017",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 5000
+      },
+      {
+        "cover": "BKN",
+        "base": 7000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-15T16:00:19.469Z",
+    "obsTime": 1794758400,
+    "reportTime": "2026-11-15T16:00:00.000Z",
+    "temp": 18,
+    "dewp": 15,
+    "wdir": 150,
+    "wspd": 7,
+    "visib": 4.97,
+    "altim": 1017,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 151600Z 15007KT 110V190 8000 FEW030 SCT060 BKN070 18/15 Q1017",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "FEW",
+        "base": 3000
+      },
+      {
+        "cover": "SCT",
+        "base": 6000
+      },
+      {
+        "cover": "BKN",
+        "base": 7000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-15T15:00:14.634Z",
+    "obsTime": 1794754800,
+    "reportTime": "2026-11-15T15:00:00.000Z",
+    "temp": 17,
+    "dewp": 15,
+    "wdir": 150,
+    "wspd": 7,
+    "visib": 4.97,
+    "altim": 1017,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 151500Z 15007KT 120V200 8000 BKN060 BKN070 17/15 Q1017",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 6000
+      },
+      {
+        "cover": "BKN",
+        "base": 7000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-15T14:00:24.589Z",
+    "obsTime": 1794751200,
+    "reportTime": "2026-11-15T14:00:00.000Z",
+    "temp": 17,
+    "dewp": 8,
+    "wdir": "VRB",
+    "wspd": 1,
+    "visib": 4.35,
+    "altim": 1017,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 151400Z VRB01KT 7000 BKN060 17/08 Q1017",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "BKN",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 6000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-15T13:00:15.904Z",
+    "obsTime": 1794747600,
+    "reportTime": "2026-11-15T13:00:00.000Z",
+    "temp": 16,
+    "dewp": 14,
+    "wdir": "VRB",
+    "wspd": 2,
+    "visib": 3.73,
+    "altim": 1016,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 151300Z VRB02KT 6000 BKN020 OVC070 16/14 Q1016",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "OVC",
+    "clouds": [
+      {
+        "cover": "BKN",
+        "base": 2000
+      },
+      {
+        "cover": "OVC",
+        "base": 7000
+      }
+    ],
+    "fltCat": "MVFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-14T23:00:49.442Z",
+    "obsTime": 1794697200,
+    "reportTime": "2026-11-14T23:00:00.000Z",
+    "temp": 21,
+    "dewp": 17,
+    "wdir": 150,
+    "wspd": 11,
+    "visib": "6+",
+    "altim": 1012,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 142300Z 15011KT CAVOK 21/17 Q1012",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "CAVOK",
+    "clouds": [],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-14T22:00:05.130Z",
+    "obsTime": 1794693600,
+    "reportTime": "2026-11-14T22:00:00.000Z",
+    "temp": 25,
+    "dewp": 17,
+    "wdir": 190,
+    "wspd": 11,
+    "visib": "6+",
+    "altim": 1012,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 142200Z 19011KT CAVOK 25/17 Q1012",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "CAVOK",
+    "clouds": [],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCPD",
+    "receiptTime": "2026-11-14T21:00:55.958Z",
+    "obsTime": 1794690000,
+    "reportTime": "2026-11-14T21:00:00.000Z",
+    "temp": 26,
+    "dewp": 18,
+    "wdir": 170,
+    "wspd": 14,
+    "visib": 5.59,
+    "altim": 1012,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCPD 142100Z 17014KT 9000 NSC 26/18 Q1012",
+    "lat": -33.1173,
+    "lon": -70.6838,
+    "elev": 360,
+    "name": "Peldehue Arpt, RM, CL",
+    "cover": "CLR",
+    "clouds": [],
+    "fltCat": "VFR"
+  }
+]

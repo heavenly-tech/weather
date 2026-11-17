@@ -1,0 +1,1388 @@
+{
+  "generatedAt": "2026-11-17T20:27:47.456Z",
+  "station": "SCEL",
+  "pastDays": 3,
+  "metarCount": 72,
+  "comparisonRows": 55,
+  "stats": {
+    "gfs_seamless": {
+      "categoryAgree": 43,
+      "categoryTotal": 51,
+      "hits": 11,
+      "misses": 5,
+      "falseAlarms": 1,
+      "pod": 0.6875,
+      "far": 0.08333333333333333,
+      "csi": 0.6470588235294118,
+      "hss": 0.7068965517241379,
+      "bias": 0.75,
+      "maeFt": 818.3493280136964,
+      "maeCount": 12
+    },
+    "ecmwf_ifs025": {
+      "categoryAgree": 38,
+      "categoryTotal": 51,
+      "hits": 11,
+      "misses": 5,
+      "falseAlarms": 0,
+      "pod": 0.6875,
+      "far": 0,
+      "csi": 0.6875,
+      "hss": 0.751219512195122,
+      "bias": 0.6875,
+      "maeFt": 860.9224514004148,
+      "maeCount": 12
+    },
+    "icon_seamless": {
+      "categoryAgree": 39,
+      "categoryTotal": 51,
+      "hits": 13,
+      "misses": 3,
+      "falseAlarms": 4,
+      "pod": 0.8125,
+      "far": 0.23529411764705882,
+      "csi": 0.65,
+      "hss": 0.6865671641791045,
+      "bias": 1.0625,
+      "maeFt": 1069.0579423501451,
+      "maeCount": 15
+    },
+    "gem_seamless": {
+      "categoryAgree": 36,
+      "categoryTotal": 51,
+      "hits": 4,
+      "misses": 12,
+      "falseAlarms": 0,
+      "pod": 0.25,
+      "far": 0,
+      "csi": 0.25,
+      "hss": 0.31390134529147984,
+      "bias": 0.25,
+      "maeFt": 492.61644418501857,
+      "maeCount": 5
+    }
+  },
+  "notes": "Smoke test only: one dominant stratus episode from stitched short-range past_days states — not a skill score. Hourly UTC pairing; contingency MVFR/IFR/LIFR events with POD/FAR/CSI/HSS.",
+  "comparison": [
+    {
+      "time": "2026-11-14T10:00",
+      "metarRaw": null,
+      "metarCeilFt": null,
+      "metarCat": "UNK",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 925.8430764299244,
+          "cat": "IFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-14T11:00",
+      "metarRaw": null,
+      "metarCeilFt": null,
+      "metarCat": "UNK",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 627.46062991875,
+          "cat": "IFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-14T12:00",
+      "metarRaw": null,
+      "metarCeilFt": null,
+      "metarCat": "UNK",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 639.763779525,
+          "cat": "IFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-14T13:00",
+      "metarRaw": null,
+      "metarCeilFt": null,
+      "metarCat": "UNK",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 637.7132545906251,
+          "cat": "IFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-14T21:00",
+      "metarRaw": "METAR SCEL 142100Z 16015KT CAVOK 22/16 Q1012 NOSIG",
+      "metarCeilFt": null,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-14T22:00",
+      "metarRaw": "METAR SCEL 142200Z 17013KT CAVOK 22/16 Q1012 NOSIG",
+      "metarCeilFt": null,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-14T23:00",
+      "metarRaw": "METAR SCEL 142300Z 20011KT CAVOK 19/15 Q1012 NOSIG",
+      "metarCeilFt": null,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T00:00",
+      "metarRaw": "METAR SCEL 150000Z 19008KT CAVOK 18/15 Q1012 NOSIG",
+      "metarCeilFt": null,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 3244.0288713781,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T01:00",
+      "metarRaw": "METAR SCEL 150100Z 17008KT 150V220 8000 SCT015 BKN020 18/15 Q1013 NOSIG",
+      "metarCeilFt": 2000,
+      "metarCat": "MVFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 814.8138555016446,
+          "cat": "IFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 1168.583367863816,
+          "cat": "MVFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T02:00",
+      "metarRaw": "METAR SCEL 150200Z 21007KT 8000 FEW012 BKN016 18/14 Q1013 NOSIG",
+      "metarCeilFt": 1600,
+      "metarCat": "MVFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 625.410104984375,
+          "cat": "IFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 949.5458288264218,
+          "cat": "IFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T03:00",
+      "metarRaw": "METAR SCEL 150300Z 18011KT 8000 FEW012 OVC015 16/13 Q1013 NOSIG",
+      "metarCeilFt": 1500,
+      "metarCat": "MVFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": 1531.3320209912501,
+          "cat": "MVFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 629.511154853125,
+          "cat": "IFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 950.1908852264546,
+          "cat": "IFR"
+        },
+        "gem_seamless": {
+          "ceilFt": 626.3258188591782,
+          "cat": "IFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T04:00",
+      "metarRaw": "METAR SCEL 150400Z 16007KT 130V210 7000 -DZ BKN010 OVC020 16/14 Q1014 NOSIG",
+      "metarCeilFt": 1000,
+      "metarCat": "MVFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": 1506.9415665086842,
+          "cat": "MVFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 635.66272965625,
+          "cat": "IFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 1081.5054368160713,
+          "cat": "MVFR"
+        },
+        "gem_seamless": {
+          "ceilFt": 571.1004874367857,
+          "cat": "IFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T05:00",
+      "metarRaw": "METAR SCEL 150500Z 16009KT 8000 SCT008 BKN010 OVC020 15/14 Q1014 NOSIG",
+      "metarCeilFt": 1000,
+      "metarCat": "MVFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": 1540.0206859674154,
+          "cat": "MVFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 639.763779525,
+          "cat": "IFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 1231.226305040278,
+          "cat": "MVFR"
+        },
+        "gem_seamless": {
+          "ceilFt": 606.690018524669,
+          "cat": "IFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T06:00",
+      "metarRaw": "METAR SCEL 150600Z 16007KT 130V190 6000 DZ BKN005 OVC010 15/14 Q1015 NOSIG",
+      "metarCeilFt": 500,
+      "metarCat": "IFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": 1501.4367816031897,
+          "cat": "MVFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 641.8143044593751,
+          "cat": "IFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 829.1027766232895,
+          "cat": "IFR"
+        },
+        "gem_seamless": {
+          "ceilFt": 944.5453933605129,
+          "cat": "IFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T07:00",
+      "metarRaw": "METAR SCEL 150700Z 12005KT 7000 -DZ BKN004 OVC015 14/14 Q1015 NOSIG",
+      "metarCeilFt": 400,
+      "metarCat": "LIFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": 1502.6877649849037,
+          "cat": "MVFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 833.7002693708881,
+          "cat": "IFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 820.0372979660526,
+          "cat": "IFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T08:00",
+      "metarRaw": "METAR SCEL 150800Z 17003KT 9999 FEW006 BKN010 OVC030 15/14 Q1014 NOSIG",
+      "metarCeilFt": 1000,
+      "metarCat": "MVFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": 1878.720952556342,
+          "cat": "MVFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 658.9020122458335,
+          "cat": "IFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T09:00",
+      "metarRaw": "METAR SCEL 150900Z 21005KT 9999 FEW006 SCT010 BKN040 15/14 Q1014 NOSIG",
+      "metarCeilFt": 4000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": 1769.236082324737,
+          "cat": "MVFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 825.8219367282895,
+          "cat": "IFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T10:00",
+      "metarRaw": "METAR SCEL 151000Z 16005KT 9999 FEW004 SCT015 OVC030 15/14 Q1014 NOSIG",
+      "metarCeilFt": 3000,
+      "metarCat": "MVFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": 2047.1014492671743,
+          "cat": "MVFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 966.4003396595587,
+          "cat": "IFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T11:00",
+      "metarRaw": "METAR SCEL 151100Z 16008KT 9999 FEW004 SCT020 OVC030 15/13 Q1015 NOSIG",
+      "metarCeilFt": 3000,
+      "metarCat": "MVFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": 2336.77821521375,
+          "cat": "MVFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 849.888624115954,
+          "cat": "IFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 1101.1904761860715,
+          "cat": "MVFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T12:00",
+      "metarRaw": "METAR SCEL 151200Z 14005KT 090V170 9999 SCT010 OVC030 15/14 Q1016 NOSIG",
+      "metarCeilFt": 3000,
+      "metarCat": "MVFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": 2181.758530175,
+          "cat": "MVFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 868.7750379851972,
+          "cat": "IFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 1111.0329958710713,
+          "cat": "MVFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T13:00",
+      "metarRaw": "METAR SCEL 151300Z 14005KT 9999 -DZ SCT010 OVC020 15/14 Q1016 NOSIG",
+      "metarCeilFt": 2000,
+      "metarCat": "MVFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": 1997.6500030439536,
+          "cat": "MVFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 1774.0230387797221,
+          "cat": "MVFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 1272.8747448184722,
+          "cat": "MVFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T14:00",
+      "metarRaw": "METAR SCEL 151400Z 15005KT 100V180 9999 SCT010 BKN030 16/14 Q1016 NOSIG",
+      "metarCeilFt": 3000,
+      "metarCat": "MVFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": 1908.4235564228127,
+          "cat": "MVFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 2356.8733595706253,
+          "cat": "MVFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 1547.4361436465854,
+          "cat": "MVFR"
+        },
+        "gem_seamless": {
+          "ceilFt": 3322.6531523852127,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T15:00",
+      "metarRaw": "METAR SCEL 151500Z 10004KT 010V160 9999 SCT020 BKN040 19/14 Q1017 NOSIG",
+      "metarCeilFt": 4000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": 3149.723472053393,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 2574.0239501209376,
+          "cat": "MVFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T16:00",
+      "metarRaw": "METAR SCEL 151600Z VRB04KT 9999 BKN020 BKN040 20/13 Q1016 NOSIG",
+      "metarCeilFt": 2000,
+      "metarCat": "MVFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T17:00",
+      "metarRaw": "METAR SCEL 151700Z VRB03KT 9999 FEW030 SCT120 BKN200 21/13 Q1016 NOSIG",
+      "metarCeilFt": 20000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T18:00",
+      "metarRaw": "METAR SCEL 151800Z 04005KT 330V110 9999 SCT040 BKN150 24/12 Q1015 NOSIG",
+      "metarCeilFt": 15000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T19:00",
+      "metarRaw": "METAR SCEL 151900Z VRB02KT 9999 BKN160 25/12 Q1015 NOSIG",
+      "metarCeilFt": 16000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T20:00",
+      "metarRaw": "METAR SCEL 152000Z 20008KT 150V250 9999 FEW040 BKN200 24/12 Q1014 NOSIG",
+      "metarCeilFt": 20000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T21:00",
+      "metarRaw": "METAR SCEL 152100Z 20015KT 9999 FEW030 BKN200 23/12 Q1014 NOSIG",
+      "metarCeilFt": 20000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T22:00",
+      "metarRaw": "METAR SCEL 152200Z 20015KT 9999 FEW050 BKN200 21/12 Q1015 NOSIG",
+      "metarCeilFt": 20000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-15T23:00",
+      "metarRaw": "METAR SCEL 152300Z 19014KT 9999 SCT050 BKN200 20/11 Q1016 NOSIG",
+      "metarCeilFt": 20000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T00:00",
+      "metarRaw": "METAR SCEL 160000Z 16007KT 130V200 9999 SCT050 BKN170 19/11 Q1016 NOSIG",
+      "metarCeilFt": 17000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T01:00",
+      "metarRaw": "METAR SCEL 160100Z 15008KT 9999 FEW050 BKN180 18/10 Q1017 NOSIG",
+      "metarCeilFt": 18000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T02:00",
+      "metarRaw": "METAR SCEL 160200Z 14008KT 9999 SCT150 BKN170 17/10 Q1018 NOSIG",
+      "metarCeilFt": 17000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T03:00",
+      "metarRaw": "METAR SCEL 160300Z 15007KT 9999 SCT040 BKN170 17/11 Q1017 NOSIG",
+      "metarCeilFt": 17000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T04:00",
+      "metarRaw": "METAR SCEL 160400Z 14005KT 110V170 9999 SCT040 SCT120 BKN170 17/11 Q1018 NOSIG",
+      "metarCeilFt": 17000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T05:00",
+      "metarRaw": "METAR SCEL 160500Z 16008KT 9999 FEW040 BKN150 BKN170 16/11 Q1017 NOSIG",
+      "metarCeilFt": 15000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 3224.1352293520895,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T06:00",
+      "metarRaw": "METAR SCEL 160600Z 15007KT 9999 SCT040 BKN170 16/11 Q1017 NOSIG",
+      "metarCeilFt": 17000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 2814.550524923125,
+          "cat": "MVFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T07:00",
+      "metarRaw": "METAR SCEL 160700Z 24003KT 210V290 9999 SCT040 BKN150 15/11 Q1016 NOSIG",
+      "metarCeilFt": 15000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": 2810.0393700675,
+          "cat": "MVFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T08:00",
+      "metarRaw": "METAR SCEL 160800Z 02004KT 340V130 9999 FEW040 BKN150 15/11 Q1016 NOSIG",
+      "metarCeilFt": 15000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T09:00",
+      "metarRaw": "METAR SCEL 160900Z 21009KT 9999 SCT030 BKN150 15/12 Q1015 NOSIG",
+      "metarCeilFt": 15000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T10:00",
+      "metarRaw": "METAR SCEL 161000Z 08007KT 020V110 9999 FEW015 BKN120 BKN150 15/12 Q1017 NOSIG",
+      "metarCeilFt": 12000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T11:00",
+      "metarRaw": "METAR SCEL 161100Z VRB02KT 9999 SCT030 OVC140 16/12 Q1017 NOSIG",
+      "metarCeilFt": 14000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T12:00",
+      "metarRaw": "METAR SCEL 161200Z VRB04KT 9999 BKN020 BKN140 16/12 Q1016 NOSIG",
+      "metarCeilFt": 2000,
+      "metarCat": "MVFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T13:00",
+      "metarRaw": "METAR SCEL 161300Z VRB03KT 9999 FEW020 BKN150 17/12 Q1016 NOSIG",
+      "metarCeilFt": 15000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T14:00",
+      "metarRaw": "METAR SCEL 161400Z 20012KT 9999 FEW020 BKN150 18/12 Q1016 NOSIG",
+      "metarCeilFt": 15000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T15:00",
+      "metarRaw": "METAR SCEL 161500Z 18010KT 9999 SCT010 BKN160 19/12 Q1017 NOSIG",
+      "metarCeilFt": 16000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T16:00",
+      "metarRaw": "METAR SCEL 161600Z 18007KT 120V240 9999 FEW030 BKN160 19/12 Q1017 NOSIG",
+      "metarCeilFt": 16000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T17:00",
+      "metarRaw": "METAR SCEL 161700Z 16008KT 110V210 9999 BKN030 BKN050 20/12 Q1017 NOSIG",
+      "metarCeilFt": 3000,
+      "metarCat": "MVFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T18:00",
+      "metarRaw": "METAR SCEL 161800Z 19010KT 160V240 9999 FEW030 SCT050 20/12 Q1018 NOSIG",
+      "metarCeilFt": null,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T19:00",
+      "metarRaw": "METAR SCEL 161900Z 15009KT 100V210 9999 FEW050 SCT150 22/12 Q1017 NOSIG",
+      "metarCeilFt": null,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": 4646.5090301026485,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T20:00",
+      "metarRaw": "METAR SCEL 162000Z 17009KT 150V210 9999 FEW050 SCT180 22/12 Q1016 NOSIG",
+      "metarCeilFt": null,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T21:00",
+      "metarRaw": "METAR SCEL 162100Z 20012KT 180V240 9999 FEW050 BKN170 22/12 Q1016 NOSIG",
+      "metarCeilFt": 17000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T22:00",
+      "metarRaw": "METAR SCEL 162200Z 19013KT 9999 FEW050 SCT170 21/12 Q1016 NOSIG",
+      "metarCeilFt": null,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    },
+    {
+      "time": "2026-11-16T23:00",
+      "metarRaw": "METAR SCEL 162300Z 20013KT 9999 SCT050 BKN170 19/12 Q1016 NOSIG",
+      "metarCeilFt": 17000,
+      "metarCat": "VFR",
+      "models": {
+        "gfs_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "ecmwf_ifs025": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "icon_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        },
+        "gem_seamless": {
+          "ceilFt": null,
+          "cat": "VFR"
+        }
+      }
+    }
+  ]
+}
