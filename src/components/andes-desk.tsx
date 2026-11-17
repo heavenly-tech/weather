@@ -30,6 +30,7 @@ export function AndesDesk() {
   const [generatedMetar, setGeneratedMetar] = useState<string | null>(null);
   const [generatedTaf, setGeneratedTaf] = useState<string | null>(null);
   const [visEstimated, setVisEstimated] = useState(false);
+  const [cldEstimated, setCldEstimated] = useState(false);
   const [gridWarning, setGridWarning] = useState<string | null>(null);
   const [gridShape, setGridShape] = useState({ rows: 44, cols: 32 });
   const [sliceHeightM, setSliceHeightM] = useState<number | null>(null);
@@ -125,6 +126,7 @@ export function AndesDesk() {
       );
       setGeneratedTaf(t.raw ?? null);
       setVisEstimated(Boolean(m.visEstimated || t.visEstimated));
+      setCldEstimated(Boolean(m.cldEstimated || t.cldEstimated));
     });
   }, [state.model]);
 
@@ -203,6 +205,11 @@ export function AndesDesk() {
                   VIS EST
                 </span>
               ) : null}
+              {cldEstimated ? (
+                <span className="rounded bg-sky-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-sky-800 dark:text-sky-300">
+                  CLD EST
+                </span>
+              ) : null}
               <ModelOutputStamp />
             </div>
           </div>
@@ -215,6 +222,11 @@ export function AndesDesk() {
               {visEstimated ? (
                 <span className="rounded bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">
                   VIS EST
+                </span>
+              ) : null}
+              {cldEstimated ? (
+                <span className="rounded bg-sky-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-sky-800 dark:text-sky-300">
+                  CLD EST
                 </span>
               ) : null}
               <ModelOutputStamp />

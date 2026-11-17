@@ -58,6 +58,7 @@ type PeriodWx = {
   dir: number | null;
   kt: number | null;
   visM: number | null;
+  cldEstimated: boolean;
 };
 
 function periodWx(hourly: Hourly, index: number, elevM: number, model: AndesModelId): PeriodWx {
@@ -82,6 +83,7 @@ function periodWx(hourly: Hourly, index: number, elevM: number, model: AndesMode
     dir: numAt(hourly, "wind_direction_10m", index),
     kt: kmhToKt(numAt(hourly, "wind_speed_10m", index)),
     visM,
+    cldEstimated: derived.cldEstimated,
   };
 }
 
@@ -114,7 +116,7 @@ export function generateModelTaf(opts: {
   model: AndesModelId;
   runTime: string;
   hourly: Hourly;
-}): { raw: string; stamp: string; visEstimated?: boolean } | { error: string } {
+}): { raw: string; stamp: string; visEstimated?: boolean; cldEstimated?: boolean } | { error: string } {
   const times = (opts.hourly.time ?? []) as string[];
   if (times.length < 2) return { error: "Insufficient model hours for TAF" };
 
@@ -194,6 +196,12 @@ export function generateModelTaf(opts: {
   const body = [groupString(base), ...changes.map((c) => c.text)].filter(Boolean).join(" ");
   const rmkParts = [`GEN=${opts.runTime}`, `MODEL=${opts.model}`];
   if (visEstimated) rmkParts.push("VIS EST");
+  if (base.cldEstimated) rmkParts.push("CLD EST");
   const raw = `${STAMP}\n${header} ${body} RMK ${rmkParts.join(" ")}`;
-  return { raw, stamp: STAMP, visEstimated: visEstimated || undefined };
+  return {
+    raw,
+    stamp: STAMP,
+    visEstimated: visEstimated || undefined,
+    cldEstimated: base.cldEstimated || undefined,
+  };
 }

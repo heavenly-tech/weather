@@ -72,7 +72,7 @@ export function generateModelMetar(opts: {
   validTime: string;
   hourly: Hourly;
   hourIndex: number;
-}): { raw: string; stamp: string; visEstimated?: boolean } {
+}): { raw: string; stamp: string; visEstimated?: boolean; cldEstimated?: boolean } {
   const i = opts.hourIndex;
   const resolved = resolveVisibilityMeters(opts.hourly, i, opts.model);
   const visM = resolved.visM != null ? roundVisM(resolved.visM) : null;
@@ -105,5 +105,10 @@ export function generateModelMetar(opts: {
   const rmkParts = [`GEN=${opts.runTime}`, `MODEL=${opts.model}`, ...derived.rmkExtra];
   if (resolved.estimated) rmkParts.push("VIS EST");
   const raw = `${STAMP}\nMETAR ${body} RMK ${rmkParts.join(" ")}`;
-  return { raw, stamp: STAMP, visEstimated: resolved.estimated || undefined };
+  return {
+    raw,
+    stamp: STAMP,
+    visEstimated: resolved.estimated || undefined,
+    cldEstimated: derived.cldEstimated || undefined,
+  };
 }

@@ -17,14 +17,34 @@ export function lclHeightM(tempC: number | null, dewC: number | null): number | 
   return 125 * spread;
 }
 
+const M_TO_FT = 3.280839895;
+/** Beyond this spread the surface LCL is not used for a low-cloud base (treat as mid-level). */
+const MAX_LCL_SPREAD_C = 15;
+
 export type MetarProductContext = {
   clouds: string;
   weather: string;
   rmkExtra: string[];
-  /** After LCL estimate for METAR display */
+  /** After LCL estimate for METAR/TAF display */
   effectiveCeilFt: number | null;
   lowCloudUnresolved: boolean;
+  cldEstimated: boolean;
 };
+
+/** Round base height down to the Annex 3 100 ft cloud group (e.g. 4511 ft → 45 → BKN045). */
+export function cloudHeightHundredsFt(ftAgl: number): number {
+  return Math.max(1, Math.floor(ftAgl / 100));
+}
+
+/**
+ * Mid-level-only cloud (BKN low cover but no defensible surface LCL):
+ * we emit **NSC** in METAR/TAF — no ceiling-height claim and no `///` groups.
+ * Model mid/high cover still drives the ceiling map; NSC here means only that
+ * this product will not state a low cloud base height (FM 51 / Annex 3 AUTO style).
+ */
+export function midLevelCloudGroup(): string {
+  return "NSC";
+}
 
 export function deriveMetarWxAndCloud(
   hourly: Hourly,
@@ -59,6 +79,8 @@ export function deriveMetarWxAndCloud(
   let effectiveCeilFt = ceil.ceilingFtAgl;
   const rmkExtra: string[] = [];
   let lowUnresolved = ceil.lowCloudUnresolved;
+  let cldEstimated = false;
+  const cover925 = numAt(hourly, "cloud_cover_925hPa", index);
 
   const weather: string[] = [];
   if (visRoundM != null) {
@@ -98,34 +120,47 @@ export function deriveMetarWxAndCloud(
     weather.push(snow < 2 ? "-SN" : snow <= 5 ? "SN" : "+SN");
   }
 
+  const lclM = lclHeightM(temp, dew);
+  const lclFt = lclM != null ? lclM * M_TO_FT : null;
+  const lowCloudTopFt =
+    numAt(hourly, "geopotential_height_925hPa", index) != null
+      ? Math.max(0, (numAt(hourly, "geopotential_height_925hPa", index)! - elevM) * M_TO_FT)
+      : null;
+
+  const lclImplausible =
+    spread == null ||
+    spread > MAX_LCL_SPREAD_C ||
+    lclFt == null ||
+    (lowCloudTopFt != null &&
+      lowCloudTopFt > 0 &&
+      lclFt > lowCloudTopFt &&
+      cover925 != null &&
+      cover925 >= BKN_CLOUD_COVER_PCT);
+
   let clouds = "NSC";
   if (effectiveCeilFt != null && effectiveCeilFt > 0) {
-    const h = Math.floor(effectiveCeilFt / 100);
+    const h = cloudHeightHundredsFt(effectiveCeilFt);
     const code = coverLow != null && coverLow >= 87.5 ? "OVC" : "BKN";
     clouds = `${code}${String(h).padStart(3, "0")}`;
-  } else if (ceil.lowCloudUnresolved || (coverLow != null && coverLow >= BKN_CLOUD_COVER_PCT)) {
-    const lclM = lclHeightM(temp, dew);
-    const lclFt = lclM != null ? lclM * 3.280839895 : null;
-    if (spread != null && spread <= 3 && rh != null && rh >= 92 && lclFt != null && lclFt < 5000) {
+  } else if (coverLow != null && coverLow >= BKN_CLOUD_COVER_PCT) {
+    if (!lclImplausible && lclFt != null) {
       effectiveCeilFt = lclFt;
       lowUnresolved = false;
-      const h = Math.max(1, Math.floor(lclFt / 100));
+      cldEstimated = true;
+      const h = cloudHeightHundredsFt(lclFt);
       clouds = `BKN${String(h).padStart(3, "0")}`;
-      rmkExtra.push("CB EST LCL");
-    } else if (coverLow != null && coverLow >= BKN_CLOUD_COVER_PCT) {
-      clouds = "BKN///";
-      lowUnresolved = true;
-    } else if (coverLow != null && coverLow >= 12.5) {
-      clouds = lclFt != null && lclFt < 1500 ? `SCT///` : "NSC";
+      rmkExtra.push("CLD EST");
     } else {
-      clouds = "NSC";
+      clouds = midLevelCloudGroup();
+      effectiveCeilFt = null;
+      lowUnresolved = false;
     }
   } else if (coverLow != null && coverLow >= 12.5 && coverLow < BKN_CLOUD_COVER_PCT) {
     clouds = "NSC";
   }
 
-  if (forTaf && coverLow != null && coverLow >= BKN_CLOUD_COVER_PCT && clouds === "NSC") {
-    clouds = "BKN///";
+  if (forTaf && clouds.includes("///")) {
+    clouds = midLevelCloudGroup();
   }
 
   return {
@@ -134,5 +169,6 @@ export function deriveMetarWxAndCloud(
     rmkExtra,
     effectiveCeilFt,
     lowCloudUnresolved: lowUnresolved,
+    cldEstimated,
   };
 }
