@@ -1,8 +1,11 @@
 import { annex3NscCeilingFtAgl } from "@/lib/andes/airfield-msa";
 import type { CeilingSample } from "@/lib/andes/ceiling";
 import { BKN_CLOUD_COVER_PCT, surfacePressureHpa } from "@/lib/andes/ceiling";
+import type { AndesModelId } from "@/lib/andes/models";
 import { capEstimatedVisForLowCloud } from "@/lib/andes/visibility-estimate";
 import { visObscurationWx } from "@/lib/andes/wmo-vis-wx";
+import type { FlightCategory } from "@/lib/types";
+import { flightCategoryFromWx } from "@/lib/visibility";
 
 type Hourly = Record<string, Array<number | null> | string[]>;
 
@@ -35,6 +38,8 @@ export type MetarProductContext = {
   midCloudBaseUnk: boolean;
   /** Visibility used for the body, after the low-cloud / fog cap. */
   visM: number | null;
+  /** Category of the ceiling actually reported (BKN/OVC/VV), not a FEW/SCT remark. */
+  flightCategory: FlightCategory;
 };
 
 /** Round base height down to the Annex 3 100 ft cloud group (e.g. 4511 ft → 45 → BKN045). */
@@ -55,7 +60,7 @@ export function unknownLowCloudCover(forTaf: boolean): string {
     : "BKN///";
 }
 
-const LEVELS_FOR_NSC = [1000, 975, 950, 925, 900, 850, 800, 700] as const;
+const LEVELS_FOR_NSC = [1000, 975, 950, 925, 900, 850, 800, 700, 600, 500] as const;
 
 /** True when BKN+ cloud exists below max(1500 m / 5000 ft, 25 NM AIP MSA) AGL. */
 export function hasSignificantCloudBelowNscCeiling(
@@ -89,7 +94,8 @@ export function deriveMetarWxAndCloud(
   ceil: CeilingSample,
   visRoundM: number | null,
   forTaf = false,
-  visEstimated = false
+  visEstimated = false,
+  model?: AndesModelId
 ): MetarProductContext {
   const temp = numAt(hourly, "temperature_2m", index);
   const dew = numAt(hourly, "dew_point_2m", index);
@@ -188,10 +194,23 @@ export function deriveMetarWxAndCloud(
     lowCoverPct: coverLow,
   });
 
-  const dryAir = spread != null && spread > 5;
-  const stratCeil = effectiveCeilFt != null && effectiveCeilFt <= 3000;
+  // No cloud layer (and no 700/600 hPa estimate): the dry-air gate drops RA/DZ,
+  // and a moist hour still cannot leave RA/DZ on NSC or NCD.
+  // ECMWF has no showers/rain split. Its rain is convective for this encoding.
+  const showerRate = model === "ecmwf_ifs025" ? Math.max(showers, rain) : showers;
+  const stratRain = model === "ecmwf_ifs025" ? 0 : rain;
   const precipWx: string[] = [];
-  if (showers >= 0.1 && !isCloudLayer(clouds) && !ceil.obscured) {
+  const noteCldEst = () => {
+    cldEstimated = true;
+    if (!rmkExtra.includes("CLD EST")) rmkExtra.push("CLD EST");
+  };
+  const levelFtAgl = (hpa: number) => {
+    const gh = numAt(hourly, `geopotential_height_${hpa}hPa`, index);
+    if (gh == null || gh <= elevM) return null;
+    return (gh - elevM) * M_TO_FT;
+  };
+
+  if (showerRate >= 0.1 && !isCloudLayer(clouds) && !ceil.obscured) {
     const cbM = numAt(hourly, "convective_cloud_base", index);
     const fromCb = cbM != null && cbM > elevM + 30 ? (cbM - elevM) * M_TO_FT : null;
     const fromLcl =
@@ -199,18 +218,43 @@ export function deriveMetarWxAndCloud(
     const estFt = fromCb ?? fromLcl;
     if (estFt != null && estFt > 0) {
       const h = cloudHeightHundredsFt(estFt);
-      const cover = showers >= 2.5 ? "BKN" : showers >= 0.5 ? "SCT" : "FEW";
+      const cover = showerRate >= 2.5 ? "BKN" : showerRate >= 0.5 ? "SCT" : "FEW";
       clouds = `${cover}${String(h).padStart(3, "0")}`;
-      cldEstimated = true;
-      if (!rmkExtra.includes("CLD EST")) rmkExtra.push("CLD EST");
+      if (cover === "BKN") effectiveCeilFt = estFt;
+      noteCldEst();
     }
   }
-  if (showers >= 0.1 && isCloudLayer(clouds)) {
-    const p = showers < 2.5 ? "-" : showers <= 7.6 ? "" : "+";
+
+  const stratCandidate = showerRate < 0.1 && hourlyRate >= 0.1 && (hasAdjacent || hourlyRate >= 0.25);
+  const midCover = numAt(hourly, "cloud_cover_mid", index);
+  const totalCover = numAt(hourly, "cloud_cover", index);
+  if (stratCandidate && !isCloudLayer(clouds) && !ceil.obscured) {
+    const backed = (midCover != null && midCover >= 50) || (totalCover != null && totalCover >= BKN_CLOUD_COVER_PCT);
+    const estFt = backed ? (levelFtAgl(700) ?? levelFtAgl(600)) : null;
+    if (estFt != null && estFt > 0) {
+      const h = cloudHeightHundredsFt(estFt);
+      clouds = `BKN${String(h).padStart(3, "0")}`;
+      effectiveCeilFt = estFt;
+      noteCldEst();
+    }
+  }
+
+  const stratCeil = effectiveCeilFt != null && effectiveCeilFt <= 3000;
+  if (ceil.obscured && hourlyRate >= 0.1) {
+    const dz = spread != null && spread <= 3 && hourlyRate < 0.5;
+    if (dz) {
+      const p = hourlyRate < 0.25 ? "-" : "";
+      precipWx.push(`${p}DZ`);
+    } else {
+      const p = hourlyRate < 2.5 ? "-" : hourlyRate <= 7.6 ? "" : "+";
+      precipWx.push(`${p}RA`);
+    }
+  } else if (showerRate >= 0.1 && isCloudLayer(clouds)) {
+    const p = showerRate < 2.5 ? "-" : showerRate <= 7.6 ? "" : "+";
     precipWx.push(`${p}SHRA`);
-  } else if (!dryAir && hourlyRate >= 0.1 && (hasAdjacent || hourlyRate >= 0.25)) {
-    if (rain >= 0.1) {
-      const p = rain < 2.5 ? "-" : rain <= 7.6 ? "" : "+";
+  } else if (stratCandidate && isCloudLayer(clouds)) {
+    if (stratRain >= 0.1) {
+      const p = stratRain < 2.5 ? "-" : stratRain <= 7.6 ? "" : "+";
       precipWx.push(`${p}RA`);
     } else if (stratCeil && spread != null && spread <= 3 && hourlyRate < 0.5) {
       const p = hourlyRate < 0.25 ? "-" : hourlyRate <= 0.5 ? "" : "+";
@@ -223,6 +267,7 @@ export function deriveMetarWxAndCloud(
 
   const visWx = visObscurationWx(visM, rh);
   const weather = [...precipWx, visWx].filter(Boolean).join(" ").trim();
+  const reportedCeilingFt = /^(?:BKN|OVC|VV)/.test(clouds) ? effectiveCeilFt : null;
 
   return {
     clouds,
@@ -233,5 +278,6 @@ export function deriveMetarWxAndCloud(
     cldEstimated,
     midCloudBaseUnk: false,
     visM,
+    flightCategory: flightCategoryFromWx(visM, reportedCeilingFt),
   };
 }

@@ -71,7 +71,7 @@ function periodWx(hourly: Hourly, index: number, elevM: number, model: AndesMode
     numAt(hourly, "wind_speed_10m", index),
     numAt(hourly, "wind_gusts_10m", index)
   );
-  const derived = deriveMetarWxAndCloud(hourly, index, elevM, icao, ceil, visRound, true, resolved.estimated);
+  const derived = deriveMetarWxAndCloud(hourly, index, elevM, icao, ceil, visRound, true, resolved.estimated, model);
   const visM = derived.visM ?? resolved.visM;
   const vis = visM != null ? roundVisTaf(visM) : "9999";
   return {
@@ -79,7 +79,7 @@ function periodWx(hourly: Hourly, index: number, elevM: number, model: AndesMode
     vis,
     cloud: derived.clouds,
     wx: derived.weather,
-    cat: ceil.ceilingCategory,
+    cat: derived.flightCategory,
     ceilFt: derived.effectiveCeilFt ?? ceil.ceilingFtAgl,
     dir: numAt(hourly, "wind_direction_10m", index),
     kt: kmhToKt(numAt(hourly, "wind_speed_10m", index)),
