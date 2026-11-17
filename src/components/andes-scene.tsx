@@ -35,7 +35,13 @@ function cellsToCanvas(
     let color = "#334155";
     if (mode === "ceiling" && "category" in cell) {
       const c = cell as CeilingCell;
-      color = c.obscured ? "#78716c" : categoryColor(c.category);
+      if (c.lowCloudUnresolved) {
+        color = "#64748b";
+      } else if (c.category === "UNK") {
+        color = "#475569";
+      } else {
+        color = c.obscured ? "#78716c" : categoryColor(c.category);
+      }
     } else if (mode === "slice") {
       const s = cell as SliceValue;
       if (s.tempC == null) {
@@ -194,19 +200,6 @@ export function AndesScene({
         classificationType: Cesium.ClassificationType.TERRAIN,
       },
     });
-
-    ceilingCells
-      .filter((c) => c.obscured)
-      .forEach((c, i) => {
-        v.entities.add({
-          id: `${id}-obs-${i}`,
-          rectangle: {
-            coordinates: Cesium.Rectangle.fromDegrees(c.lon - 0.08, c.lat - 0.08, c.lon + 0.08, c.lat + 0.08),
-            material: Cesium.Color.fromCssColorString("#57534e").withAlpha(0.65),
-            height: c.elevM,
-          },
-        });
-      });
 
     if (showSlice && sliceValues.length) {
       const sliceImg = cellsToCanvas(sliceValues, "slice", gridCols, gridRows);

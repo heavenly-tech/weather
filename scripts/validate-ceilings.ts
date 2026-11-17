@@ -8,7 +8,6 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseAwcMetar } from "../src/lib/awc";
 import { ceilingCategoryFromFtAgl, ceilingFromHourly } from "../src/lib/andes/ceiling";
-import { mergeIconConvectiveHourly } from "../src/lib/andes/icon-hourly";
 import { ANDES_MODELS, hourlyVariablesForModel, modelById } from "../src/lib/andes/models";
 import type { AndesModelId } from "../src/lib/andes/models";
 import { ceilingFtFromClouds } from "../src/lib/visibility";
@@ -165,10 +164,7 @@ async function main() {
 
   for (const meta of ANDES_MODELS) {
     const data = await fetchModelPast(meta.id);
-    modelHourly[meta.id] =
-      meta.id === "icon_seamless"
-        ? await mergeIconConvectiveHourly(SCEL.lat, SCEL.lon, data.hourly)
-        : data.hourly;
+    modelHourly[meta.id] = data.hourly;
     elevByModel[meta.id] = data.elevation ?? SCEL.elevM;
     await fs.writeFile(
       path.join(OUT_DIR, `open-meteo-${meta.id}-scel.json`),

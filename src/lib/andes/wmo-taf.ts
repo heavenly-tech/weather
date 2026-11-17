@@ -1,13 +1,11 @@
 import { ceilingFromHourly } from "@/lib/andes/ceiling";
 import type { AndesModelId } from "@/lib/andes/models";
 import { parseUtcIso } from "@/lib/andes/parse-utc";
-import {
-  roundVisTaf,
-  wxSignificant,
-} from "@/lib/andes/wmo-annex3";
+import { wxSignificant, roundVisTaf } from "@/lib/andes/wmo-annex3";
+import { deriveMetarWxAndCloud } from "@/lib/andes/wmo-metar-wx";
+import { formatModelWind, STAMP } from "@/lib/andes/wmo-metar";
 import { kmhToKt } from "@/lib/format";
 import type { FlightCategory } from "@/lib/types";
-import { STAMP } from "@/lib/andes/wmo-metar";
 
 type Hourly = Record<string, Array<number | null> | string[]>;
 
@@ -28,26 +26,32 @@ export function tafDdhh(iso: string): string {
   return `${String(d.getUTCDate()).padStart(2, "0")}${String(d.getUTCHours()).padStart(2, "0")}`;
 }
 
-export function nextSynopticAfter(issue: Date): Date {
-  const d = new Date(issue);
-  d.setUTCMinutes(0, 0, 0);
-  const h = d.getUTCHours();
-  const next = [0, 6, 12, 18].find((s) => s > h) ?? 0;
-  if (next === 0 && h >= 18) {
-    d.setUTCDate(d.getUTCDate() + 1);
-    d.setUTCHours(0);
-  } else if (next === 0) {
-    d.setUTCHours(0);
-  } else {
-    d.setUTCHours(next);
+export function tafValidityEnd(from: Date, to: Date): string {
+  if (to.getUTCHours() === 0) {
+    const endCal = new Date(to);
+    endCal.setUTCDate(endCal.getUTCDate() - 1);
+    return `${String(endCal.getUTCDate()).padStart(2, "0")}24`;
   }
-  return d;
+  return tafDdhh(to.toISOString());
+}
+
+export function validityFromIssue(issue: Date): { from: Date; to: Date } {
+  const from = new Date(issue);
+  from.setUTCSeconds(0, 0);
+  from.setUTCMinutes(0);
+  if (issue.getUTCMinutes() > 0 || issue.getUTCSeconds() > 0) {
+    from.setUTCHours(from.getUTCHours() + 1);
+  }
+  const to = new Date(from);
+  to.setUTCHours(to.getUTCHours() + 24);
+  return { from, to };
 }
 
 type PeriodWx = {
   wind: string;
   vis: string;
   cloud: string;
+  wx: string;
   cat: FlightCategory;
   ceilFt: number | null;
   dir: number | null;
@@ -58,33 +62,36 @@ type PeriodWx = {
 function periodWx(hourly: Hourly, index: number, elevM: number): PeriodWx {
   const ceil = ceilingFromHourly(hourly, index, elevM);
   const visM = numAt(hourly, "visibility", index);
-  const windKt = kmhToKt(numAt(hourly, "wind_speed_10m", index));
-  const windDir = numAt(hourly, "wind_direction_10m", index);
-  const wind =
-    windKt != null && windKt >= 1 && windDir != null
-      ? `${String(Math.round(windDir / 10) * 10 || 360).padStart(3, "0")}${String(Math.round(windKt)).padStart(2, "0")}KT`
-      : "/////KT";
+  const visRound = visM != null ? (visM >= 9990 ? 9999 : visM) : null;
+  const wind = formatModelWind(
+    numAt(hourly, "wind_direction_10m", index),
+    numAt(hourly, "wind_speed_10m", index),
+    numAt(hourly, "wind_gusts_10m", index)
+  );
   const vis = roundVisTaf(visM);
-  const cloud =
-    ceil.ceilingFtAgl != null
-      ? `${ceil.ceilingFtAgl <= 0 ? "VV" : "BKN"}${String(Math.max(0, Math.floor(ceil.ceilingFtAgl / 100))).padStart(3, "0")}`
-      : ceil.lowCloudUnresolved
-        ? "NSC"
-        : "NSC";
+  const derived = deriveMetarWxAndCloud(hourly, index, elevM, ceil, visRound, true);
   return {
     wind,
     vis,
-    cloud,
+    cloud: derived.clouds,
+    wx: derived.weather,
     cat: ceil.ceilingCategory,
-    ceilFt: ceil.ceilingFtAgl,
-    dir: windDir,
-    kt: windKt,
+    ceilFt: derived.effectiveCeilFt ?? ceil.ceilingFtAgl,
+    dir: numAt(hourly, "wind_direction_10m", index),
+    kt: kmhToKt(numAt(hourly, "wind_speed_10m", index)),
     visM,
   };
 }
 
 function groupString(wx: PeriodWx): string {
-  return `${wx.wind} ${wx.vis} ${wx.cloud}`;
+  const parts = [wx.wind, wx.vis];
+  if (wx.wx) parts.push(wx.wx);
+  if (wx.visM != null && wx.visM < 5000 && !wx.wx) {
+    const derived = wx.wx || (wx.visM < 1000 ? "FG" : "BR");
+    parts.push(derived);
+  }
+  parts.push(wx.cloud);
+  return parts.filter(Boolean).join(" ");
 }
 
 function toSignificant(a: PeriodWx) {
@@ -110,9 +117,7 @@ export function generateModelTaf(opts: {
   if (times.length < 2) return { error: "Insufficient model hours for TAF" };
 
   const issue = parseUtcIso(opts.runTime);
-  const validFrom = nextSynopticAfter(issue);
-  const validTo = new Date(validFrom);
-  validTo.setUTCHours(validTo.getUTCHours() + 24);
+  const { from: validFrom, to: validTo } = validityFromIssue(issue);
 
   const fromIdx = times.findIndex((t) => parseUtcIso(t).getTime() >= validFrom.getTime());
   const baseIdx = fromIdx >= 0 ? fromIdx : 0;
@@ -120,7 +125,7 @@ export function generateModelTaf(opts: {
   if (endIdx <= baseIdx) return { error: "Validity window outside model hours" };
 
   const base = periodWx(opts.hourly, baseIdx, opts.elevM);
-  const header = `TAF ${opts.icao} ${tafDdhhmmZ(opts.runTime)} ${tafDdhh(validFrom.toISOString())}/${tafDdhh(validTo.toISOString())}`;
+  const header = `TAF ${opts.icao} ${tafDdhhmmZ(opts.runTime)} ${tafDdhh(validFrom.toISOString())}/${tafValidityEnd(validFrom, validTo)}`;
   const changes: { order: number; text: string }[] = [];
 
   let prevailing = base;
@@ -132,18 +137,30 @@ export function generateModelTaf(opts: {
       continue;
     }
 
-    const windowEndIdx = Math.min(i + 2, endIdx);
+    let windowEndIdx = Math.min(i + 2, endIdx);
+    if (windowEndIdx <= i) {
+      i++;
+      continue;
+    }
     const atEnd = periodWx(opts.hourly, windowEndIdx, opts.elevM);
     const windowEndTime = parseUtcIso(times[windowEndIdx]!);
-    if (windowEndTime.getTime() > validTo.getTime()) break;
+    if (windowEndTime.getTime() > validTo.getTime()) {
+      windowEndIdx = Math.max(i, endIdx - 1);
+      if (windowEndIdx <= i) break;
+    }
+
+    const t0 = tafDdhh(times[i]!);
+    const t1 = tafDdhh(times[windowEndIdx]!);
+    if (t0 === t1) {
+      i++;
+      continue;
+    }
 
     const persistent =
       wxSignificant(toSignificant(prevailing), toSignificant(wx)) &&
       wxSignificant(toSignificant(prevailing), toSignificant(atEnd));
 
     if (persistent) {
-      const t0 = tafDdhh(times[i]!);
-      const t1 = tafDdhh(times[windowEndIdx]!);
       changes.push({ order: parseUtcIso(times[i]!).getTime(), text: `BECMG ${t0}/${t1} ${groupString(atEnd)}` });
       prevailing = atEnd;
       i = windowEndIdx + 1;
@@ -154,10 +171,12 @@ export function generateModelTaf(opts: {
       const revert = periodWx(opts.hourly, i + 1, opts.elevM);
       if (wxSignificant(toSignificant(prevailing), toSignificant(wx)) && !wxSignificant(toSignificant(prevailing), toSignificant(revert))) {
         const endI = Math.min(i + 1, endIdx);
-        if (parseUtcIso(times[endI]!).getTime() <= validTo.getTime()) {
+        const te0 = tafDdhh(times[i]!);
+        const te1 = tafDdhh(times[endI]!);
+        if (te0 !== te1 && parseUtcIso(times[endI]!).getTime() <= validTo.getTime()) {
           changes.push({
             order: parseUtcIso(times[i]!).getTime(),
-            text: `TEMPO ${tafDdhh(times[i]!)}/${tafDdhh(times[endI]!)} ${groupString(wx)}`,
+            text: `TEMPO ${te0}/${te1} ${groupString(wx)}`,
           });
         }
       }
@@ -165,39 +184,8 @@ export function generateModelTaf(opts: {
     i++;
   }
 
-  const pIdx = baseIdx + 12;
-  if (pIdx <= endIdx) {
-    const precip = numAt(opts.hourly, "precipitation", pIdx);
-    if (precip != null && precip > 0.2) {
-      const pEnd = Math.min(pIdx + 2, endIdx);
-      const endTime = parseUtcIso(times[pEnd]!);
-      if (endTime.getTime() <= validTo.getTime()) {
-        changes.push({
-          order: parseUtcIso(times[pIdx]!).getTime(),
-          text: `PROB30 ${tafDdhh(times[pIdx]!)}/${tafDdhh(times[pEnd]!)} RA`,
-        });
-      }
-    }
-  }
-
   changes.sort((a, b) => a.order - b.order);
   const body = [groupString(base), ...changes.map((c) => c.text)].filter(Boolean).join(" ");
   const raw = `${STAMP}\n${header} ${body} RMK GEN=${opts.runTime} MODEL=${opts.model}`;
   return { raw, stamp: STAMP };
-}
-
-export function assertTafChangeCountForFixture(
-  hourly: Hourly,
-  opts: { elevM: number; runTime: string; maxBecmg: number }
-): boolean {
-  const r = generateModelTaf({
-    icao: "SCEL",
-    elevM: opts.elevM,
-    model: "gfs_seamless",
-    runTime: opts.runTime,
-    hourly,
-  });
-  if ("error" in r) return false;
-  const becmg = (r.raw.match(/\bBECMG\b/g) ?? []).length;
-  return becmg <= opts.maxBecmg;
 }

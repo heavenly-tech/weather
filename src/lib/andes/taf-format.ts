@@ -32,14 +32,17 @@ export function assertModelTafFormat(raw: string): { ok: true } | { ok: false; r
     if ((tag === "BECMG" || tag === "TEMPO" || tag.startsWith("PROB")) && !slashTo) {
       reasons.push(`${tag} must use DDhh/DDhh window`);
     }
-    const to = slashTo ?? from;
+    const toGroup = slashTo ?? from;
+    if (slashTo && from === toGroup) {
+      reasons.push(`${tag} zero-length window ${from}/${toGroup}`);
+    }
     if (validFrom && validTo) {
       const vf = ddhhToMs(validFrom, anchor);
       const vt = ddhhToMs(validTo, anchor);
       const gf = ddhhToMs(from, anchor);
-      const gt = ddhhToMs(to, anchor);
+      const gt = ddhhToMs(toGroup, anchor);
       if (gf < vf || gt > vt) {
-        reasons.push(`change group ${tag} ${from}/${to} outside validity ${validFrom}/${validTo}`);
+        reasons.push(`change group ${tag} ${from}/${toGroup} outside validity ${validFrom}/${validTo}`);
       }
     }
   }

@@ -7,8 +7,6 @@ import {
 } from "@/lib/andes/ceiling";
 import fixture from "../../../tests/fixtures/open-meteo-hourly.json";
 import underground from "../../../tests/fixtures/underground-cloud-levels.json";
-import iconFixture from "../../../tests/fixtures/icon-scel-hour.json";
-
 describe("ceilingFromHourly", () => {
   it("interpolates BKN crossing between levels", () => {
     const { baseMslM, method } = interpolateCloudBaseMsl(fixture.hourly, 0, 600, 1015);
@@ -54,11 +52,13 @@ describe("ceilingFromHourly", () => {
     expect(s.obscured).toBe(false);
   });
 
-  it("ICON convective base ignored without convective_cloud_cover", () => {
+  it("ICON convective base ignored without showers/cape/low cloud gate", () => {
     const hourly = {
       time: ["t"],
       surface_pressure: [955],
       convective_cloud_base: [1200],
+      showers: [0],
+      cloud_cover_low: [10],
       cloud_cover_850hPa: [5],
       geopotential_height_850hPa: [1600],
     };
@@ -66,15 +66,19 @@ describe("ceilingFromHourly", () => {
     expect(s.cloudBaseMslM).not.toBe(1200);
   });
 
-  it("ICON convective base used when cover is BKN+ (fixture)", () => {
-    const idx = 0;
-    const elev = iconFixture.elevation ?? 474;
-    const s = ceilingFromHourly(iconFixture.hourly, idx, elev);
-    const cc = (iconFixture.hourly.convective_cloud_cover as number[])[idx];
-    const cb = (iconFixture.hourly.convective_cloud_base as number[])[idx];
-    if (cc != null && cc >= 62.5 && cb != null && cb > 0) {
-      expect(s.cloudBaseMslM).toBe(cb);
-    }
+  it("ICON convective base used when showers >= 0.1 mm/h", () => {
+    const hourly = {
+      time: ["t"],
+      surface_pressure: [955],
+      convective_cloud_base: [1200],
+      showers: [0.5],
+      cloud_cover_low: [20],
+      cloud_cover_850hPa: [5],
+      geopotential_height_850hPa: [1600],
+    };
+    const s = ceilingFromHourly(hourly, 0, 474);
+    expect(s.cloudBaseMslM).toBe(1200);
+    expect(s.method).toBe("cloud_base_field");
   });
 
   it("maps FAA categories from ft AGL", () => {

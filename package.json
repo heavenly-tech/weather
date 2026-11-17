@@ -13,6 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "validate:ceilings": "tsx scripts/validate-ceilings.ts",
+    "generate:andes-elevation": "tsx scripts/generate-andes-elevation.ts",
+    "smoke:open-meteo-schema": "tsx scripts/smoke-open-meteo-schema.ts",
     "capture:andes": "node scripts/capture-andes-screenshots.mjs"
   },
   "dependencies": {

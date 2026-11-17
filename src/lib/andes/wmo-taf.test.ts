@@ -42,7 +42,7 @@ describe("generateModelTaf", () => {
       icao: "SCEL",
       elevM: 474,
       model: "gfs_seamless",
-      runTime: "2026-11-17T11:00:00Z",
+      runTime: "2026-11-17T17:20:27Z",
       hourly: hourly as Record<string, Array<number | null> | string[]>,
     });
     expect("error" in result).toBe(false);
@@ -52,6 +52,38 @@ describe("generateModelTaf", () => {
     expect(becmg).toBeLessThanOrEqual(3);
     const check = assertModelTafFormat(result.raw);
     expect(check.ok, check.ok ? "" : check.reasons.join("; ")).toBe(true);
+  });
+
+  it("validity starts at next whole hour and uses 24 for midnight end", () => {
+    const hourly = hours(30, "2026-11-17T16:00");
+    const result = generateModelTaf({
+      icao: "SCTB",
+      elevM: 649,
+      model: "gfs_seamless",
+      runTime: "2026-11-17T17:20:27Z",
+      hourly: hourly as Record<string, Array<number | null> | string[]>,
+    });
+    expect("error" in result).toBe(false);
+    if ("error" in result) return;
+    expect(result.raw).toMatch(/1718\/1818/);
+  });
+
+  it("calm wind is 00000KT in TAF", () => {
+    const hourly = hours(24) as Record<string, number[] | string[]> & { time: string[] };
+    for (let i = 0; i < 24; i++) {
+      (hourly.wind_speed_10m as number[])[i] = 0;
+      (hourly.wind_direction_10m as number[])[i] = 180;
+    }
+    const result = generateModelTaf({
+      icao: "SCTB",
+      elevM: 649,
+      model: "gfs_seamless",
+      runTime: "2026-11-17T22:00:00Z",
+      hourly: hourly as unknown as Record<string, Array<number | null> | string[]>,
+    });
+    expect("error" in result).toBe(false);
+    if ("error" in result) return;
+    expect(result.raw).toContain("00000KT");
   });
 
   it("wind noise alone does not emit BECMG every hour", () => {

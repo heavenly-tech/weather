@@ -8,7 +8,6 @@ import { ceilingFromHourly } from "@/lib/andes/ceiling";
 import { refineCeilingGrid } from "@/lib/andes/ceiling-regrid";
 import { defaultGridShape, domainGrid } from "@/lib/andes/domain";
 import { fetchMultiBatched } from "@/lib/andes/batch-fetch";
-import { mergeIconConvectiveHourly } from "@/lib/andes/icon-hourly";
 import { cachedFetchUrl } from "@/lib/andes/open-meteo-cache";
 import { parseUtcIso } from "@/lib/andes/parse-utc";
 import { asSingle, fetchOpenMeteo, pickHourIndex } from "@/lib/open-meteo";
@@ -145,10 +144,7 @@ export async function fetchPointHourly(
     return { ok: false as const, error: `HTTP ${cached.status}`, meta };
   }
   const body = asSingle((await cached.json()) as import("@/lib/open-meteo").OpenMeteoResponse);
-  let hourly = body.hourly ?? {};
-  if (model === "icon_seamless" && !hourly.convective_cloud_cover) {
-    hourly = await mergeIconConvectiveHourly(lat, lon, hourly);
-  }
+  const hourly = body.hourly ?? {};
   return {
     ok: true as const,
     hourly,

@@ -1,22 +1,14 @@
 import type { CeilingCell } from "@/lib/andes/fetch-field";
 import { ANDES_DOMAIN } from "@/lib/andes/domain";
 import { ceilingCategoryFromFtAgl } from "@/lib/andes/ceiling";
-import { elevationsForPoints } from "@/lib/andes/elevation-cache";
+import { staticFineElevations } from "@/lib/andes/elevation-static";
 
 const M_TO_FT = 3.280839895;
 const OBSC_EPS_M = 5;
 
-/** Factor N: N×N fine pixels per coarse model cell (~sub-km after coarse 0.25° grid). */
 const SUBDIV = Number(process.env.ANDES_RENDER_SUBDIV ?? 4);
 
-function bilinear(
-  q11: number,
-  q21: number,
-  q12: number,
-  q22: number,
-  tx: number,
-  ty: number
-): number {
+function bilinear(q11: number, q21: number, q12: number, q22: number, tx: number, ty: number): number {
   const a = q11 * (1 - tx) + q21 * tx;
   const b = q12 * (1 - tx) + q22 * tx;
   return a * (1 - ty) + b * ty;
@@ -55,7 +47,13 @@ export async function refineCeilingGrid(
   const fineCols = coarseCols * SUBDIV;
   const matrix = buildCoarseMatrix(coarseCells, coarseRows, coarseCols);
 
-  const finePoints: { lat: number; lon: number }[] = [];
+  const elevs = staticFineElevations(coarseRows, coarseCols);
+  if (!elevs || elevs.length !== fineRows * fineCols) {
+    throw new Error("Static fine elevation grid missing — run scripts/generate-andes-elevation.ts");
+  }
+
+  const out: CeilingCell[] = [];
+
   for (let fr = 0; fr < fineRows; fr++) {
     const lat =
       ANDES_DOMAIN.latMax +
@@ -64,18 +62,21 @@ export async function refineCeilingGrid(
       const lon =
         ANDES_DOMAIN.lonMin +
         (fc / Math.max(1, fineCols - 1)) * (ANDES_DOMAIN.lonMax - ANDES_DOMAIN.lonMin);
-      finePoints.push({ lat, lon });
-    }
-  }
-
-  const elevs = await elevationsForPoints(finePoints);
-  const out: CeilingCell[] = [];
-
-  for (let fr = 0; fr < fineRows; fr++) {
-    for (let fc = 0; fc < fineCols; fc++) {
       const idx = fr * fineCols + fc;
-      const p = finePoints[idx]!;
-      const elevM = elevs[idx] ?? 0;
+      const elevM = elevs[idx];
+      if (elevM == null || !Number.isFinite(elevM)) {
+        out.push({
+          lat,
+          lon,
+          elevM: 0,
+          ceilingFtAgl: null,
+          category: "UNK",
+          obscured: false,
+          cloudBaseMslM: null,
+          lowCloudUnresolved: true,
+        });
+        continue;
+      }
 
       const gr = (fr / Math.max(1, fineRows - 1)) * (coarseRows - 1);
       const gc = (fc / Math.max(1, fineCols - 1)) * (coarseCols - 1);
@@ -86,23 +87,25 @@ export async function refineCeilingGrid(
       const ty = gr - r0;
       const tx = gc - c0;
 
-      const samples = [matrix[r0]?.[c0], matrix[r0]?.[c1], matrix[r1]?.[c0], matrix[r1]?.[c1]];
-      const bases = samples.map((s) => s?.baseMslM);
-      const allNull = bases.every((b) => b == null);
+      const corners = [matrix[r0]?.[c0], matrix[r0]?.[c1], matrix[r1]?.[c0], matrix[r1]?.[c1]];
+      const present = corners.filter((s) => s?.baseMslM != null);
+      const lowCloudUnresolved = corners.some((s) => s?.lowCloudUnresolved);
 
       let baseMslM: number | null = null;
-      const lowCloudUnresolved = samples.some((s) => s?.lowCloudUnresolved);
-      if (!allNull) {
-        const v11 = bases[0] ?? bases[1] ?? bases[2] ?? bases[3];
-        const v21 = bases[1] ?? bases[0];
-        const v12 = bases[2] ?? bases[0];
-        const v22 = bases[3] ?? bases[1] ?? bases[2] ?? bases[0];
-        if (v11 != null && v21 != null && v12 != null && v22 != null) {
-          baseMslM = bilinear(v11, v21, v12, v22, tx, ty);
-        } else {
-          const pick = samples.find((s) => s?.baseMslM != null);
-          baseMslM = pick?.baseMslM ?? null;
-        }
+      if (present.length === 4) {
+        const v11 = corners[0]!.baseMslM!;
+        const v21 = corners[1]!.baseMslM!;
+        const v12 = corners[2]!.baseMslM!;
+        const v22 = corners[3]!.baseMslM!;
+        baseMslM = bilinear(v11, v21, v12, v22, tx, ty);
+      } else if (present.length >= 2) {
+        const nearest = corners.reduce<{ d: number; b: number } | null>((best, s, ci) => {
+          if (s?.baseMslM == null) return best;
+          const dist = (ci % 2 === 0 ? tx : 1 - tx) + (ci < 2 ? ty : 1 - ty);
+          if (!best || dist < best.d) return { d: dist, b: s.baseMslM };
+          return best;
+        }, null);
+        baseMslM = nearest?.b ?? null;
       }
 
       let ceilingFtAgl: number | null = null;
@@ -110,13 +113,13 @@ export async function refineCeilingGrid(
       if (baseMslM != null) {
         obscured = baseMslM <= elevM + OBSC_EPS_M;
         const agl = baseMslM - elevM;
-        ceilingFtAgl = agl > 0 ? agl * M_TO_FT : obscured ? null : null;
+        ceilingFtAgl = agl > 0 ? agl * M_TO_FT : null;
       }
 
-      const category = ceilingCategoryFromFtAgl(ceilingFtAgl, null);
+      const category = lowCloudUnresolved && ceilingFtAgl == null ? "UNK" : ceilingCategoryFromFtAgl(ceilingFtAgl, null);
       out.push({
-        lat: p.lat,
-        lon: p.lon,
+        lat,
+        lon,
         elevM,
         ceilingFtAgl,
         category,

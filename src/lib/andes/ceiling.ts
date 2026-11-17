@@ -150,8 +150,12 @@ export function interpolateCloudBaseMsl(
 function iconConvectiveBaseMsl(hourly: Hourly, index: number): number | null {
   const cb = numAt(hourly, "convective_cloud_base", index);
   if (cb == null || cb <= 0 || cb <= -500) return null;
-  const convCover = numAt(hourly, "convective_cloud_cover", index);
-  if (convCover == null || convCover < BKN_CLOUD_COVER_PCT) return null;
+  const showers = numAt(hourly, "showers", index) ?? 0;
+  const cape = numAt(hourly, "cape", index);
+  const low = numAt(hourly, "cloud_cover_low", index) ?? 0;
+  const convective =
+    showers >= 0.1 || (cape != null && cape >= 100) || low >= BKN_CLOUD_COVER_PCT;
+  if (!convective) return null;
   return cb;
 }
 

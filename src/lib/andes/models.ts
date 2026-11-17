@@ -47,7 +47,7 @@ export const ANDES_MODELS: AndesModelMeta[] = [
     query: "icon_seamless",
     pressureLevels: true,
     cloudBaseField: "convective_cloud_base",
-    notes: "convective_cloud_base is metres AMSL (not AGL); used only with convective cover ≥ BKN.",
+    notes: "convective_cloud_base is metres AMSL; gated on showers/cape/low cloud, not convective_cloud_cover.",
   },
   {
     id: "gem_seamless",
@@ -85,12 +85,15 @@ function surfaceVarsForModel(meta: AndesModelMeta, mode: HourlyVarMode): string[
     "wind_gusts_10m",
     "visibility",
     "precipitation",
+    "rain",
+    "showers",
+    "snowfall",
     "weather_code",
   ];
   if (meta.id !== "icon_seamless" && !base.includes("cloud_cover_low")) base.splice(2, 0, "cloud_cover_low");
-  if (meta.cloudBaseField === "convective_cloud_base") {
-    base.push("convective_cloud_base");
-    if (mode === "point") base.push("convective_cloud_cover");
+  if (meta.id === "icon_seamless") {
+    base.splice(2, 0, "cloud_cover_low");
+    base.push("convective_cloud_base", "cape");
   }
   return base;
 }

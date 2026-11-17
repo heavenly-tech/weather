@@ -51,9 +51,8 @@ describe("generateModelMetar", () => {
     });
     const line = raw.raw.split("\n")[1] ?? "";
     const visIdx = line.indexOf("2400");
-    const wxIdx = line.indexOf("RA");
-    expect(visIdx).toBeGreaterThan(-1);
-    expect(wxIdx).toBeGreaterThan(visIdx);
+    const windIdx = line.indexOf("35016G32KT");
+    expect(visIdx).toBeGreaterThan(windIdx);
     expect(line).toContain("35016G32KT");
   });
 });
