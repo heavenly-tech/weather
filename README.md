@@ -10,7 +10,7 @@ Chile-first aviation briefing desk for METAR, TAF, GRAMET, GAMET, MeteoChile WRF
 | Models | GFS, ECMWF IFS 0.25°, ICON, GEM (Open-Meteo); unavailable models show a warning |
 | Headline | Ceiling **ft AGL** over terrain, FAA flight-category colours, mountain-obscuration tint |
 | Controls | Linked altitude (**ft MSL** ↔ **hPa**), valid-time slider, model picker |
-| Grid | Default **9×6** (~0.25°), batched Open-Meteo multi-point with server cache (`ANDES_GRID_*`, `OPEN_METEO_BATCH_*`) |
+| Grid | Coarse **11×8** model samples, bilinear regrid + fine Open-Meteo elevation; batched cache (`ANDES_GRID_*`) |
 | Timelines | SCTB, SCEL, SCVH, SCPD — each model vs METAR (proxy METAR labelled with distance) |
 | Generated products | Model METAR/TAF stamped **MODEL OUTPUT — NOT OFFICIAL**, logged to JSONL |
 
@@ -40,16 +40,16 @@ Repeatable pipeline: `npm run validate:ceilings` → writes `docs/validation/sce
 
 **Data window:** SCEL METARs from AWC (`hours=72`, 2026-11-14 → 2026-11-17 UTC) plus companion pulls for **SCVM** and **SCPD** (`awc-metars-scvm.json`, `awc-metars-scpd.json`). Models: Open-Meteo forecast API with `past_days=3`, hourly pressure-level cloud/RH/height/**surface_pressure**, run through `ceilingFromHourly` at SCEL elevation (underground levels skipped).
 
-Hourly UTC pairing over **all** METAR hours in the window; contingency table (MVFR/IFR/LIFR events) reports POD, FAR, CSI. MAE **N** is the count of paired finite ceilings (&lt; 10 kft both sides).
+**Smoke test only** — one dominant stratus episode from Open-Meteo `past_days` stitched short-range states; **not a skill score**. Hourly UTC pairing over all METAR hours; contingency on MVFR/IFR/LIFR events (POD, FAR, CSI, HSS).
 
 **Stats (2026-11-17 run):** `docs/validation/scel-2026-11-17/stats-table.md`
 
-| Model | Cat agree | POD | FAR | CSI | MAE ft | N |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| GFS | 70.6% (36/51) | 0.75 | 0.40 | 0.50 | 1116 | 14 |
-| ECMWF IFS 0.25° | 64.7% (33/51) | 0.81 | 0.28 | 0.62 | 1466 | 14 |
-| DWD ICON | 47.1% (24/51) | 0.94 | 0.56 | 0.43 | 1274 | 17 |
-| GEM | 68.6% (35/51) | 0.31 | 0.17 | 0.29 | 1181 | 7 |
+| Model | Cat agree | POD | FAR | CSI | HSS | Bias | MAE ft | N |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| GFS | 84.3% (43/51) | 0.69 | 0.08 | 0.65 | 0.71 | 0.75 | 818 | 12 |
+| ECMWF IFS 0.25° | 74.5% (38/51) | 0.69 | 0.00 | 0.69 | 0.75 | 0.69 | 861 | 12 |
+| DWD ICON | 76.5% (39/51) | 0.81 | 0.24 | 0.65 | 0.69 | 1.06 | 1069 | 15 |
+| GEM | 70.6% (36/51) | 0.25 | 0.00 | 0.25 | 0.31 | 0.25 | 493 | 5 |
 
 **Sample 3-hourly rows** (full table in `summary.json`):
 
@@ -62,11 +62,12 @@ Hourly UTC pairing over **all** METAR hours in the window; contingency table (MV
 
 ![SCEL ceiling validation chart](/docs/validation/scel-2026-11-17/ceiling-comparison.png)
 
+**Open-Meteo load (formula):** weighted ≈ locations × max(1, vars/10) × max(1, days/14). Coarse grid 88 pts × 14 vars → **~123 weighted calls/model**; cold load one model with probe + points ≈ **~250** (see PR “Decision for Pablo”).
+
 **Where it fails (honest):**
 
-- ICON category agreement is weakest (24/51) despite high POD — FAR 0.56 on low-ceiling events.
-- MAE remains ~1.1–1.5k ft — pressure-level cover is still a proxy, not a cloud base field.
-- GEM has low POD (0.31) on MVFR/IFR/LIFR events with modest FAR.
+- Serial correlation: effectively one stratus episode in the window — do not infer skill.
+- MAE still ~0.5–1.1k ft where ceilings exist — pressure-level proxy, not a cloud base field.
 - `past_days` hours are Open-Meteo archived states, not a formal archived forecast run.
 - Clear-sky METAR (no BKN/OVC base) vs model “unlimited” is only partially aligned in scoring.
 

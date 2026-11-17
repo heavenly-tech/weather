@@ -17,14 +17,13 @@ function chunk<T>(arr: T[], size: number): T[][] {
 
 export async function fetchMultiBatched(
   points: { lat: number; lon: number }[],
-  model: AndesModelId,
-  days = 1
+  model: AndesModelId
 ): Promise<{ ok: true; list: OpenMeteoResponse[] } | { ok: false; error: string }> {
   const batches = chunk(points, OPEN_METEO_BATCH_SIZE);
   const list: OpenMeteoResponse[] = [];
 
   for (let i = 0; i < batches.length; i++) {
-    const url = openMeteoMultiUrl(batches[i]!, model, days);
+    const url = openMeteoMultiUrl(batches[i]!, model);
     let res = await cachedFetchUrl(url, model);
     if (res.status === 429) {
       await sleep(OPEN_METEO_BATCH_DELAY_MS * 4);

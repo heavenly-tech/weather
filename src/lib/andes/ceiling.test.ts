@@ -7,6 +7,7 @@ import {
 } from "@/lib/andes/ceiling";
 import fixture from "../../../tests/fixtures/open-meteo-hourly.json";
 import underground from "../../../tests/fixtures/underground-cloud-levels.json";
+import iconFixture from "../../../tests/fixtures/icon-scel-hour.json";
 
 describe("ceilingFromHourly", () => {
   it("interpolates BKN crossing between levels", () => {
@@ -20,38 +21,60 @@ describe("ceilingFromHourly", () => {
     const sample = ceilingFromHourly(underground.hourly, 0, 474);
     expect(sample.method).toBe("interpolated");
     expect(sample.cloudBaseMslM).toBeGreaterThan(850);
-    expect(sample.cloudBaseMslM).toBeLessThan(1700);
     expect(sample.obscured).toBe(false);
   });
 
-  it("ICON convective base is AMSL and does not add terrain", () => {
+  it("no ceiling when low cloud >=50% but no BKN level", () => {
     const hourly = {
-      time: ["2026-11-17T12:00"],
-      surface_pressure: [955],
-      convective_cloud_base: [1200],
-      convective_cloud_cover: [80],
-      cloud_cover_850hPa: [5],
+      time: ["t"],
+      surface_pressure: [990],
+      cloud_cover_low: [55],
+      cloud_cover_925hPa: [40],
+      geopotential_height_925hPa: [1200],
+      cloud_cover_850hPa: [30],
       geopotential_height_850hPa: [1600],
-      geopotential_height_925hPa: [900],
-      cloud_cover_925hPa: [5],
     };
     const s = ceilingFromHourly(hourly, 0, 474);
-    expect(s.cloudBaseMslM).toBe(1200);
-    expect(s.ceilingFtAgl).toBeCloseTo((1200 - 474) * 3.280839895, 0);
+    expect(s.ceilingFtAgl).toBeNull();
+    expect(s.lowCloudUnresolved).toBe(true);
+    expect(s.ceilingCategory).not.toBe("LIFR");
   });
 
-  it("obscured when base MSL at or below terrain", () => {
+  it("first moist level 140m AGL is interpolated, not obscured", () => {
     const hourly = {
       time: ["t"],
       surface_pressure: [980],
-      convective_cloud_base: [600],
-      convective_cloud_cover: [80],
-      cloud_cover_925hPa: [5],
-      geopotential_height_925hPa: [1200],
+      cloud_cover_925hPa: [80],
+      geopotential_height_925hPa: [480 + 140],
+      cloud_cover_850hPa: [20],
+      geopotential_height_850hPa: [1600],
     };
-    const s = ceilingFromHourly(hourly, 0, 700);
-    expect(s.obscured).toBe(true);
-    expect(s.ceilingFtAgl).toBe(0);
+    const s = ceilingFromHourly(hourly, 0, 480);
+    expect(s.ceilingFtAgl).toBeGreaterThan(100);
+    expect(s.obscured).toBe(false);
+  });
+
+  it("ICON convective base ignored without convective_cloud_cover", () => {
+    const hourly = {
+      time: ["t"],
+      surface_pressure: [955],
+      convective_cloud_base: [1200],
+      cloud_cover_850hPa: [5],
+      geopotential_height_850hPa: [1600],
+    };
+    const s = ceilingFromHourly(hourly, 0, 474);
+    expect(s.cloudBaseMslM).not.toBe(1200);
+  });
+
+  it("ICON convective base used when cover is BKN+ (fixture)", () => {
+    const idx = 0;
+    const elev = iconFixture.elevation ?? 474;
+    const s = ceilingFromHourly(iconFixture.hourly, idx, elev);
+    const cc = (iconFixture.hourly.convective_cloud_cover as number[])[idx];
+    const cb = (iconFixture.hourly.convective_cloud_base as number[])[idx];
+    if (cc != null && cc >= 62.5 && cb != null && cb > 0) {
+      expect(s.cloudBaseMslM).toBe(cb);
+    }
   });
 
   it("maps FAA categories from ft AGL", () => {

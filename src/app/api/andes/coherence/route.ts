@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   const [metarEnv, tafEnv, fetched] = await Promise.all([
     loadMetar(icao),
     loadTaf(icao),
-    fetchPointHourly(model, field.lat, field.lon, 1),
+    fetchPointHourly(model, field.lat, field.lon, { forecastHours: 48, pastHours: 0 }),
   ]);
 
   if (!fetched.ok || !fetched.meta) {

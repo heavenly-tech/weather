@@ -8,8 +8,8 @@
  * 2. **Stratiform base (primary)** — Walk levels above ground. Where layer cloud
  *    cover crosses **62.5 %** (BKN/OVC proxy), **linearly interpolate** base height
  *    between the level below and above (in height vs cover). RH ≥ 87 % applies only
- *    when cloud cover at that level is **missing**. `cloud_cover_low` ≥ 50 % can
- *    reinforce the lowest level when present.
+ *    when cloud cover at that level is **missing**. The surface floor uses cover **0**,
+ *    never the column-integrated `cloud_cover_low`.
  * 3. **ICON `convective_cloud_base`** — Documented as **m ASL** (not AGL). Values
  *    ≤ 0 or ≤ −500 are ignored. Never added to terrain. Does **not** override the
  *    pressure-level scan; we take the **lower** (more conservative) base MSL when
@@ -41,7 +41,9 @@ export type CeilingSample = {
   ceilingCategory: FlightCategory;
   cloudBaseMslM: number | null;
   obscured: boolean;
-  method: "cloud_base_field" | "pressure_level" | "interpolated" | "unlimited";
+  /** Low-layer cover without a resolved BKN base — not a ceiling height. */
+  lowCloudUnresolved: boolean;
+  method: "cloud_base_field" | "pressure_level" | "interpolated" | "unlimited" | "fog";
   visM: number | null;
 };
 
@@ -103,14 +105,14 @@ export function interpolateCloudBaseMsl(
   index: number,
   terrainElevM: number,
   surfaceHpa: number
-): { baseMslM: number | null; method: "interpolated" | "unlimited" } {
+): { baseMslM: number | null; method: "interpolated" | "unlimited"; lowCloudUnresolved: boolean } {
   const levels = collectLevelsAboveGround(hourly, index, terrainElevM, surfaceHpa);
   const lowCover = numAt(hourly, "cloud_cover_low", index);
 
   const floor: LevelSample = {
     hpa: Math.round(surfaceHpa),
     heightM: terrainElevM,
-    cover: lowCover ?? 0,
+    cover: 0,
     rh: numAt(hourly, "relative_humidity_2m", index),
   };
 
@@ -129,26 +131,27 @@ export function interpolateCloudBaseMsl(
     }
 
     if (c1 >= BKN_CLOUD_COVER_PCT) {
-      if (c0 >= BKN_CLOUD_COVER_PCT) return { baseMslM: below.heightM, method: "interpolated" };
-      if (c1 === c0) return { baseMslM: above.heightM, method: "interpolated" };
+      if (c0 >= BKN_CLOUD_COVER_PCT && below.hpa < 1000) {
+        return { baseMslM: below.heightM, method: "interpolated", lowCloudUnresolved: false };
+      }
+      if (c1 === c0) {
+        return { baseMslM: above.heightM, method: "interpolated", lowCloudUnresolved: false };
+      }
       const frac = (BKN_CLOUD_COVER_PCT - c0) / (c1 - c0);
       const h = below.heightM + frac * (above.heightM - below.heightM);
-      return { baseMslM: Math.max(terrainElevM, h), method: "interpolated" };
+      return { baseMslM: Math.max(terrainElevM, h), method: "interpolated", lowCloudUnresolved: false };
     }
   }
 
-  if (lowCover != null && lowCover >= LOW_CLOUD_GATE_PCT && levels[0]) {
-    return { baseMslM: Math.max(terrainElevM, terrainElevM + 30), method: "interpolated" };
-  }
-
-  return { baseMslM: null, method: "unlimited" };
+  const lowUnresolved = lowCover != null && lowCover >= LOW_CLOUD_GATE_PCT;
+  return { baseMslM: null, method: "unlimited", lowCloudUnresolved: lowUnresolved };
 }
 
 function iconConvectiveBaseMsl(hourly: Hourly, index: number): number | null {
   const cb = numAt(hourly, "convective_cloud_base", index);
   if (cb == null || cb <= 0 || cb <= -500) return null;
   const convCover = numAt(hourly, "convective_cloud_cover", index);
-  if (convCover != null && convCover < BKN_CLOUD_COVER_PCT) return null;
+  if (convCover == null || convCover < BKN_CLOUD_COVER_PCT) return null;
   return cb;
 }
 
@@ -157,15 +160,42 @@ function visibilityM(hourly: Hourly, index: number): number | null {
   return v != null ? v : null;
 }
 
+function fogBaseMsl(
+  hourly: Hourly,
+  index: number,
+  terrainElevM: number,
+  surfaceHpa: number,
+  visM: number | null
+): number | null {
+  const rh2 = numAt(hourly, "relative_humidity_2m", index);
+  const levels = collectLevelsAboveGround(hourly, index, terrainElevM, surfaceHpa);
+  const lowest = levels[0];
+  const fogVis = visM != null && visM < 1000;
+  const moistSurface =
+    rh2 != null &&
+    rh2 >= 97 &&
+    lowest != null &&
+    (lowest.cover ?? 0) >= BKN_CLOUD_COVER_PCT &&
+    lowest.heightM - terrainElevM <= 80;
+  if (fogVis || moistSurface) return terrainElevM;
+  return null;
+}
+
 export function ceilingFromHourly(hourly: Hourly, index: number, terrainElevM: number): CeilingSample {
   const surfaceHpa = surfacePressureHpa(hourly, index, terrainElevM);
   const visM = visibilityM(hourly, index);
 
   const strat = interpolateCloudBaseMsl(hourly, index, terrainElevM, surfaceHpa);
   const convMsl = iconConvectiveBaseMsl(hourly, index);
+  const fogMsl = fogBaseMsl(hourly, index, terrainElevM, surfaceHpa, visM);
 
   let cloudBaseMslM: number | null = strat.baseMslM;
   let method: CeilingSample["method"] = strat.method;
+
+  if (fogMsl != null && (cloudBaseMslM == null || fogMsl < cloudBaseMslM)) {
+    cloudBaseMslM = fogMsl;
+    method = "fog";
+  }
 
   if (convMsl != null) {
     if (cloudBaseMslM == null || convMsl < cloudBaseMslM) {
@@ -180,6 +210,7 @@ export function ceilingFromHourly(hourly: Hourly, index: number, terrainElevM: n
       ceilingCategory: flightCategoryFromWx(visM, null),
       cloudBaseMslM: null,
       obscured: false,
+      lowCloudUnresolved: strat.lowCloudUnresolved,
       method: "unlimited",
       visM,
     };
@@ -187,14 +218,19 @@ export function ceilingFromHourly(hourly: Hourly, index: number, terrainElevM: n
 
   const obscured = cloudBaseMslM <= terrainElevM + OBSCURATION_EPS_M;
   const aglM = cloudBaseMslM - terrainElevM;
-  const ceilingFtAgl = aglM > 0 ? aglM * M_TO_FT : obscured ? 0 : null;
+  const ceilingFtAgl = aglM > 0 ? aglM * M_TO_FT : null;
 
-  const ceilingCategory = flightCategoryFromWx(
+  const ceilingCategory = flightCategoryFromWx(visM, ceilingFtAgl);
+
+  return {
+    ceilingFtAgl,
+    ceilingCategory,
+    cloudBaseMslM,
+    obscured,
+    lowCloudUnresolved: false,
+    method,
     visM,
-    ceilingFtAgl != null ? ceilingFtAgl : obscured ? 0 : null
-  );
-
-  return { ceilingFtAgl, ceilingCategory, cloudBaseMslM, obscured, method, visM };
+  };
 }
 
 export function ceilingCategoryFromFtAgl(ceilingFtAgl: number | null, visM: number | null = null): FlightCategory {

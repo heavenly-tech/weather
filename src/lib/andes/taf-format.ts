@@ -1,4 +1,14 @@
+import { parseUtcIso } from "@/lib/andes/parse-utc";
+
 const STAMP = "MODEL OUTPUT — NOT OFFICIAL";
+
+function ddhhToMs(ddhh: string, anchor: Date): number {
+  const day = Number(ddhh.slice(0, 2));
+  const hour = Number(ddhh.slice(2, 4));
+  const d = new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth(), day, hour));
+  if (d.getTime() < anchor.getTime() - 20 * 86400000) d.setUTCMonth(d.getUTCMonth() + 1);
+  return d.getTime();
+}
 
 export function assertModelTafFormat(raw: string): { ok: true } | { ok: false; reasons: string[] } {
   const reasons: string[] = [];
@@ -9,19 +19,33 @@ export function assertModelTafFormat(raw: string): { ok: true } | { ok: false; r
   const header = body.match(/^TAF\s+([A-Z]{4})\s+(\d{6})Z\s+(\d{4})\/(\d{4})/);
   if (!header) reasons.push("TAF header / validity (DDHHMMZ issue; DDHH/DDHH validity)");
 
+  const issueIso = header?.[2];
+  const anchor = issueIso ? parseUtcIso(`2026-01-${issueIso.slice(0, 2)}T${issueIso.slice(2, 4)}:00:00Z`) : new Date();
   const validFrom = header?.[3];
   const validTo = header?.[4];
 
-  const changeGroups = [...body.matchAll(/\b(BECMG|TEMPO|PROB30|PROB40)\s+(\d{4})(?:\/(\d{4}))?/g)];
-  for (const g of changeGroups) {
+  const groups = [...body.matchAll(/\b(BECMG|TEMPO|PROB30|PROB40)\s+(\d{4})(\/(\d{4}))?/g)];
+  for (const g of groups) {
+    const tag = g[1]!;
     const from = g[2]!;
-    const to = g[3] ?? from;
+    const slashTo = g[4];
+    if ((tag === "BECMG" || tag === "TEMPO" || tag.startsWith("PROB")) && !slashTo) {
+      reasons.push(`${tag} must use DDhh/DDhh window`);
+    }
+    const to = slashTo ?? from;
     if (validFrom && validTo) {
-      if (from < validFrom || to > validTo) {
-        reasons.push(`change group ${g[1]} ${from}/${to} outside validity ${validFrom}/${validTo}`);
+      const vf = ddhhToMs(validFrom, anchor);
+      const vt = ddhhToMs(validTo, anchor);
+      const gf = ddhhToMs(from, anchor);
+      const gt = ddhhToMs(to, anchor);
+      if (gf < vf || gt > vt) {
+        reasons.push(`change group ${tag} ${from}/${to} outside validity ${validFrom}/${validTo}`);
       }
     }
   }
+
+  const becmgCount = (body.match(/\bBECMG\b/g) ?? []).length;
+  if (becmgCount > 6) reasons.push(`too many BECMG groups (${becmgCount})`);
 
   return reasons.length ? { ok: false, reasons } : { ok: true };
 }

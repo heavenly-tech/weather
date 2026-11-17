@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   const lon = station.lon;
   const elevM = station.elevM;
 
-  const fetched = await fetchPointHourly(model, lat, lon, 1);
+  const fetched = await fetchPointHourly(model, lat, lon, { forecastHours: 48, pastHours: 0 });
   if (!fetched.ok || !fetched.meta) {
     return NextResponse.json({ error: fetched.error ?? "model unavailable" }, { status: 502 });
   }

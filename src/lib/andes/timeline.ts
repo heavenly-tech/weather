@@ -34,7 +34,7 @@ export async function modelCeilingTimeline(
   model: AndesModelId,
   hours = 24
 ): Promise<ModelCeilingSeries> {
-  const fetched = await fetchPointHourly(model, field.lat, field.lon, 2);
+  const fetched = await fetchPointHourly(model, field.lat, field.lon, { forecastHours: 48, pastHours: 24 });
   if (!fetched.ok || !fetched.meta) {
     return {
       model,

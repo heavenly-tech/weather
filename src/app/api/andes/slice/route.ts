@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   const validTime = searchParams.get("validTime");
 
   const grid = domainGrid();
-  const batched = await fetchMultiBatched(grid, model, 1);
+  const batched = await fetchMultiBatched(grid, model);
   if (!batched.ok) {
     return NextResponse.json({ unavailable: batched.error, values: [], gridShape: defaultGridShape() });
   }
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
     return { lat: point.latitude, lon: point.longitude, ...slice };
   });
 
-  const center = await fetchPointHourly(model, -33.456, -70.546, 1);
+  const center = await fetchPointHourly(model, -33.456, -70.546, { forecastHours: 48, pastHours: 0 });
   let sliceHeightM: number | null = null;
   if (center.ok) {
     const hourly = center.hourly;

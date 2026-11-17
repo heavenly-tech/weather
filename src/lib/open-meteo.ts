@@ -90,7 +90,8 @@ export function pickHourIndex(times: string[], target = new Date()): number {
   let best = 0;
   let bestDiff = Infinity;
   times.forEach((iso, i) => {
-    const diff = Math.abs(new Date(iso).getTime() - t);
+    const normalized = iso.endsWith("Z") ? iso : `${iso}Z`;
+    const diff = Math.abs(new Date(normalized).getTime() - t);
     if (diff < bestDiff) {
       best = i;
       bestDiff = diff;

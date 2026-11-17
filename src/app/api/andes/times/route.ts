@@ -8,7 +8,10 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const model = (searchParams.get("model") ?? "gfs_seamless") as AndesModelId;
-  const fetched = await fetchPointHourly(model, SCTB_FOCUS.lat, SCTB_FOCUS.lon, 1);
+  const fetched = await fetchPointHourly(model, SCTB_FOCUS.lat, SCTB_FOCUS.lon, {
+    forecastHours: 48,
+    pastHours: 0,
+  });
   if (!fetched.ok) {
     return NextResponse.json({ times: [], error: fetched.error });
   }

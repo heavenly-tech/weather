@@ -69,6 +69,32 @@ const POINT_PRESSURE_LEVELS = [1000, 975, 950, 925, 900, 850, 800, 700, 600, 500
 
 export type HourlyVarMode = "point" | "validate";
 
+function surfaceVarsForModel(meta: AndesModelMeta, mode: HourlyVarMode): string[] {
+  const base = [
+    "surface_pressure",
+    "cloud_cover",
+    ...(meta.id === "icon_seamless" && mode === "point" ? [] : meta.id === "icon_seamless" ? [] : ["cloud_cover_low"]),
+    "cloud_cover_mid",
+    "cloud_cover_high",
+    "temperature_2m",
+    "dew_point_2m",
+    "relative_humidity_2m",
+    "pressure_msl",
+    "wind_speed_10m",
+    "wind_direction_10m",
+    "wind_gusts_10m",
+    "visibility",
+    "precipitation",
+    "weather_code",
+  ];
+  if (meta.id !== "icon_seamless" && !base.includes("cloud_cover_low")) base.splice(2, 0, "cloud_cover_low");
+  if (meta.cloudBaseField === "convective_cloud_base") {
+    base.push("convective_cloud_base");
+    if (mode === "point") base.push("convective_cloud_cover");
+  }
+  return base;
+}
+
 export function hourlyVariablesForModel(meta: AndesModelMeta, mode: HourlyVarMode = "point"): string {
   const levels = mode === "validate" ? GRID_PRESSURE_LEVELS : POINT_PRESSURE_LEVELS;
   const levelVars = meta.pressureLevels
@@ -91,27 +117,7 @@ export function hourlyVariablesForModel(meta: AndesModelMeta, mode: HourlyVarMod
         }),
       ]
     : [];
-  const surface = [
-    "surface_pressure",
-    "cloud_cover",
-    "cloud_cover_low",
-    "cloud_cover_mid",
-    "cloud_cover_high",
-    "temperature_2m",
-    "dew_point_2m",
-    "relative_humidity_2m",
-    "pressure_msl",
-    "wind_speed_10m",
-    "wind_direction_10m",
-    "wind_gusts_10m",
-    "visibility",
-    "precipitation",
-    "weather_code",
-  ];
-  if (meta.cloudBaseField) {
-    surface.push(meta.cloudBaseField);
-    // Open-Meteo rejects convective_cloud_cover combined with layered cloud_cover_* on ICON.
-  }
+  const surface = surfaceVarsForModel(meta, mode);
   return [...surface, ...levelVars].join(",");
 }
 
@@ -119,34 +125,37 @@ export function openMeteoForecastUrl(
   lat: number,
   lon: number,
   model: AndesModelId,
-  days = 2
+  opts: { forecastHours?: number; pastHours?: number } = {}
 ): string {
   const meta = modelById(model)!;
+  const forecastHours = opts.forecastHours ?? 48;
+  const pastHours = opts.pastHours ?? 24;
   const params = new URLSearchParams({
     latitude: String(lat),
     longitude: String(lon),
     hourly: hourlyVariablesForModel(meta),
-    forecast_days: String(days),
-    forecast_hours: "48",
+    forecast_hours: String(forecastHours),
+    past_hours: String(pastHours),
     models: meta.query,
     timezone: "UTC",
   });
   return `https://api.open-meteo.com/v1/forecast?${params.toString()}`;
 }
 
-export function openMeteoMultiUrl(points: { lat: number; lon: number }[], model: AndesModelId, days = 1): string {
+export function openMeteoMultiUrl(points: { lat: number; lon: number }[], model: AndesModelId): string {
   const meta = modelById(model)!;
   const hourly = [
     ...GRID_PRESSURE_LEVELS.map((hpa) => `cloud_cover_${hpa}hPa`),
     ...GRID_PRESSURE_LEVELS.map((hpa) => `geopotential_height_${hpa}hPa`),
     "surface_pressure",
-    "cloud_cover_low",
+    ...(model === "icon_seamless" ? ["convective_cloud_base"] : ["cloud_cover_low"]),
   ];
   const params = new URLSearchParams({
     latitude: points.map((p) => p.lat.toFixed(4)).join(","),
     longitude: points.map((p) => p.lon.toFixed(4)).join(","),
     hourly: hourly.join(","),
-    forecast_days: String(days),
+    forecast_hours: "48",
+    past_hours: "0",
     models: meta.query,
     timezone: "UTC",
   });

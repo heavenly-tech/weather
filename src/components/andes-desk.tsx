@@ -30,7 +30,7 @@ export function AndesDesk() {
   const [generatedMetar, setGeneratedMetar] = useState<string | null>(null);
   const [generatedTaf, setGeneratedTaf] = useState<string | null>(null);
   const [gridWarning, setGridWarning] = useState<string | null>(null);
-  const [gridShape, setGridShape] = useState({ rows: 6, cols: 9 });
+  const [gridShape, setGridShape] = useState({ rows: 44, cols: 32 });
   const [sliceHeightM, setSliceHeightM] = useState<number | null>(null);
 
   const patch = useCallback((p: Partial<AndesControlsState>) => {
@@ -61,7 +61,6 @@ export function AndesDesk() {
         setCells(d.cells ?? []);
         if (d.gridShape) setGridShape(d.gridShape);
         setGridWarning(d.unavailable ?? null);
-        if (d.timeLabels?.length) setTimeLabels(d.timeLabels);
         if (d.modelRun && !state.validIso) patch({ validIso: d.modelRun });
       })
       .catch(() => setGridWarning("Ceiling grid fetch failed"));

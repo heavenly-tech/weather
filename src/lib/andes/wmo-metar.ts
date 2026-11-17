@@ -1,5 +1,6 @@
 import { ceilingFromHourly } from "@/lib/andes/ceiling";
 import type { AndesModelId } from "@/lib/andes/models";
+import { parseUtcIso } from "@/lib/andes/parse-utc";
 import { kmhToKt } from "@/lib/format";
 
 export const STAMP = "MODEL OUTPUT — NOT OFFICIAL";
@@ -14,7 +15,7 @@ function numAt(hourly: Hourly, key: string, index: number): number | null {
 }
 
 export function metarDdhhmmZ(iso: string): string {
-  const d = new Date(iso);
+  const d = parseUtcIso(iso);
   const dd = String(d.getUTCDate()).padStart(2, "0");
   const hh = String(d.getUTCHours()).padStart(2, "0");
   const mm = String(d.getUTCMinutes()).padStart(2, "0");
@@ -30,56 +31,86 @@ function roundVisM(m: number): number {
 
 export function formatModelWind(dir: number | null, speedKmh: number | null, gustKmh: number | null): string {
   const kt = speedKmh != null ? kmhToKt(speedKmh) : null;
-  if (kt == null || kt < 1) return "00000KT";
-  if (dir == null) return "VRB" + String(Math.round(kt)).padStart(2, "0") + "KT";
-  const deg = kt < 1 ? 0 : Math.round(dir / 10) * 10 || 360;
-  const ddd = String(deg === 0 ? 360 : deg).padStart(3, "0");
-  let out = `${ddd}${String(Math.round(kt)).padStart(2, "0")}KT`;
-  if (gustKmh != null && kmhToKt(gustKmh)! > kt + 5) {
-    out += `G${String(Math.round(kmhToKt(gustKmh)!)).padStart(2, "0")}KT`;
+  if (kt == null) return "/////KT";
+  if (kt < 1) return "00000KT";
+  const gustKt = gustKmh != null ? kmhToKt(gustKmh) : null;
+  if (dir == null) {
+    const base = `VRB${String(Math.round(kt)).padStart(2, "0")}`;
+    if (gustKt != null && gustKt >= kt + 10) return `${base}G${String(Math.round(gustKt)).padStart(2, "0")}KT`;
+    return `${base}KT`;
   }
-  return out;
+  const deg = Math.round(dir / 10) * 10 || 360;
+  const ddd = String(deg === 0 ? 360 : deg).padStart(3, "0");
+  const ff = String(Math.round(kt)).padStart(2, "0");
+  if (gustKt != null && gustKt >= kt + 10) {
+    return `${ddd}${ff}G${String(Math.round(gustKt)).padStart(2, "0")}KT`;
+  }
+  return `${ddd}${ff}KT`;
 }
 
 function formatTempGroup(tempC: number | null, dewC: number | null): string {
   if (tempC == null || dewC == null) return "/////";
-  const t = Math.round(tempC);
-  const d = Math.round(dewC);
-  const fmt = (n: number) => (n < 0 ? `M${String(Math.abs(n)).padStart(2, "0")}` : String(n).padStart(2, "0"));
-  return `${fmt(t)}/${fmt(d)}`;
+  const fmt = (n: number) => {
+    if (n < 0) return `M${String(Math.round(Math.abs(n))).padStart(2, "0")}`;
+    if (n > -0.5 && n < 0) return "M00";
+    return String(Math.round(n)).padStart(2, "0");
+  };
+  return `${fmt(tempC)}/${fmt(dewC)}`;
 }
 
 function formatQnh(hpa: number | null): string {
   if (hpa == null) return "";
-  return `Q${String(Math.floor(hpa + 0.5)).padStart(4, "0")}`;
+  return `Q${String(Math.floor(hpa)).padStart(4, "0")}`;
 }
 
-function cloudGroup(ceilFt: number | null, coverLow: number | null): string {
+function cloudGroup(
+  ceilFt: number | null,
+  coverLow: number | null,
+  coverMid: number | null,
+  lowUnresolved: boolean
+): string {
   if (ceilFt != null && ceilFt <= 0) return "VV///";
-  if (ceilFt == null) return coverLow != null && coverLow > 0 ? "NCD" : "NSC";
-  const h = Math.floor(ceilFt / 100);
-  const code = h <= 3 ? "OVC" : "BKN";
-  return `${code}${String(h).padStart(3, "0")}`;
+  if (ceilFt != null) {
+    const h = Math.floor(ceilFt / 100);
+    const code = coverLow != null && coverLow >= 87.5 ? "OVC" : "BKN";
+    return `${code}${String(h).padStart(3, "0")}`;
+  }
+  if (lowUnresolved) return "NSC";
+  const cov = coverLow ?? 0;
+  if (cov <= 0) return "NSC";
+  if (cov < 12.5) return "FEW000";
+  if (cov < 37.5) return "SCT000";
+  return "NCD";
 }
 
-const WX: Record<number, string> = {
-  45: "FG",
-  48: "FG",
-  51: "DZ",
-  53: "DZ",
-  55: "DZ",
-  61: "RA",
-  63: "RA",
-  65: "RA",
-  80: "SHRA",
-  81: "SHRA",
-  95: "TSRA",
+const WX: Record<number, { code: string; heavy?: boolean }> = {
+  45: { code: "FG" },
+  48: { code: "FG" },
+  51: { code: "DZ" },
+  53: { code: "DZ" },
+  55: { code: "DZ", heavy: true },
+  61: { code: "RA" },
+  63: { code: "RA" },
+  65: { code: "RA", heavy: true },
+  71: { code: "SN" },
+  73: { code: "SN" },
+  75: { code: "SN", heavy: true },
+  80: { code: "SHRA" },
+  81: { code: "SHRA", heavy: true },
+  95: { code: "TSRA" },
 };
 
 function presentWeather(wx: number | null, visM: number | null): string {
   const parts: string[] = [];
-  if (wx != null && WX[wx]) parts.push(WX[wx]!);
-  if (visM != null && visM < 5000 && !parts.includes("FG") && !parts.includes("BR")) parts.push(visM < 1000 ? "FG" : "BR");
+  if (wx != null && WX[wx]) {
+    const e = WX[wx]!;
+    const prefix = e.heavy ? "+" : wx < 63 ? "-" : "";
+    parts.push(`${prefix}${e.code}`);
+  }
+  if (visM != null && visM < 1000 && !parts.some((p) => p.includes("FG"))) parts.push("FG");
+  else if (visM != null && visM < 5000 && !parts.includes("BR") && !parts.some((p) => p.includes("FG"))) {
+    parts.push("BR");
+  }
   return parts.length ? parts.join(" ") : "";
 }
 
@@ -100,6 +131,7 @@ export function generateModelMetar(opts: {
   const qnh = numAt(opts.hourly, "pressure_msl", i);
   const wxCode = numAt(opts.hourly, "weather_code", i);
   const coverLow = numAt(opts.hourly, "cloud_cover_low", i);
+  const coverMid = numAt(opts.hourly, "cloud_cover_mid", i);
   const ceil = ceilingFromHourly(opts.hourly, i, opts.elevM);
 
   const visG = visM != null ? String(visM).padStart(4, "0") : "////";
@@ -109,14 +141,14 @@ export function generateModelMetar(opts: {
     numAt(opts.hourly, "wind_gusts_10m", i)
   );
   const wx = presentWeather(wxCode, visM);
-  const clouds = cloudGroup(ceil.ceilingFtAgl, coverLow);
+  const clouds = cloudGroup(ceil.ceilingFtAgl, coverLow, coverMid, ceil.lowCloudUnresolved);
   const qnhG = formatQnh(qnh);
   const body = [
     opts.icao,
     metarDdhhmmZ(opts.validTime),
     wind,
-    wx,
     visG,
+    wx,
     clouds,
     formatTempGroup(temp, dew),
     qnhG,

@@ -27,6 +27,7 @@ function cellsToCanvas(
   canvas.width = cols;
   canvas.height = rows;
   const ctx = canvas.getContext("2d")!;
+  ctx.imageSmoothingEnabled = false;
 
   cells.forEach((cell, i) => {
     const x = i % cols;
@@ -184,18 +185,12 @@ export function AndesScene({
     v.entities.removeById(`${id}-plane`);
 
     const { dataUrl, rectangle } = cellsToCanvas(ceilingCells, "ceiling", gridCols, gridRows);
-    const avgBaseMsl =
-      ceilingCells.reduce(
-        (sum, c) => sum + c.elevM + (c.ceilingFtAgl != null ? c.ceilingFtAgl * 0.3048 : 2000),
-        0
-      ) / Math.max(1, ceilingCells.length);
     v.entities.add({
       id,
       name: "Ceiling (ft AGL)",
       rectangle: {
         coordinates: Cesium.Rectangle.fromDegrees(rectangle[0], rectangle[1], rectangle[2], rectangle[3]),
         material: new Cesium.ImageMaterialProperty({ image: dataUrl, transparent: true }),
-        height: avgBaseMsl,
         classificationType: Cesium.ClassificationType.TERRAIN,
       },
     });

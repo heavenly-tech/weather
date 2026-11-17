@@ -8,6 +8,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseAwcMetar } from "../src/lib/awc";
 import { ceilingCategoryFromFtAgl, ceilingFromHourly } from "../src/lib/andes/ceiling";
+import { mergeIconConvectiveHourly } from "../src/lib/andes/icon-hourly";
 import { ANDES_MODELS, hourlyVariablesForModel, modelById } from "../src/lib/andes/models";
 import type { AndesModelId } from "../src/lib/andes/models";
 import { ceilingFtFromClouds } from "../src/lib/visibility";
@@ -164,7 +165,10 @@ async function main() {
 
   for (const meta of ANDES_MODELS) {
     const data = await fetchModelPast(meta.id);
-    modelHourly[meta.id] = data.hourly;
+    modelHourly[meta.id] =
+      meta.id === "icon_seamless"
+        ? await mergeIconConvectiveHourly(SCEL.lat, SCEL.lon, data.hourly)
+        : data.hourly;
     elevByModel[meta.id] = data.elevation ?? SCEL.elevM;
     await fs.writeFile(
       path.join(OUT_DIR, `open-meteo-${meta.id}-scel.json`),
@@ -229,6 +233,7 @@ async function main() {
     pod: number | null;
     far: number | null;
     csi: number | null;
+    hss: number | null;
     bias: number | null;
     maeFt: number | null;
     maeCount: number;
@@ -264,6 +269,11 @@ async function main() {
     const denomPod = hits + misses;
     const denomFar = hits + falseAlarms;
     const denomCsi = hits + misses + falseAlarms;
+  const correctNeg = categoryTotal - hits - misses - falseAlarms;
+  const hssNum = 2 * (hits * correctNeg - falseAlarms * misses);
+  const hssDen =
+    (hits + misses) * (misses + correctNeg) +
+    (hits + falseAlarms) * (falseAlarms + correctNeg);
     stats[meta.id] = {
       categoryAgree,
       categoryTotal,
@@ -273,7 +283,8 @@ async function main() {
       pod: denomPod ? hits / denomPod : null,
       far: denomFar ? falseAlarms / denomFar : null,
       csi: denomCsi ? hits / denomCsi : null,
-      bias: misses ? (hits + falseAlarms) / (hits + misses) : null,
+      hss: hssDen ? hssNum / hssDen : null,
+      bias: denomPod ? (hits + falseAlarms) / denomPod : null,
       maeFt: errN ? errSum / errN : null,
       maeCount: errN,
     };
@@ -302,7 +313,7 @@ async function main() {
     comparisonRows: comparison.length,
     stats,
     notes:
-      "Hourly UTC pairing; METAR category includes vis/ceil; model unlimited scored as VFR. Contingency uses MVFR/IFR/LIFR events. past_days is smoke-only, not forecast skill.",
+      "Smoke test only: one dominant stratus episode from stitched short-range past_days states — not a skill score. Hourly UTC pairing; contingency MVFR/IFR/LIFR events with POD/FAR/CSI/HSS.",
     comparison,
   };
 
@@ -310,8 +321,8 @@ async function main() {
   await fs.writeFile(
     path.join(OUT_DIR, "stats-table.md"),
     [
-      "| Model | Cat agree | POD | FAR | CSI | MAE ft | N |",
-      "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+      "| Model | Cat agree | POD | FAR | CSI | HSS | Bias | MAE ft | N |",
+      "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
       ...ANDES_MODELS.map((m) => {
         const s = stats[m.id];
         const rate = s.categoryTotal
@@ -320,8 +331,10 @@ async function main() {
         const pod = s.pod != null ? s.pod.toFixed(2) : "—";
         const far = s.far != null ? s.far.toFixed(2) : "—";
         const csi = s.csi != null ? s.csi.toFixed(2) : "—";
+        const hss = s.hss != null ? s.hss.toFixed(2) : "—";
+        const bias = s.bias != null ? s.bias.toFixed(2) : "—";
         const mae = s.maeFt != null ? s.maeFt.toFixed(0) : "—";
-        return `| ${m.label} | ${rate} | ${pod} | ${far} | ${csi} | ${mae} | ${s.maeCount} |`;
+        return `| ${m.label} | ${rate} | ${pod} | ${far} | ${csi} | ${hss} | ${bias} | ${mae} | ${s.maeCount} |`;
       }),
     ].join("\n")
   );

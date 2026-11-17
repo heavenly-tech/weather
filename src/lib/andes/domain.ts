@@ -16,12 +16,12 @@ export type TimelineAirfield = (typeof TIMELINE_AIRFIELDS)[number];
 export type GridPoint = { lat: number; lon: number; elevM: number };
 
 /**
- * Default ~0.25° (native GFS/ECMWF) — 9×6 = 54 points to stay within Open-Meteo free-tier limits.
+ * Default ~0.25° (native GFS/ECMWF) — 11×8 = 88 coarse points; rendered finer via bilinear regrid.
  * Override via ANDES_GRID_ROWS / ANDES_GRID_COLS.
  */
 export function defaultGridShape(): { rows: number; cols: number } {
-  const rows = Number(process.env.ANDES_GRID_ROWS ?? 6);
-  const cols = Number(process.env.ANDES_GRID_COLS ?? 9);
+  const rows = Number(process.env.ANDES_GRID_ROWS ?? 11);
+  const cols = Number(process.env.ANDES_GRID_COLS ?? 8);
   return {
     rows: Number.isFinite(rows) && rows >= 4 ? rows : 18,
     cols: Number.isFinite(cols) && cols >= 4 ? cols : 27,

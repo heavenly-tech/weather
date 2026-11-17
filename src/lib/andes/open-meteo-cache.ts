@@ -12,6 +12,7 @@ const TTL_MS: Record<string, number> = {
   ecmwf_ifs025: 6 * 60 * 60 * 1000,
   icon_seamless: 3 * 60 * 60 * 1000,
   gem_seamless: 6 * 60 * 60 * 1000,
+  elevation: 30 * 24 * 60 * 60 * 1000,
   default: 15 * 60 * 1000,
 };
 
