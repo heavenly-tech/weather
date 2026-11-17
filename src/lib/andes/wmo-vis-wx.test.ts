@@ -211,7 +211,7 @@ describe("METAR/TAF vis wx integration", () => {
       wind_speed_10m: Array(n).fill(16),
       wind_direction_10m: Array(n).fill(180),
       wind_gusts_10m: Array(n).fill(20),
-      visibility: Array(n).fill(5000),
+      visibility: Array(n).fill(5499),
       precipitation: Array(n).fill(0),
       rain: Array(n).fill(0),
       showers: Array(n).fill(0),

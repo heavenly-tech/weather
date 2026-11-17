@@ -1,7 +1,7 @@
 import { ceilingFromHourly } from "@/lib/andes/ceiling";
 import type { AndesModelId } from "@/lib/andes/models";
 import { parseUtcIso } from "@/lib/andes/parse-utc";
-import { ceilSignificant, roundVisTaf, visSignificant, windSignificant, wxSignificant } from "@/lib/andes/wmo-annex3";
+import { ceilSignificant, roundVisTaf, roundVisTafMeters, visSignificant, windSignificant, wxSignificant } from "@/lib/andes/wmo-annex3";
 import { deriveMetarWxAndCloud } from "@/lib/andes/wmo-metar-wx";
 import { formatModelWind, STAMP } from "@/lib/andes/wmo-metar";
 import { resolveVisibilityMeters } from "@/lib/andes/visibility-estimate";
@@ -65,7 +65,7 @@ type PeriodWx = {
 function periodWx(hourly: Hourly, index: number, elevM: number, model: AndesModelId, icao: string): PeriodWx {
   const ceil = ceilingFromHourly(hourly, index, elevM);
   const resolved = resolveVisibilityMeters(hourly, index, model);
-  const visRound = resolved.visM != null ? (resolved.visM >= 9990 ? 9999 : resolved.visM) : null;
+  const visRound = resolved.visM != null ? roundVisTafMeters(resolved.visM) : null;
   const wind = formatModelWind(
     numAt(hourly, "wind_direction_10m", index),
     numAt(hourly, "wind_speed_10m", index),
