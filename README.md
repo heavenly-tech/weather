@@ -62,7 +62,7 @@ Repeatable pipeline: `npm run validate:ceilings` → writes `docs/validation/sce
 
 ![SCEL ceiling validation chart](/docs/validation/scel-2026-11-17/ceiling-comparison.png)
 
-**Open-Meteo load (formula):** weighted ≈ locations × max(1, vars/10) × max(1, days/14). Coarse grid 88 pts × 14 vars → **~123 weighted calls/model**; cold load one model with probe + points ≈ **~250** (see PR “Decision for Pablo”).
+**Open-Meteo load (formula):** weighted ≈ locations × max(1, vars/10) × max(1, days/14). The coarse map now requests 17 hourly variables (18 on ICON, which adds `convective_cloud_base`): six pressure levels of cloud cover and height, plus surface pressure, precipitation, rain, showers, and low cloud. 88 pts × 17 vars → **~150 weighted calls/model** (88 × 1.7; ICON ~158). Those 88 points are still two HTTP calls (batch size 60). A cold load adds one probe point call per model.
 
 **Where it fails (honest):**
 

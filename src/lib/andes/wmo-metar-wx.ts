@@ -171,8 +171,8 @@ export function deriveMetarWxAndCloud(
     clouds = midLevelCloudGroup();
   }
 
-  const cloudLayer = /^(?:FEW|SCT|BKN|OVC)(?:\d{3}|\/\/\/)$/.test(clouds);
-  if (ceil.obscured && !cloudLayer) {
+  const isCloudLayer = (group: string) => /^(?:FEW|SCT|BKN|OVC)(?:\d{3}|\/\/\/)$/.test(group);
+  if (ceil.obscured && !isCloudLayer(clouds)) {
     clouds = "VV000";
     effectiveCeilFt = 0;
     lowUnresolved = false;
@@ -191,7 +191,21 @@ export function deriveMetarWxAndCloud(
   const dryAir = spread != null && spread > 5;
   const stratCeil = effectiveCeilFt != null && effectiveCeilFt <= 3000;
   const precipWx: string[] = [];
-  if (showers >= 0.1) {
+  if (showers >= 0.1 && !isCloudLayer(clouds) && !ceil.obscured) {
+    const cbM = numAt(hourly, "convective_cloud_base", index);
+    const fromCb = cbM != null && cbM > elevM + 30 ? (cbM - elevM) * M_TO_FT : null;
+    const fromLcl =
+      fromCb == null && lclFt != null && spread != null && spread > 0 && spread <= MAX_LCL_SPREAD_C ? lclFt : null;
+    const estFt = fromCb ?? fromLcl;
+    if (estFt != null && estFt > 0) {
+      const h = cloudHeightHundredsFt(estFt);
+      const cover = showers >= 2.5 ? "BKN" : showers >= 0.5 ? "SCT" : "FEW";
+      clouds = `${cover}${String(h).padStart(3, "0")}`;
+      cldEstimated = true;
+      if (!rmkExtra.includes("CLD EST")) rmkExtra.push("CLD EST");
+    }
+  }
+  if (showers >= 0.1 && isCloudLayer(clouds)) {
     const p = showers < 2.5 ? "-" : showers <= 7.6 ? "" : "+";
     precipWx.push(`${p}SHRA`);
   } else if (!dryAir && hourlyRate >= 0.1 && (hasAdjacent || hourlyRate >= 0.25)) {

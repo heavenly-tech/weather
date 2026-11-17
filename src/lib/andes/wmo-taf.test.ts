@@ -231,4 +231,109 @@ describe("generateModelTaf", () => {
     expect(body).not.toMatch(/\bEST\b/);
     expect(rmk).toMatch(/CLD EST/);
   });
+
+  it("a 13 h BR run is a BECMG of 2 h, and a later change is its own group", () => {
+    const n = 20;
+    const br = (i: number) => i >= 2 && i <= 14;
+    const hourly = {
+      time: Array.from({ length: n }, (_, i) => {
+        const d = new Date("2026-11-17T12:00:00Z");
+        d.setUTCHours(d.getUTCHours() + i);
+        return d.toISOString().slice(0, 16);
+      }),
+      temperature_2m: Array(n).fill(12),
+      dew_point_2m: Array.from({ length: n }, (_, i) => (br(i) ? 10 : 1)),
+      relative_humidity_2m: Array.from({ length: n }, (_, i) => (br(i) ? 85 : 40)),
+      pressure_msl: Array(n).fill(1014),
+      wind_speed_10m: Array(n).fill(16),
+      wind_direction_10m: Array(n).fill(180),
+      wind_gusts_10m: Array(n).fill(18),
+      visibility: Array.from({ length: n }, (_, i) => (br(i) ? 5000 : 9999)),
+      precipitation: Array(n).fill(0),
+      rain: Array(n).fill(0),
+      showers: Array(n).fill(0),
+      surface_pressure: Array(n).fill(980),
+      cloud_cover_low: Array(n).fill(10),
+      cloud_cover_925hPa: Array(n).fill(10),
+      geopotential_height_925hPa: Array(n).fill(1600),
+    };
+    const taf = generateModelTaf({
+      icao: "SCTB",
+      elevM: 649,
+      model: "gfs_seamless",
+      runTime: "2026-11-17T12:00:00Z",
+      hourly,
+    });
+    expect("error" in taf).toBe(false);
+    if ("error" in taf) return;
+    const windows = [...taf.raw.matchAll(/\bBECMG\s+(\d{4})\/(\d{4})/g)];
+    expect(windows.length).toBeGreaterThan(0);
+    for (const w of windows) {
+      const span = ddhhSpanHours(w[1]!, w[2]!);
+      expect(span).toBeGreaterThan(0);
+      expect(span).toBeLessThanOrEqual(2);
+    }
+    expect(taf.raw).toMatch(/BECMG 1714\/1716\b[^\n]*\bBR\b/);
+    const check = assertModelTafFormat(taf.raw);
+    expect(check.ok, check.ok ? "" : check.reasons.join("; ")).toBe(true);
+    expect(check.warnings).toEqual([]);
+  });
+
+  it("a 2 h BR event is one TEMPO covering both hours", () => {
+    const n = 8;
+    const br = (i: number) => i === 2 || i === 3;
+    const hourly = {
+      time: Array.from({ length: n }, (_, i) => `2026-11-17T${String(12 + i).padStart(2, "0")}:00`),
+      temperature_2m: Array(n).fill(12),
+      dew_point_2m: Array.from({ length: n }, (_, i) => (br(i) ? 10 : 1)),
+      relative_humidity_2m: Array.from({ length: n }, (_, i) => (br(i) ? 85 : 40)),
+      pressure_msl: Array(n).fill(1014),
+      wind_speed_10m: Array(n).fill(16),
+      wind_direction_10m: Array(n).fill(180),
+      wind_gusts_10m: Array(n).fill(18),
+      visibility: Array.from({ length: n }, (_, i) => (br(i) ? 3000 : 9999)),
+      precipitation: Array(n).fill(0),
+      rain: Array(n).fill(0),
+      showers: Array(n).fill(0),
+      surface_pressure: Array(n).fill(980),
+      cloud_cover_low: Array(n).fill(10),
+      cloud_cover_925hPa: Array(n).fill(10),
+      geopotential_height_925hPa: Array(n).fill(1600),
+    };
+    const taf = generateModelTaf({
+      icao: "SCTB",
+      elevM: 649,
+      model: "gfs_seamless",
+      runTime: "2026-11-17T12:00:00Z",
+      hourly,
+    });
+    expect("error" in taf).toBe(false);
+    if ("error" in taf) return;
+    expect(taf.raw).toMatch(/TEMPO 1714\/1716\b[^\n]*\bBR\b/);
+    expect(taf.raw).not.toMatch(/TEMPO 1715\/1716/);
+  });
+
+  it("rejects a BECMG over 4 h and warns over 2 h", () => {
+    const head = "MODEL OUTPUT — NOT OFFICIAL\nTAF SCTB 171200Z 1712/1812 18008KT 9999 NSC";
+    const over = assertModelTafFormat(`${head} BECMG 1712/1718 18008KT 9999 NSC RMK GEN=x`);
+    expect(over.ok).toBe(false);
+    if (over.ok) return;
+    expect(over.reasons.join(" ")).toMatch(/never over 4 h/);
+    const warn = assertModelTafFormat(`${head} BECMG 1712/1715 18008KT 9999 NSC RMK GEN=x`);
+    expect(warn.ok).toBe(true);
+    expect(warn.warnings.join(" ")).toMatch(/normally 2 h or less/);
+    const ok = assertModelTafFormat(`${head} BECMG 1712/1714 18008KT 9999 NSC RMK GEN=x`);
+    expect(ok.ok).toBe(true);
+    expect(ok.warnings).toEqual([]);
+  });
 });
+
+function ddhhSpanHours(from: string, to: string): number {
+  const fDay = Number(from.slice(0, 2));
+  const tDay = Number(to.slice(0, 2));
+  const fHour = Number(from.slice(2, 4));
+  const tHour = Number(to.slice(2, 4));
+  let days = tDay - fDay;
+  if (days < 0) days += 31;
+  return days * 24 + (tHour - fHour);
+}

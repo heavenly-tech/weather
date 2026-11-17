@@ -178,17 +178,20 @@ export function generateModelTaf(opts: {
         i++;
         continue;
       }
+      // Annex 3: a BECMG is normally 2 h and never the rest of a long run.
+      // Conditions are those at the end of that 2 h window. A later change is its own group.
+      const becmgEnd = Math.min(i + 2, runEnd);
       const t0 = tafDdhh(times[i]!);
-      const t1 = tafDdhh(times[runEnd]!);
-      if (t0 !== t1 && parseUtcIso(times[runEnd]!).getTime() <= validTo.getTime()) {
-        const at = periodWx(opts.hourly, runEnd, opts.elevM, opts.model, opts.icao);
+      const t1 = tafDdhh(times[becmgEnd]!);
+      if (t0 !== t1 && parseUtcIso(times[becmgEnd]!).getTime() <= validTo.getTime()) {
+        const at = periodWx(opts.hourly, becmgEnd, opts.elevM, opts.model, opts.icao);
         noteCld(wx, at);
         changes.push({
           order: parseUtcIso(times[i]!).getTime(),
           text: `BECMG ${t0}/${t1} ${groupString(at, { priorWx: prevailing.wx })}`,
         });
         prevailing = at;
-        i = runEnd + 1;
+        i = becmgEnd + 1;
         continue;
       }
       i++;
@@ -254,22 +257,23 @@ export function generateModelTaf(opts: {
       continue;
     }
 
-    if (i + 1 <= endIdx) {
-      const revert = periodWx(opts.hourly, i + 1, opts.elevM, opts.model, opts.icao);
-      if (wxSignificant(toSignificant(prevailing), toSignificant(wx)) && !wxSignificant(toSignificant(prevailing), toSignificant(revert))) {
-        const endI = Math.min(i + 1, endIdx);
-        const te0 = tafDdhh(times[i]!);
-        const te1 = tafDdhh(times[endI]!);
-        if (te0 !== te1 && parseUtcIso(times[endI]!).getTime() <= validTo.getTime()) {
-          noteCld(wx);
-          changes.push({
-            order: parseUtcIso(times[i]!).getTime(),
-            text: `TEMPO ${te0}/${te1} ${groupString(wx)}`,
-          });
-        }
-      }
+    let runEnd = i;
+    while (runEnd + 1 <= endIdx) {
+      const next = periodWx(opts.hourly, runEnd + 1, opts.elevM, opts.model, opts.icao);
+      if (!wxSignificant(toSignificant(prevailing), toSignificant(next))) break;
+      runEnd++;
     }
-    i++;
+    const toIdx = Math.min(endIdx, runEnd + 1);
+    const te0 = tafDdhh(times[i]!);
+    const te1 = tafDdhh(times[toIdx]!);
+    if (te0 !== te1 && parseUtcIso(times[toIdx]!).getTime() <= validTo.getTime()) {
+      noteCld(wx);
+      changes.push({
+        order: parseUtcIso(times[i]!).getTime(),
+        text: `TEMPO ${te0}/${te1} ${groupString(wx)}`,
+      });
+    }
+    i = toIdx === i ? i + 1 : runEnd + 1;
   }
 
   changes.sort((a, b) => a.order - b.order);

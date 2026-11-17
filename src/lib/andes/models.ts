@@ -148,6 +148,8 @@ export function openMeteoForecastUrl(
 
 export function openMeteoMultiUrl(points: { lat: number; lon: number }[], model: AndesModelId): string {
   const meta = modelById(model)!;
+  // 6 levels × (cover + height) + surface pressure, precip, rain, showers, low cloud = 17.
+  // ICON adds convective_cloud_base (18). Weighted cost is locations × vars/10.
   const hourly = [
     ...GRID_PRESSURE_LEVELS.map((hpa) => `cloud_cover_${hpa}hPa`),
     ...GRID_PRESSURE_LEVELS.map((hpa) => `geopotential_height_${hpa}hPa`),
