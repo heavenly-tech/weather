@@ -26,7 +26,7 @@ describe("deriveMetarWxAndCloud", () => {
       ...unresolvedLowBkn,
     };
     const ceil = ceilingFromHourly(hourly, 0, 649);
-    const d = deriveMetarWxAndCloud(hourly, 0, 649, ceil, 9999, false);
+    const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 9999, false);
     expect(d.weather).not.toMatch(/DZ/);
     expect(d.clouds).not.toContain("///");
     expect(d.clouds).toMatch(/^BKN\d{3}$/);
@@ -41,7 +41,7 @@ describe("deriveMetarWxAndCloud", () => {
       ...unresolvedLowBkn,
     };
     const ceil = ceilingFromHourly(hourly, 0, 649);
-    const d = deriveMetarWxAndCloud(hourly, 0, 649, ceil, 9999, false);
+    const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 9999, false);
     const lclFt = 125 * (20 - 9) * 3.280839895;
     expect(cloudHeightHundredsFt(lclFt)).toBe(45);
     expect(d.clouds).toBe("BKN045");
@@ -50,7 +50,7 @@ describe("deriveMetarWxAndCloud", () => {
     expect(d.clouds).not.toContain("///");
   });
 
-  it("spread > 15°C → no ceiling height, NSC, no ///", () => {
+  it("spread > 15°C with BKN low → MID CLD BASE UNK at SCTB, not NSC", () => {
     const hourly = {
       time: ["t"],
       temperature_2m: [25],
@@ -59,11 +59,12 @@ describe("deriveMetarWxAndCloud", () => {
       ...unresolvedLowBkn,
     };
     const ceil = ceilingFromHourly(hourly, 0, 649);
-    const d = deriveMetarWxAndCloud(hourly, 0, 649, ceil, 9999, false);
-    expect(d.clouds).toBe("NSC");
+    const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 9999, false);
+    expect(d.clouds).toBe("////");
     expect(d.effectiveCeilFt).toBeNull();
-    expect(d.clouds).not.toContain("///");
-    expect(d.rmkExtra).not.toContain("CLD EST");
+    expect(d.clouds).not.toMatch(/BKN\/\/\//);
+    expect(d.rmkExtra).toContain("MID CLD BASE UNK");
+    expect(d.midCloudBaseUnk).toBe(true);
   });
 
   it("resolved pressure-level base is unchanged", () => {
@@ -81,7 +82,7 @@ describe("deriveMetarWxAndCloud", () => {
     };
     const ceil = ceilingFromHourly(hourly, 0, 649);
     expect(ceil.ceilingFtAgl).not.toBeNull();
-    const d = deriveMetarWxAndCloud(hourly, 0, 649, ceil, 8000, false);
+    const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 8000, false);
     expect(d.clouds).toMatch(/^(BKN|OVC)\d{3}$/);
     expect(d.cldEstimated).toBe(false);
     expect(d.rmkExtra).not.toContain("CLD EST");
@@ -112,7 +113,7 @@ describe("deriveMetarWxAndCloud", () => {
   it("no FG with 9999 visibility", () => {
     const hourly = { time: ["t"], visibility: [10000], temperature_2m: [15], dew_point_2m: [14] };
     const ceil = ceilingFromHourly(hourly, 0, 100);
-    const d = deriveMetarWxAndCloud(hourly, 0, 100, ceil, 9999, false);
+    const d = deriveMetarWxAndCloud(hourly, 0, 100, "SCVM", ceil, 9999, false);
     expect(d.weather).not.toContain("FG");
   });
 });

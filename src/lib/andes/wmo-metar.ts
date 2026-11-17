@@ -72,13 +72,13 @@ export function generateModelMetar(opts: {
   validTime: string;
   hourly: Hourly;
   hourIndex: number;
-}): { raw: string; stamp: string; visEstimated?: boolean; cldEstimated?: boolean } {
+}): { raw: string; stamp: string; visEstimated?: boolean; cldEstimated?: boolean; midCloudBaseUnk?: boolean } {
   const i = opts.hourIndex;
   const resolved = resolveVisibilityMeters(opts.hourly, i, opts.model);
   const visM = resolved.visM != null ? roundVisM(resolved.visM) : null;
   const qnh = numAt(opts.hourly, "pressure_msl", i);
   const ceil = ceilingFromHourly(opts.hourly, i, opts.elevM);
-  const derived = deriveMetarWxAndCloud(opts.hourly, i, opts.elevM, ceil, visM, false);
+  const derived = deriveMetarWxAndCloud(opts.hourly, i, opts.elevM, opts.icao, ceil, visM, false);
 
   const visG = visM != null ? String(visM).padStart(4, "0") : "////";
   const wind = formatModelWind(
@@ -95,7 +95,7 @@ export function generateModelMetar(opts: {
     wind,
     visG,
     wx,
-    clouds,
+    clouds || undefined,
     formatTempGroup(numAt(opts.hourly, "temperature_2m", i), numAt(opts.hourly, "dew_point_2m", i)),
     qnhG,
   ]
@@ -110,5 +110,6 @@ export function generateModelMetar(opts: {
     stamp: STAMP,
     visEstimated: resolved.estimated || undefined,
     cldEstimated: derived.cldEstimated || undefined,
+    midCloudBaseUnk: derived.midCloudBaseUnk || undefined,
   };
 }

@@ -31,6 +31,7 @@ export function AndesDesk() {
   const [generatedTaf, setGeneratedTaf] = useState<string | null>(null);
   const [visEstimated, setVisEstimated] = useState(false);
   const [cldEstimated, setCldEstimated] = useState(false);
+  const [midCloudBaseUnk, setMidCloudBaseUnk] = useState(false);
   const [gridWarning, setGridWarning] = useState<string | null>(null);
   const [gridShape, setGridShape] = useState({ rows: 44, cols: 32 });
   const [sliceHeightM, setSliceHeightM] = useState<number | null>(null);
@@ -127,6 +128,7 @@ export function AndesDesk() {
       setGeneratedTaf(t.raw ?? null);
       setVisEstimated(Boolean(m.visEstimated || t.visEstimated));
       setCldEstimated(Boolean(m.cldEstimated || t.cldEstimated));
+      setMidCloudBaseUnk(Boolean(m.midCloudBaseUnk || t.midCloudBaseUnk));
     });
   }, [state.model]);
 
@@ -210,6 +212,14 @@ export function AndesDesk() {
                   CLD EST
                 </span>
               ) : null}
+              {midCloudBaseUnk ? (
+                <span
+                  className="rounded bg-violet-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-violet-900 dark:text-violet-300"
+                  title="MSA assumptions — not official AIP data"
+                >
+                  MID CLD BASE UNK
+                </span>
+              ) : null}
               <ModelOutputStamp />
             </div>
           </div>
@@ -229,9 +239,21 @@ export function AndesDesk() {
                   CLD EST
                 </span>
               ) : null}
+              {midCloudBaseUnk ? (
+                <span
+                  className="rounded bg-violet-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-violet-900 dark:text-violet-300"
+                  title="MSA assumptions — not official AIP data"
+                >
+                  MID CLD BASE UNK
+                </span>
+              ) : null}
               <ModelOutputStamp />
             </div>
           </div>
+          <p className="mb-2 text-[10px] text-muted-foreground">
+            NSC gating uses conservative MSA <strong>ASSUMPTIONS</strong> in{" "}
+            <code className="text-[10px]">airfield-msa.ts</code> (not live AIP extracts).
+          </p>
           <pre className="whitespace-pre-wrap font-mono text-xs">{generatedTaf ?? "Loading…"}</pre>
         </div>
       </section>

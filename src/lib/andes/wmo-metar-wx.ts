@@ -1,5 +1,6 @@
+import { annex3NscCeilingFtAgl } from "@/lib/andes/airfield-msa";
 import type { CeilingSample } from "@/lib/andes/ceiling";
-import { BKN_CLOUD_COVER_PCT } from "@/lib/andes/ceiling";
+import { BKN_CLOUD_COVER_PCT, surfacePressureHpa } from "@/lib/andes/ceiling";
 
 type Hourly = Record<string, Array<number | null> | string[]>;
 
@@ -29,6 +30,7 @@ export type MetarProductContext = {
   effectiveCeilFt: number | null;
   lowCloudUnresolved: boolean;
   cldEstimated: boolean;
+  midCloudBaseUnk: boolean;
 };
 
 /** Round base height down to the Annex 3 100 ft cloud group (e.g. 4511 ft → 45 → BKN045). */
@@ -46,10 +48,46 @@ export function midLevelCloudGroup(): string {
   return "NSC";
 }
 
+const LEVELS_FOR_NSC = [1000, 975, 950, 925, 900, 850, 800, 700] as const;
+
+/** True when BKN+ cloud exists below max(5000 ft, conservative MSA) AGL. */
+export function hasSignificantCloudBelowNscCeiling(
+  hourly: Hourly,
+  index: number,
+  elevM: number,
+  icao: string
+): boolean {
+  const thresholdFt = annex3NscCeilingFtAgl(icao, elevM);
+  const coverLow = numAt(hourly, "cloud_cover_low", index);
+  if (coverLow != null && coverLow >= BKN_CLOUD_COVER_PCT) {
+    return true;
+  }
+  const surfaceHpa = surfacePressureHpa(hourly, index, elevM);
+  for (const hpa of LEVELS_FOR_NSC) {
+    const gh = numAt(hourly, `geopotential_height_${hpa}hPa`, index);
+    const cov = numAt(hourly, `cloud_cover_${hpa}hPa`, index);
+    if (cov != null && cov >= BKN_CLOUD_COVER_PCT && gh != null && gh > elevM && hpa <= surfaceHpa + 1) {
+      const aglFt = (gh - elevM) * M_TO_FT;
+      if (aglFt < thresholdFt) return true;
+    }
+  }
+  return false;
+}
+
+export function annex3NscEligible(hourly: Hourly, index: number, elevM: number, icao: string): boolean {
+  return !hasSignificantCloudBelowNscCeiling(hourly, index, elevM, icao);
+}
+
+/** No /// groups; METAR may use ////; TAF omits cloud height when base unknown. */
+export function midCloudUnknownCloudGroup(forTaf: boolean): string {
+  return forTaf ? "" : "////";
+}
+
 export function deriveMetarWxAndCloud(
   hourly: Hourly,
   index: number,
   elevM: number,
+  icao: string,
   ceil: CeilingSample,
   visRoundM: number | null,
   forTaf = false
@@ -80,6 +118,7 @@ export function deriveMetarWxAndCloud(
   const rmkExtra: string[] = [];
   let lowUnresolved = ceil.lowCloudUnresolved;
   let cldEstimated = false;
+  let midCloudBaseUnk = false;
   const cover925 = numAt(hourly, "cloud_cover_925hPa", index);
 
   const weather: string[] = [];
@@ -150,17 +189,23 @@ export function deriveMetarWxAndCloud(
       const h = cloudHeightHundredsFt(lclFt);
       clouds = `BKN${String(h).padStart(3, "0")}`;
       rmkExtra.push("CLD EST");
-    } else {
+    } else if (annex3NscEligible(hourly, index, elevM, icao)) {
       clouds = midLevelCloudGroup();
       effectiveCeilFt = null;
       lowUnresolved = false;
+    } else {
+      clouds = midCloudUnknownCloudGroup(forTaf);
+      effectiveCeilFt = null;
+      lowUnresolved = true;
+      midCloudBaseUnk = true;
+      rmkExtra.push("MID CLD BASE UNK");
     }
   } else if (coverLow != null && coverLow >= 12.5 && coverLow < BKN_CLOUD_COVER_PCT) {
     clouds = "NSC";
   }
 
   if (forTaf && clouds.includes("///")) {
-    clouds = midLevelCloudGroup();
+    clouds = annex3NscEligible(hourly, index, elevM, icao) ? midLevelCloudGroup() : midCloudUnknownCloudGroup(true);
   }
 
   return {
@@ -170,5 +215,6 @@ export function deriveMetarWxAndCloud(
     effectiveCeilFt,
     lowCloudUnresolved: lowUnresolved,
     cldEstimated,
+    midCloudBaseUnk,
   };
 }

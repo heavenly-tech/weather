@@ -59,9 +59,10 @@ type PeriodWx = {
   kt: number | null;
   visM: number | null;
   cldEstimated: boolean;
+  midCloudBaseUnk: boolean;
 };
 
-function periodWx(hourly: Hourly, index: number, elevM: number, model: AndesModelId): PeriodWx {
+function periodWx(hourly: Hourly, index: number, elevM: number, model: AndesModelId, icao: string): PeriodWx {
   const ceil = ceilingFromHourly(hourly, index, elevM);
   const resolved = resolveVisibilityMeters(hourly, index, model);
   const visM = resolved.visM;
@@ -72,7 +73,7 @@ function periodWx(hourly: Hourly, index: number, elevM: number, model: AndesMode
     numAt(hourly, "wind_gusts_10m", index)
   );
   const vis = visM != null ? roundVisTaf(visM) : "9999";
-  const derived = deriveMetarWxAndCloud(hourly, index, elevM, ceil, visRound, true);
+  const derived = deriveMetarWxAndCloud(hourly, index, elevM, icao, ceil, visRound, true);
   return {
     wind,
     vis,
@@ -84,6 +85,7 @@ function periodWx(hourly: Hourly, index: number, elevM: number, model: AndesMode
     kt: kmhToKt(numAt(hourly, "wind_speed_10m", index)),
     visM,
     cldEstimated: derived.cldEstimated,
+    midCloudBaseUnk: derived.midCloudBaseUnk,
   };
 }
 
@@ -116,7 +118,7 @@ export function generateModelTaf(opts: {
   model: AndesModelId;
   runTime: string;
   hourly: Hourly;
-}): { raw: string; stamp: string; visEstimated?: boolean; cldEstimated?: boolean } | { error: string } {
+}): { raw: string; stamp: string; visEstimated?: boolean; cldEstimated?: boolean; midCloudBaseUnk?: boolean } | { error: string } {
   const times = (opts.hourly.time ?? []) as string[];
   if (times.length < 2) return { error: "Insufficient model hours for TAF" };
 
@@ -128,7 +130,7 @@ export function generateModelTaf(opts: {
   const endIdx = lastIndexBefore(times, validTo);
   if (endIdx <= baseIdx) return { error: "Validity window outside model hours" };
 
-  const base = periodWx(opts.hourly, baseIdx, opts.elevM, opts.model);
+  const base = periodWx(opts.hourly, baseIdx, opts.elevM, opts.model, opts.icao);
   const visEstimated = resolveVisibilityMeters(opts.hourly, baseIdx, opts.model).estimated;
   const header = `TAF ${opts.icao} ${tafDdhhmmZ(opts.runTime)} ${tafDdhh(validFrom.toISOString())}/${tafValidityEnd(validFrom, validTo)}`;
   const changes: { order: number; text: string }[] = [];
@@ -136,7 +138,7 @@ export function generateModelTaf(opts: {
   let prevailing = base;
   let i = baseIdx + 1;
   while (i <= endIdx) {
-    const wx = periodWx(opts.hourly, i, opts.elevM, opts.model);
+    const wx = periodWx(opts.hourly, i, opts.elevM, opts.model, opts.icao);
     if (!wxSignificant(toSignificant(prevailing), toSignificant(wx))) {
       i++;
       continue;
@@ -147,7 +149,7 @@ export function generateModelTaf(opts: {
       i++;
       continue;
     }
-    const atEnd = periodWx(opts.hourly, windowEndIdx, opts.elevM, opts.model);
+    const atEnd = periodWx(opts.hourly, windowEndIdx, opts.elevM, opts.model, opts.icao);
     const windowEndTime = parseUtcIso(times[windowEndIdx]!);
     if (windowEndTime.getTime() > validTo.getTime()) {
       windowEndIdx = Math.max(i, endIdx - 1);
@@ -176,7 +178,7 @@ export function generateModelTaf(opts: {
     }
 
     if (i + 1 <= endIdx) {
-      const revert = periodWx(opts.hourly, i + 1, opts.elevM, opts.model);
+      const revert = periodWx(opts.hourly, i + 1, opts.elevM, opts.model, opts.icao);
       if (wxSignificant(toSignificant(prevailing), toSignificant(wx)) && !wxSignificant(toSignificant(prevailing), toSignificant(revert))) {
         const endI = Math.min(i + 1, endIdx);
         const te0 = tafDdhh(times[i]!);
@@ -197,11 +199,13 @@ export function generateModelTaf(opts: {
   const rmkParts = [`GEN=${opts.runTime}`, `MODEL=${opts.model}`];
   if (visEstimated) rmkParts.push("VIS EST");
   if (base.cldEstimated) rmkParts.push("CLD EST");
+  if (base.midCloudBaseUnk) rmkParts.push("MID CLD BASE UNK");
   const raw = `${STAMP}\n${header} ${body} RMK ${rmkParts.join(" ")}`;
   return {
     raw,
     stamp: STAMP,
     visEstimated: visEstimated || undefined,
     cldEstimated: base.cldEstimated || undefined,
+    midCloudBaseUnk: base.midCloudBaseUnk || undefined,
   };
 }
