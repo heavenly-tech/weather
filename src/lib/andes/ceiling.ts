@@ -7,24 +7,20 @@
  *    `cloud_base` (metres above ground / model surface), take the lowest non-null value
  *    as a candidate ceiling.
  *
- * 2. **Pressure-level cloud cover (BKN/OVC proxy)** — Aviation defines a ceiling as the
- *    lowest BKN, OVC, or VV layer. On a gridded model we treat **≥ 62.5 %** layer cloud
- *    cover (5/8) as BKN/OVC at that pressure level. Levels are scanned from the surface
- *    upward (1000 hPa → 300 hPa). The **lowest** qualifying level sets the cloud base MSL
- *    via `geopotential_height_*hPa`.
+ * 2. **Surface / underground levels** — At SCEL (~474 m) the surface is ~950–960 hPa;
+ *    Andes gridpoints are higher still. Any pressure level **above** the local surface
+ *    pressure (1000, 975 hPa, …) is underground; levels whose **geopotential height** is
+ *    **≤ terrain elevation** are also skipped (extrapolated artefacts).
  *
- * 3. **Relative humidity assist** — If cloud cover is missing at a level but RH ≥ 87 %,
- *    that level is also treated as moist/cloudy (common when only RH is exported).
+ * 3. **Pressure-level cloud cover (BKN/OVC proxy)** — Scan from the surface upward. The
+ *    lowest moist level **above ground** with **≥ 62.5 %** cover or RH ≥ 87 % sets the
+ *    base MSL via `geopotential_height_*hPa`.
  *
- * 4. **AGL conversion** — `ceilingFtAgl = (baseMslM - terrainElevM) * 3.28084`. Unlimited
- *    / no ceiling is represented as `null` (VFR sky).
+ * 4. **AGL** — `(baseMslM - terrainElevM) * 3.28084`, floored at 0 ft (never negative).
  *
- * 5. **Flight category** — FAA buckets on ceiling **ft AGL**: VFR > 3000; MVFR 1000–3000;
- *    IFR 500–<1000; LIFR < 500 (see `ceilingCategoryFromFtAgl`).
- *
- * 6. **Mountain obscuration** — Where the cloud base MSL is at or below the terrain
- *    elevation, or a qualifying cloud layer height is below terrain, the cell is flagged
- *    `obscured` (terrain intersects the cloud layer).
+ * 5. **Mountain obscuration** — True when a qualifying cloud base exists above the
+ *    surface-pressure stack but **MSL base ≤ terrain elevation** (terrain inside the layer),
+ *    or when a direct cloud-base field reports 0 m AGL.
  */
 
 import type { FlightCategory } from "@/lib/types";
@@ -41,6 +37,7 @@ export const CEILING_LEGEND = {
 } as const;
 
 const M_TO_FT = 3.280839895;
+const P0 = 1013.25;
 
 export type CeilingSample = {
   ceilingFtAgl: number | null;
@@ -61,12 +58,38 @@ function numAt(hourly: Hourly | undefined, key: string, index: number): number |
 
 const LEVELS_DESC = [1000, 975, 950, 925, 900, 850, 800, 700, 600, 500, 400, 300];
 
+/** Local surface pressure (hPa): model `surface_pressure` or ISA from terrain elevation. */
+export function surfacePressureHpa(hourly: Hourly, index: number, terrainElevM: number): number {
+  const sp = numAt(hourly, "surface_pressure", index);
+  if (sp != null && sp > 400 && sp < 1100) return sp;
+  return P0 * Math.pow(1 - terrainElevM / 44330, 5.255);
+}
+
+/** Level is above ground at this point (not underground in pressure or height). */
+export function pressureLevelAboveTerrain(
+  levelHpa: number,
+  geopotentialHeightM: number | null,
+  terrainElevM: number,
+  surfaceHpa: number
+): boolean {
+  if (levelHpa > surfaceHpa) return false;
+  if (geopotentialHeightM == null) return false;
+  return geopotentialHeightM > terrainElevM;
+}
+
+function isMoist(hourly: Hourly, index: number, hpa: number): boolean {
+  const cover = numAt(hourly, `cloud_cover_${hpa}hPa`, index);
+  const rh = numAt(hourly, `relative_humidity_${hpa}hPa`, index);
+  return (cover != null && cover >= BKN_CLOUD_COVER_PCT) || (rh != null && rh >= 87);
+}
+
 export function ceilingFromHourly(
   hourly: Hourly,
   index: number,
   terrainElevM: number,
   cloudBaseKey: string | null
 ): CeilingSample {
+  const surfaceHpa = surfacePressureHpa(hourly, index, terrainElevM);
   let cloudBaseMslM: number | null = null;
   let method: CeilingSample["method"] = "unlimited";
 
@@ -80,12 +103,10 @@ export function ceilingFromHourly(
 
   if (cloudBaseMslM == null) {
     for (const hpa of LEVELS_DESC) {
-      const cover = numAt(hourly, `cloud_cover_${hpa}hPa`, index);
-      const rh = numAt(hourly, `relative_humidity_${hpa}hPa`, index);
-      const moist = (cover != null && cover >= BKN_CLOUD_COVER_PCT) || (rh != null && rh >= 87);
-      if (!moist) continue;
+      if (hpa > surfaceHpa) continue;
       const hM = numAt(hourly, `geopotential_height_${hpa}hPa`, index);
-      if (hM == null) continue;
+      if (!pressureLevelAboveTerrain(hpa, hM, terrainElevM, surfaceHpa)) continue;
+      if (!isMoist(hourly, index, hpa)) continue;
       cloudBaseMslM = hM;
       method = "pressure_level";
       break;
@@ -103,8 +124,14 @@ export function ceilingFromHourly(
   }
 
   const aglM = cloudBaseMslM - terrainElevM;
-  const ceilingFtAgl = Math.max(0, aglM * M_TO_FT);
-  const obscured = aglM <= 0 || cloudBaseMslM <= terrainElevM;
+  const obscured =
+    cloudBaseMslM <= terrainElevM ||
+    (cloudBaseKey != null && numAt(hourly, cloudBaseKey, index) === 0);
+
+  let ceilingFtAgl: number | null = null;
+  if (aglM > 0) ceilingFtAgl = aglM * M_TO_FT;
+  else if (obscured) ceilingFtAgl = 0;
+
   const ceilingCategory = ceilingCategoryFromFtAgl(ceilingFtAgl);
 
   return { ceilingFtAgl, ceilingCategory, cloudBaseMslM, obscured, method };

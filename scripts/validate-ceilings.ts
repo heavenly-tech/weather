@@ -19,7 +19,7 @@ const OUT_DIR = path.join(
   process.cwd(),
   "docs",
   "validation",
-  `sceil-${new Date().toISOString().slice(0, 10)}`
+  `scel-${new Date().toISOString().slice(0, 10)}`
 );
 
 type Hourly = Record<string, Array<number | null> | string[]>;
@@ -146,7 +146,7 @@ async function main() {
   await fs.mkdir(OUT_DIR, { recursive: true });
 
   const metarRows = await fetchMetars(SCEL.icao, 72);
-  await fs.writeFile(path.join(OUT_DIR, "awc-metars-sceil.json"), JSON.stringify(metarRows, null, 2));
+  await fs.writeFile(path.join(OUT_DIR, "awc-metars-scel.json"), JSON.stringify(metarRows, null, 2));
   const scvmRows = await fetchMetars("SCVM", 72);
   await fs.writeFile(path.join(OUT_DIR, "awc-metars-scvm.json"), JSON.stringify(scvmRows, null, 2));
   const scpdRows = await fetchMetars("SCPD", 72);
@@ -167,7 +167,7 @@ async function main() {
     modelHourly[meta.id] = data.hourly;
     elevByModel[meta.id] = data.elevation ?? SCEL.elevM;
     await fs.writeFile(
-      path.join(OUT_DIR, `open-meteo-${meta.id}-sceil.json`),
+      path.join(OUT_DIR, `open-meteo-${meta.id}-scel.json`),
       JSON.stringify(data, null, 2)
     );
     await new Promise((r) => setTimeout(r, 300));

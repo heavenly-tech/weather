@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-17T19:45:40.447Z",
+  "generatedAt": "2026-11-17T19:55:42.119Z",
   "station": "SCEL",
   "pastDays": 3,
   "metarCount": 72,
-  "comparisonRows": 22,
+  "comparisonRows": 21,
   "stats": {
     "gfs_seamless": {
       "categoryHit": 8,
@@ -12,15 +12,15 @@
       "maeCount": 5
     },
     "ecmwf_ifs025": {
-      "categoryHit": 3,
+      "categoryHit": 7,
       "categoryTotal": 10,
-      "maeFt": 1933.5083114633333,
+      "maeFt": 1251.7497812816666,
       "maeCount": 6
     },
     "icon_seamless": {
       "categoryHit": 9,
       "categoryTotal": 13,
-      "maeFt": 725.1968503900001,
+      "maeFt": 620.8661417290001,
       "maeCount": 5
     },
     "gem_seamless": {
@@ -33,30 +33,6 @@
   "notes": "Open-Meteo past_days provides archived hourly model states at SCEL coordinates; METAR from AWC. Category hits require both sides to have a ceiling or matching unlimited.",
   "comparison": [
     {
-      "time": "2026-11-14T03:00",
-      "metarRaw": null,
-      "metarCeilFt": null,
-      "metarCat": "UNK",
-      "models": {
-        "gfs_seamless": {
-          "ceilFt": null,
-          "cat": "VFR"
-        },
-        "ecmwf_ifs025": {
-          "ceilFt": 0,
-          "cat": "LIFR"
-        },
-        "icon_seamless": {
-          "ceilFt": null,
-          "cat": "VFR"
-        },
-        "gem_seamless": {
-          "ceilFt": null,
-          "cat": "VFR"
-        }
-      }
-    },
-    {
       "time": "2026-11-14T06:00",
       "metarRaw": null,
       "metarCeilFt": null,
@@ -67,8 +43,8 @@
           "cat": "VFR"
         },
         "ecmwf_ifs025": {
-          "ceilFt": 0,
-          "cat": "LIFR"
+          "ceilFt": 948.162729655,
+          "cat": "IFR"
         },
         "icon_seamless": {
           "ceilFt": null,
@@ -91,11 +67,11 @@
           "cat": "VFR"
         },
         "ecmwf_ifs025": {
-          "ceilFt": 0,
-          "cat": "LIFR"
+          "ceilFt": 954.7244094450001,
+          "cat": "IFR"
         },
         "icon_seamless": {
-          "ceilFt": 0,
+          "ceilFt": 232.93963254500002,
           "cat": "LIFR"
         },
         "gem_seamless": {
@@ -115,11 +91,11 @@
           "cat": "IFR"
         },
         "ecmwf_ifs025": {
-          "ceilFt": 0,
-          "cat": "LIFR"
+          "ceilFt": 1023.62204724,
+          "cat": "MVFR"
         },
         "icon_seamless": {
-          "ceilFt": 0,
+          "ceilFt": 282.15223097,
           "cat": "LIFR"
         },
         "gem_seamless": {
@@ -211,11 +187,11 @@
           "cat": "IFR"
         },
         "ecmwf_ifs025": {
-          "ceilFt": 0,
-          "cat": "LIFR"
+          "ceilFt": 1007.2178477650001,
+          "cat": "MVFR"
         },
         "icon_seamless": {
-          "ceilFt": 0,
+          "ceilFt": 255.90551181,
           "cat": "LIFR"
         },
         "gem_seamless": {
@@ -235,11 +211,11 @@
           "cat": "IFR"
         },
         "ecmwf_ifs025": {
-          "ceilFt": 0,
-          "cat": "LIFR"
+          "ceilFt": 1026.9028871350001,
+          "cat": "MVFR"
         },
         "icon_seamless": {
-          "ceilFt": 0,
+          "ceilFt": 265.748031495,
           "cat": "LIFR"
         },
         "gem_seamless": {
@@ -259,8 +235,8 @@
           "cat": "IFR"
         },
         "ecmwf_ifs025": {
-          "ceilFt": 0,
-          "cat": "LIFR"
+          "ceilFt": 987.5328083950001,
+          "cat": "IFR"
         },
         "icon_seamless": {
           "ceilFt": 4199.475065600001,
@@ -283,8 +259,8 @@
           "cat": "MVFR"
         },
         "ecmwf_ifs025": {
-          "ceilFt": 0,
-          "cat": "LIFR"
+          "ceilFt": 1056.43044619,
+          "cat": "MVFR"
         },
         "icon_seamless": {
           "ceilFt": 3740.1574803000003,
@@ -451,8 +427,8 @@
           "cat": "VFR"
         },
         "ecmwf_ifs025": {
-          "ceilFt": 0,
-          "cat": "LIFR"
+          "ceilFt": 12660.761154805,
+          "cat": "VFR"
         },
         "icon_seamless": {
           "ceilFt": 3369.422572165,
@@ -475,8 +451,8 @@
           "cat": "VFR"
         },
         "ecmwf_ifs025": {
-          "ceilFt": 0,
-          "cat": "LIFR"
+          "ceilFt": 1066.272965875,
+          "cat": "MVFR"
         },
         "icon_seamless": {
           "ceilFt": 18799.21259835,

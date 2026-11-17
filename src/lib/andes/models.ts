@@ -69,6 +69,7 @@ export function hourlyVariablesForModel(meta: AndesModelMeta): string {
       ]
     : [];
   const surface = [
+    "surface_pressure",
     "cloud_cover",
     "cloud_cover_low",
     "cloud_cover_mid",
@@ -108,6 +109,7 @@ export function openMeteoMultiUrl(points: { lat: number; lon: number }[], model:
     ...PRESSURE_LEVELS.map((hpa) => `cloud_cover_${hpa}hPa`),
     ...PRESSURE_LEVELS.map((hpa) => `geopotential_height_${hpa}hPa`),
     ...PRESSURE_LEVELS.map((hpa) => `relative_humidity_${hpa}hPa`),
+    "surface_pressure",
     "temperature_2m",
   ];
   if (meta.cloudBaseField) hourly.push(meta.cloudBaseField);
