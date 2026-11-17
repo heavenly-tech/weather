@@ -99,7 +99,7 @@ export async function fetchCeilingGrid(
   const targetDate = validTime ? parseUtcIso(validTime) : new Date();
 
   list.forEach((point, idx) => {
-    let hourly = point.hourly ?? {};
+    const hourly = point.hourly ?? {};
     const times = (hourly.time ?? []) as string[];
     const index = pickHourIndex(times, targetDate);
     const elevM = point.elevation ?? grid[idx]?.elevM ?? 0;

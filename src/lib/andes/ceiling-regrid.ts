@@ -91,7 +91,7 @@ export async function refineCeilingGrid(
       const allNull = bases.every((b) => b == null);
 
       let baseMslM: number | null = null;
-      let lowCloudUnresolved = samples.some((s) => s?.lowCloudUnresolved);
+      const lowCloudUnresolved = samples.some((s) => s?.lowCloudUnresolved);
       if (!allNull) {
         const v11 = bases[0] ?? bases[1] ?? bases[2] ?? bases[3];
         const v21 = bases[1] ?? bases[0];

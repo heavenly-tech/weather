@@ -44,16 +44,6 @@ export function nextSynopticAfter(issue: Date): Date {
   return d;
 }
 
-function parseDdhh(ddhh: string, anchor: Date): Date {
-  const day = Number(ddhh.slice(0, 2));
-  const hour = Number(ddhh.slice(2, 4));
-  const d = new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth(), day, hour));
-  if (d.getTime() < anchor.getTime() - 20 * 86400000) {
-    d.setUTCMonth(d.getUTCMonth() + 1);
-  }
-  return d;
-}
-
 type PeriodWx = {
   wind: string;
   vis: string;
