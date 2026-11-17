@@ -196,10 +196,11 @@ export function deriveMetarWxAndCloud(
 
   // RA/DZ is written whenever a cloud layer is present, including dry air.
   // With no layer it is omitted, so it is never left on NSC or NCD.
-  // ECMWF has no showers/rain split: its rain is encoded as showers, but the
-  // base is not the nighttime LCL unless low cloud supports that base.
-  const showerRate = model === "ecmwf_ifs025" ? Math.max(showers, rain) : showers;
-  const stratRain = model === "ecmwf_ifs025" ? 0 : rain;
+  // ECMWF has no showers/rain split. A mid-level deck with no convective
+  // signal is -RA; convective or low cloud stays -SHRA. The base is not the
+  // nighttime LCL unless low cloud supports that base. Total cloud is not
+  // used: it includes cirrus.
+  const ecmwf = model === "ecmwf_ifs025";
   const precipWx: string[] = [];
   const noteCldEst = () => {
     cldEstimated = true;
@@ -212,23 +213,38 @@ export function deriveMetarWxAndCloud(
   };
   const midCover = numAt(hourly, "cloud_cover_mid", index);
   const totalCover = numAt(hourly, "cloud_cover", index);
-  const midOrTotal =
-    (midCover != null && midCover >= 50) || (totalCover != null && totalCover >= BKN_CLOUD_COVER_PCT);
+  const lowPct = coverLow ?? 0;
+  const midPct = midCover ?? 0;
+  const totalPct = totalCover ?? 0;
+  // Same broken/overcast fraction previously applied to total cloud, now on
+  // max(low, mid) so cirrus cannot invent or block a low/mid layer.
+  const ECMWF_LOW_MID_BKN_PCT = BKN_CLOUD_COVER_PCT;
+  const lowMidMax = Math.max(lowPct, midPct);
+  const ecmwfLowMidBkn = lowMidMax >= ECMWF_LOW_MID_BKN_PCT;
+  const cape = numAt(hourly, "cape", index) ?? 0;
+  const convBase = numAt(hourly, "convective_cloud_base", index);
+  const convectiveSignal = cape >= 100 || showers >= 0.1 || (convBase != null && convBase > elevM + 30);
+  const lowDominant = lowPct >= 50 || lowPct >= midPct;
+  const ecmwfLiquid = Math.max(rain, showers) > 0 ? Math.max(rain, showers) : hourlyRate;
+  const ecmwfTrace = ecmwf && ecmwfLiquid < 0.2 && totalPct < 25;
+  const ecmwfMidDeck = ecmwf && !ecmwfTrace && midPct >= 50 && !convectiveSignal && !lowDominant;
+  const showerRate = ecmwfTrace || ecmwfMidDeck ? 0 : ecmwf ? ecmwfLiquid : showers;
+  const stratRain = ecmwf ? 0 : rain;
   const h700 = levelFtAgl(700) ?? levelFtAgl(600);
+  const stratMidOrTotal = midPct >= 50 || (totalCover != null && totalPct >= BKN_CLOUD_COVER_PCT);
 
-  if (model === "ecmwf_ifs025" && showerRate >= 0.1 && !isCloudLayer(clouds) && !ceil.obscured) {
-    if (midOrTotal && h700 != null && h700 > 0) {
+  if (ecmwf && !ecmwfTrace && ecmwfLiquid >= 0.1 && !isCloudLayer(clouds) && !ceil.obscured) {
+    if ((ecmwfMidDeck || ecmwfLowMidBkn) && h700 != null && h700 > 0) {
       const h = cloudHeightHundredsFt(h700);
       clouds = `BKN${String(h).padStart(3, "0")}`;
       effectiveCeilFt = h700;
       noteCldEst();
-    } else if (!midOrTotal) {
-      const lowPct = coverLow ?? 0;
+    } else if (!ecmwfMidDeck && !ecmwfLowMidBkn) {
       const lclOk = lowPct >= 10 && lclFt != null && lclFt >= 1500;
       const estFt = lclOk ? lclFt : h700;
       if (estFt != null && estFt > 0) {
         const h = cloudHeightHundredsFt(estFt);
-        const cover = showerRate >= 2.5 ? "BKN" : showerRate >= 0.5 ? "SCT" : "FEW";
+        const cover = ecmwfLiquid >= 2.5 ? "BKN" : ecmwfLiquid >= 0.5 ? "SCT" : "FEW";
         clouds = `${cover}${String(h).padStart(3, "0")}`;
         if (cover === "BKN") effectiveCeilFt = estFt;
         noteCldEst();
@@ -249,9 +265,10 @@ export function deriveMetarWxAndCloud(
     }
   }
 
-  const stratCandidate = showerRate < 0.1 && hourlyRate >= 0.1 && (hasAdjacent || hourlyRate >= 0.25);
+  const stratCandidate =
+    !ecmwf && showerRate < 0.1 && hourlyRate >= 0.1 && (hasAdjacent || hourlyRate >= 0.25);
   if (stratCandidate && !isCloudLayer(clouds) && !ceil.obscured) {
-    const estFt = midOrTotal ? h700 : null;
+    const estFt = stratMidOrTotal ? h700 : null;
     if (estFt != null && estFt > 0) {
       const h = cloudHeightHundredsFt(estFt);
       clouds = `BKN${String(h).padStart(3, "0")}`;
@@ -261,15 +278,20 @@ export function deriveMetarWxAndCloud(
   }
 
   const stratCeil = effectiveCeilFt != null && effectiveCeilFt <= 3000;
-  if (ceil.obscured && hourlyRate >= 0.1) {
+  const rainToken = (rate: number) => {
+    const p = rate < 2.5 ? "-" : rate <= 7.6 ? "" : "+";
+    return `${p}RA`;
+  };
+  if (ceil.obscured && hourlyRate >= 0.1 && !ecmwfTrace) {
     const dz = spread != null && spread <= 3 && hourlyRate < 0.5;
     if (dz) {
       const p = hourlyRate < 0.25 ? "-" : "";
       precipWx.push(`${p}DZ`);
     } else {
-      const p = hourlyRate < 2.5 ? "-" : hourlyRate <= 7.6 ? "" : "+";
-      precipWx.push(`${p}RA`);
+      precipWx.push(rainToken(hourlyRate));
     }
+  } else if (ecmwfMidDeck && ecmwfLiquid >= 0.1 && isCloudLayer(clouds)) {
+    precipWx.push(rainToken(ecmwfLiquid));
   } else if (showerRate >= 0.1 && isCloudLayer(clouds)) {
     const p = showerRate < 2.5 ? "-" : showerRate <= 7.6 ? "" : "+";
     precipWx.push(`${p}SHRA`);

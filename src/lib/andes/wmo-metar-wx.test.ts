@@ -464,7 +464,111 @@ describe("deriveMetarWxAndCloud", () => {
     expect(d.clouds).toBe(`BKN${String(cloudHeightHundredsFt(agl700)).padStart(3, "0")}`);
     expect(d.effectiveCeilFt).toBeCloseTo(agl700, 4);
     expect(d.rmkExtra).toContain("CLD EST");
+    expect(d.weather).toMatch(/(?:^|\s)-RA(?:\s|$)/);
+    expect(d.weather).not.toMatch(/SHRA/);
+  });
+
+  it("ECMWF ignores total cloud when choosing the estimated layer", () => {
+    const gh = 3100;
+    const elev = 649;
+    const agl700 = (gh - elev) * 3.280839895;
+    const hourly = {
+      time: ["2026-11-17T18:00"],
+      temperature_2m: [16],
+      dew_point_2m: [8],
+      relative_humidity_2m: [55],
+      precipitation: [0.4],
+      rain: [0.4],
+      showers: [0],
+      visibility: [9000],
+      cloud_cover_low: [4],
+      cloud_cover_mid: [6],
+      cloud_cover: [90],
+      surface_pressure: [980],
+      geopotential_height_700hPa: [gh],
+      cape: [0],
+    };
+    const ceil = ceilingFromHourly(hourly, 0, elev);
+    const d = deriveMetarWxAndCloud(hourly, 0, elev, "SCTB", ceil, 9000, false, false, "ecmwf_ifs025");
+    expect(d.clouds).toBe(`FEW${String(cloudHeightHundredsFt(agl700)).padStart(3, "0")}`);
+    expect(d.clouds).not.toMatch(/^BKN/);
     expect(d.weather).toMatch(/SHRA/);
+  });
+
+  it("drops ECMWF trace rain below 0.2 mm/h when total cloud is under 25%", () => {
+    const hourly = {
+      time: ["2026-11-17T18:00"],
+      temperature_2m: [16],
+      dew_point_2m: [8],
+      relative_humidity_2m: [55],
+      precipitation: [0.15],
+      rain: [0.15],
+      showers: [0],
+      visibility: [9000],
+      cloud_cover_low: [4],
+      cloud_cover_mid: [6],
+      cloud_cover: [12],
+      surface_pressure: [980],
+      geopotential_height_700hPa: [3100],
+      cape: [0],
+    };
+    const ceil = ceilingFromHourly(hourly, 0, 649);
+    const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 9000, false, false, "ecmwf_ifs025");
+    expect(d.weather).not.toMatch(/SHRA|(?:^|\s)[+-]?RA(?:\s|$)/);
+    expect(d.clouds).not.toMatch(/^(?:FEW|SCT|BKN|OVC)/);
+    expect(d.cldEstimated).toBe(false);
+  });
+
+  it("encodes an ECMWF mid deck as -RA and keeps SH when the cloud is convective or low", () => {
+    const gh = 3100;
+    const elev = 649;
+    const agl700 = (gh - elev) * 3.280839895;
+    const deck = {
+      time: ["2026-11-17T18:00"],
+      temperature_2m: [12],
+      dew_point_2m: [8],
+      relative_humidity_2m: [70],
+      precipitation: [0.4],
+      rain: [0.4],
+      showers: [0],
+      visibility: [9000],
+      cloud_cover_low: [8],
+      cloud_cover_mid: [60],
+      cloud_cover: [40],
+      surface_pressure: [980],
+      geopotential_height_700hPa: [gh],
+      cape: [0],
+    };
+    const ceil = ceilingFromHourly(deck, 0, elev);
+    const rain = deriveMetarWxAndCloud(deck, 0, elev, "SCTB", ceil, 9000, false, false, "ecmwf_ifs025");
+    expect(rain.clouds).toBe(`BKN${String(cloudHeightHundredsFt(agl700)).padStart(3, "0")}`);
+    expect(rain.rmkExtra).toContain("CLD EST");
+    expect(rain.weather).toMatch(/(?:^|\s)-RA(?:\s|$)/);
+    expect(rain.weather).not.toMatch(/SHRA/);
+    const convective = deriveMetarWxAndCloud(
+      { ...deck, cape: [250] },
+      0,
+      elev,
+      "SCTB",
+      ceil,
+      9000,
+      false,
+      false,
+      "ecmwf_ifs025"
+    );
+    expect(convective.weather).toMatch(/SHRA/);
+    expect(convective.weather).not.toMatch(/(?:^|\s)[+-]?RA(?:\s|$)/);
+    const low = {
+      ...deck,
+      cloud_cover_low: [80],
+      cloud_cover_925hPa: [80],
+      geopotential_height_925hPa: [900],
+      cape: [0],
+    };
+    const lowCeil = ceilingFromHourly(low, 0, elev);
+    const showers = deriveMetarWxAndCloud(low, 0, elev, "SCTB", lowCeil, 9000, false, false, "ecmwf_ifs025");
+    expect(showers.weather).toMatch(/SHRA/);
+    expect(showers.weather).not.toMatch(/(?:^|\s)[+-]?RA(?:\s|$)/);
   });
 
   it("drops HZ when precipitation explains the visibility and keeps BR", () => {
