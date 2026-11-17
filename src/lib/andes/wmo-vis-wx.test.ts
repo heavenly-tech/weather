@@ -17,6 +17,15 @@ describe("visObscurationWx", () => {
   it("3000 m RH 60% → HZ", () => {
     expect(visObscurationWx(3000, 60)).toBe("HZ");
   });
+  it("5000 m inclusive is BR or HZ", () => {
+    expect(visObscurationWx(5000, 85)).toBe("BR");
+    expect(visObscurationWx(5000, 80)).toBe("BR");
+    expect(visObscurationWx(5000, 60)).toBe("HZ");
+  });
+  it("5001 m has no obscuration group", () => {
+    expect(visObscurationWx(5001, 95)).toBe("");
+    expect(visObscurationWx(9999, 95)).toBe("");
+  });
 });
 
 describe("METAR/TAF vis wx integration", () => {
@@ -144,8 +153,83 @@ describe("METAR/TAF vis wx integration", () => {
     });
     expect(metar.raw).toMatch(/\b0[0-8]\d{2}\b/);
     expect(metar.raw).toContain("FG");
-    expect(metar.raw).toMatch(/VV\d{3}/);
+    expect(metar.raw).toMatch(/\bVV000\b/);
+    expect(metar.raw).not.toMatch(/\b(?:FEW|SCT|BKN|OVC)(?:\d{3}|\/\/\/)/);
     expect(metar.raw).not.toMatch(/\b4[0-9]{3}\b/);
     expect(() => assertEstOnlyInTrailingRmk(metar.raw)).not.toThrow();
+  });
+
+  it("does not write VV beside a BKN or OVC layer", () => {
+    const hourly = {
+      time: ["t"],
+      temperature_2m: [11],
+      dew_point_2m: [10],
+      relative_humidity_2m: [90],
+      cloud_cover_low: [90],
+      surface_pressure: [980],
+      precipitation: [0],
+      rain: [0],
+      showers: [0],
+      visibility: [800],
+    };
+    const ceil = {
+      ceilingFtAgl: 400,
+      ceilingCategory: "LIFR" as const,
+      cloudBaseMslM: 770,
+      obscured: false,
+      lowCloudUnresolved: false,
+      method: "interpolated" as const,
+      visM: 800,
+      capeOnlyLayer: null,
+    };
+    const d = deriveMetarWxAndCloud(hourly, 0, 649, "SCTB", ceil, 800, false, false);
+    expect(d.clouds).toMatch(/^(BKN|OVC)\d{3}$/);
+    expect(d.clouds).not.toMatch(/VV/);
+    expect(d.weather).toBe("FG");
+    const obscuredWithLayer = deriveMetarWxAndCloud(
+      hourly,
+      0,
+      649,
+      "SCTB",
+      { ...ceil, obscured: true },
+      800,
+      false,
+      false
+    );
+    expect(obscuredWithLayer.clouds).toMatch(/^(BKN|OVC)\d{3}$/);
+    expect(obscuredWithLayer.clouds).not.toMatch(/VV/);
+  });
+
+  it("TAF at 5000 m carries BR, not NSW alone", () => {
+    const n = 6;
+    const hourly = {
+      time: Array.from({ length: n }, (_, i) => `2026-11-17T${String(16 + i).padStart(2, "0")}:00`),
+      temperature_2m: Array(n).fill(12),
+      dew_point_2m: Array(n).fill(10),
+      relative_humidity_2m: Array(n).fill(85),
+      pressure_msl: Array(n).fill(1014),
+      wind_speed_10m: Array(n).fill(16),
+      wind_direction_10m: Array(n).fill(180),
+      wind_gusts_10m: Array(n).fill(20),
+      visibility: Array(n).fill(5000),
+      precipitation: Array(n).fill(0),
+      rain: Array(n).fill(0),
+      showers: Array(n).fill(0),
+      surface_pressure: Array(n).fill(980),
+      cloud_cover_low: Array(n).fill(20),
+      cloud_cover_925hPa: Array(n).fill(10),
+      geopotential_height_925hPa: Array(n).fill(1600),
+    };
+    const taf = generateModelTaf({
+      icao: "SCTB",
+      elevM: 649,
+      model: "gfs_seamless",
+      runTime: "2026-11-17T16:10:00Z",
+      hourly,
+    });
+    expect("error" in taf).toBe(false);
+    if ("error" in taf) return;
+    expect(taf.raw).toMatch(/\b5000 BR\b/);
+    expect(taf.raw).not.toMatch(/\bNSW\b/);
   });
 });

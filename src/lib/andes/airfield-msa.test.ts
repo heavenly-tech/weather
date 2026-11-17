@@ -4,6 +4,16 @@ import { ceilingFromHourly } from "@/lib/andes/ceiling";
 import { deriveMetarWxAndCloud } from "@/lib/andes/wmo-metar-wx";
 
 describe("airfield MSA assumptions", () => {
+  it("pins SCTB at the 25 NM AIP MSA of 20000 ft", () => {
+    const row = airfieldMsa("SCTB");
+    expect(row?.msaFtAmsl).toBe(20_000);
+    expect(row?.assumption).toBe(false);
+    expect(row?.citation).toMatch(/IAC 1/);
+    expect(row?.citation).toMatch(/AMDT 100/);
+    const elevFt = 649 * 3.280839895;
+    expect(annex3NscCeilingFtAgl("SCTB", 649)).toBe(Math.max(ANNEX3_NSC_MIN_FT, 20_000 - elevFt));
+  });
+
   it("SCTB NSC ceiling AGL is above default 5000 ft (Andes MSA)", () => {
     const ft = annex3NscCeilingFtAgl("SCTB", 649);
     expect(ft).toBeGreaterThan(ANNEX3_NSC_MIN_FT);

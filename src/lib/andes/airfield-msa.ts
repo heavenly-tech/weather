@@ -13,7 +13,10 @@ import { ANDES_AIRFIELDS } from "@/lib/andes/airfields";
 
 const M_TO_FT = 3.280839895;
 
-/** Annex 3: NSC only if no significant cloud below max(5000 ft, MSA). */
+/**
+ * Annex 3 NSC floor: no significant cloud below the greater of 1500 m (5000 ft)
+ * and the aerodrome's 25 NM MSA. Compared in feet AGL.
+ */
 export const ANNEX3_NSC_MIN_FT = 5000;
 
 export type AirfieldMsaRecord = {
@@ -33,6 +36,7 @@ export type AirfieldMsaRecord = {
 export const AIRFIELD_MSA: AirfieldMsaRecord[] = [
   {
     icao: "SCTB",
+    // SCTB IAC 1 RNP RWY 01 (LNAV only), MSA 25 NM RW01. DGAC AMDT 100, effective 07 AUG 2025.
     msaFtAmsl: 20_000,
     assumption: false,
     citation:
@@ -40,6 +44,7 @@ export const AIRFIELD_MSA: AirfieldMsaRecord[] = [
   },
   {
     icao: "SCEL",
+    // SCEL IAC 2 ILS Z RWY 17R, MSA 25 NM AMB. DGAC AMDT 103, effective 06 AUG 2026.
     msaFtAmsl: 19_000,
     assumption: false,
     citation:
@@ -47,6 +52,7 @@ export const AIRFIELD_MSA: AirfieldMsaRecord[] = [
   },
   {
     icao: "SCVM",
+    // SCVM IAC 2 ILS Y o LOC Y RWY 05, MSA 25 NM SAL. DGAC AMDT 98, effective 28 NOV 2024.
     msaFtAmsl: 9_500,
     assumption: false,
     citation:
@@ -54,6 +60,7 @@ export const AIRFIELD_MSA: AirfieldMsaRecord[] = [
   },
   {
     icao: "SCVH",
+    // No IAC. Assumption only — VAC AMDT 62, effective 28 NOV 2024, publishes no MSA.
     msaFtAmsl: 9_500,
     assumption: true,
     citation:
@@ -61,6 +68,7 @@ export const AIRFIELD_MSA: AirfieldMsaRecord[] = [
   },
   {
     icao: "SCPD",
+    // No IAC. Assumption only — VAC AMDT 67, effective 06 AUG 2026, publishes no MSA.
     msaFtAmsl: 9_500,
     assumption: true,
     citation:
@@ -73,7 +81,7 @@ export const AIRFIELD_MSA_ASSUMPTIONS = AIRFIELD_MSA;
 
 const MSA_BY_ICAO = new Map(AIRFIELD_MSA.map((row) => [row.icao, row]));
 
-/** Lowest altitude (ft AGL) below which Annex 3 NSC requires no BKN/OVC. */
+/** Ft AGL below which BKN/OVC blocks NSC: max(1500 m / 5000 ft, 25 NM MSA). */
 export function annex3NscCeilingFtAgl(icao: string, elevM: number): number {
   const row = MSA_BY_ICAO.get(icao.toUpperCase());
   const msaAmsl = row?.msaFtAmsl ?? ANNEX3_NSC_MIN_FT;

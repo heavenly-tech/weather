@@ -87,17 +87,19 @@ export async function buildAirfieldTimelines(icao: string): Promise<{
   const field = andesAirfield(icao);
   if (!field) throw new Error(`Unknown airfield ${icao}`);
 
-  const metarIcao = field.hasMetar ? field.icao : field.nearestMetarIcao ?? "SCEL";
-  const observation = await observedMetarCeilings(metarIcao, 36);
+  const metarIcao = field.hasMetar ? field.icao : field.nearestMetarIcao;
+  const observation = metarIcao ? await observedMetarCeilings(metarIcao, 36) : null;
 
   let obsProxyLabel: string | null = null;
-  if (!field.hasMetar) {
+  if (!field.hasMetar && metarIcao) {
     const ref =
       andesAirfield(metarIcao) ??
       andesAirfield("SCEL") ?? { lat: -33.393, lon: -70.786, icao: metarIcao, name: "", elevM: 0, hasMetar: true };
     const km = haversine(field, ref);
     obsProxyLabel = `obs: ${metarIcao} (nearest METAR, ${km.toFixed(0)} km)`;
     if (observation) observation.label = obsProxyLabel;
+  } else if (!field.hasMetar) {
+    obsProxyLabel = "model only — no METAR";
   }
 
   const models: AndesModelId[] = ["gfs_seamless", "ecmwf_ifs025", "icon_seamless", "gem_seamless"];

@@ -178,7 +178,7 @@ export function AndesDesk() {
               icao === "SCTB"
                 ? "SCTB (proxy obs: SCEL METAR)"
                 : icao === "SCVH"
-                  ? row?.label ?? "SCVH (nearest METAR)"
+                  ? "SCVH La Victoria de Chacabuco (model only, no METAR)"
                   : icao;
             return (
               <CeilingTimelineChart

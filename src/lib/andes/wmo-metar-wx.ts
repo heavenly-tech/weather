@@ -57,7 +57,7 @@ export function unknownLowCloudCover(forTaf: boolean): string {
 
 const LEVELS_FOR_NSC = [1000, 975, 950, 925, 900, 850, 800, 700] as const;
 
-/** True when BKN+ cloud exists below max(5000 ft, conservative MSA) AGL. */
+/** True when BKN+ cloud exists below max(1500 m / 5000 ft, 25 NM AIP MSA) AGL. */
 export function hasSignificantCloudBelowNscCeiling(
   hourly: Hourly,
   index: number,
@@ -135,15 +135,11 @@ export function deriveMetarWxAndCloud(
       cover925 >= BKN_CLOUD_COVER_PCT);
 
   let clouds = "NSC";
-  if (ceil.obscured) {
-    clouds = "VV000";
-    effectiveCeilFt = 0;
-    lowUnresolved = false;
-  } else if (effectiveCeilFt != null && effectiveCeilFt > 0) {
+  if (effectiveCeilFt != null && effectiveCeilFt > 0) {
     const h = cloudHeightHundredsFt(effectiveCeilFt);
     const code = coverLow != null && coverLow >= 87.5 ? "OVC" : "BKN";
     clouds = `${code}${String(h).padStart(3, "0")}`;
-  } else if (coverLow != null && coverLow >= BKN_CLOUD_COVER_PCT) {
+  } else if (!ceil.obscured && coverLow != null && coverLow >= BKN_CLOUD_COVER_PCT) {
     if (!lclImplausible && lclFt != null) {
       effectiveCeilFt = lclFt;
       lowUnresolved = false;
@@ -162,7 +158,7 @@ export function deriveMetarWxAndCloud(
         rmkExtra.push("CLD BASE UNK");
       }
     }
-  } else if (ceil.capeOnlyLayer) {
+  } else if (!ceil.obscured && ceil.capeOnlyLayer) {
     const h = cloudHeightHundredsFt(ceil.capeOnlyLayer.ftAgl);
     clouds = `${ceil.capeOnlyLayer.cover}${String(h).padStart(3, "0")}`;
     effectiveCeilFt = null;
@@ -175,6 +171,13 @@ export function deriveMetarWxAndCloud(
     clouds = midLevelCloudGroup();
   }
 
+  const cloudLayer = /^(?:FEW|SCT|BKN|OVC)(?:\d{3}|\/\/\/)$/.test(clouds);
+  if (ceil.obscured && !cloudLayer) {
+    clouds = "VV000";
+    effectiveCeilFt = 0;
+    lowUnresolved = false;
+  }
+
   const visM = capEstimatedVisForLowCloud({
     visM: visRoundM,
     estimated: visEstimated,
@@ -184,11 +187,6 @@ export function deriveMetarWxAndCloud(
     rhPct: rh,
     lowCoverPct: coverLow,
   });
-
-  if (!ceil.obscured && effectiveCeilFt != null && effectiveCeilFt > 0 && effectiveCeilFt <= 100 && visM != null && visM < 1000) {
-    const h = effectiveCeilFt < 50 ? 0 : cloudHeightHundredsFt(effectiveCeilFt);
-    clouds = `VV${String(h).padStart(3, "0")}`;
-  }
 
   const dryAir = spread != null && spread > 5;
   const stratCeil = effectiveCeilFt != null && effectiveCeilFt <= 3000;
