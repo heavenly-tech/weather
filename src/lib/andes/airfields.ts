@@ -51,10 +51,10 @@ export const ANDES_AIRFIELDS: AndesAirfield[] = [
   },
   {
     icao: "SCPD",
-    name: "Padre Hurtado",
-    lat: -33.558,
-    lon: -70.812,
-    elevM: 680,
+    name: "Peldehue",
+    lat: -33.117,
+    lon: -70.684,
+    elevM: 360,
     hasMetar: true,
   },
 ];

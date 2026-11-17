@@ -30,7 +30,8 @@ export function AndesDesk() {
   const [generatedMetar, setGeneratedMetar] = useState<string | null>(null);
   const [generatedTaf, setGeneratedTaf] = useState<string | null>(null);
   const [gridWarning, setGridWarning] = useState<string | null>(null);
-  const [gridShape, setGridShape] = useState({ rows: 18, cols: 27 });
+  const [gridShape, setGridShape] = useState({ rows: 6, cols: 9 });
+  const [sliceHeightM, setSliceHeightM] = useState<number | null>(null);
 
   const patch = useCallback((p: Partial<AndesControlsState>) => {
     setState((s) => ({ ...s, ...p }));
@@ -60,23 +61,26 @@ export function AndesDesk() {
         setCells(d.cells ?? []);
         if (d.gridShape) setGridShape(d.gridShape);
         setGridWarning(d.unavailable ?? null);
+        if (d.timeLabels?.length) setTimeLabels(d.timeLabels);
         if (d.modelRun && !state.validIso) patch({ validIso: d.modelRun });
       })
       .catch(() => setGridWarning("Ceiling grid fetch failed"));
   }, [state.model, state.validIso, patch]);
 
   useEffect(() => {
-    const q = new URLSearchParams({ model: state.model, hpa: String(state.pressureHpa) });
+    const q = new URLSearchParams({
+      model: state.model,
+      hpa: String(state.pressureHpa),
+      ...(state.validIso ? { validTime: state.validIso } : {}),
+    });
     fetch(`/api/andes/slice?${q}`)
       .then((r) => r.json())
       .then((d) => {
         setSliceValues(d.values ?? []);
-        if (d.validTime && !timeLabels.length) {
-          setTimeLabels([d.validTime]);
-        }
+        setSliceHeightM(d.sliceHeightM ?? null);
       })
       .catch(() => undefined);
-  }, [state.model, state.pressureHpa, timeLabels.length]);
+  }, [state.model, state.pressureHpa, state.validIso]);
 
   useEffect(() => {
     fetch(`/api/andes/times?model=${encodeURIComponent(state.model)}`)
@@ -125,6 +129,14 @@ export function AndesDesk() {
 
   return (
     <div className="space-y-6">
+      <ModelOutputStamp className="mb-3 w-full text-center" />
+      <p className="mb-2 text-xs text-muted-foreground">
+        Model fields via{" "}
+        <a href="https://open-meteo.com/" className="underline" rel="noopener noreferrer">
+          Open-Meteo
+        </a>{" "}
+        (CC BY 4.0). Free tier is non-commercial; production needs a paid plan or self-hosted Open-Meteo.
+      </p>
       <div>
         <p className="text-[11px] tracking-[0.28em] text-primary uppercase">Aguacero-style · Step 1</p>
         <h1 className="mt-1 font-heading text-3xl">Central Chile ceiling viewer</h1>
@@ -149,6 +161,7 @@ export function AndesDesk() {
         pressureHpa={state.pressureHpa}
         gridRows={gridShape.rows}
         gridCols={gridShape.cols}
+        sliceHeightM={sliceHeightM}
       />
 
       <section className="space-y-4">

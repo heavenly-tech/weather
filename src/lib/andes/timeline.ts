@@ -47,10 +47,8 @@ export async function modelCeilingTimeline(
   const hourly = fetched.hourly;
   const times = (hourly.time ?? []) as string[];
   const elevM = fetched.elevM || field.elevM;
-  const cloudKey = fetched.meta.cloudBaseField;
-
   const points: TimelinePoint[] = times.slice(0, hours).map((time, index) => {
-    const s = ceilingFromHourly(hourly, index, elevM, cloudKey);
+    const s = ceilingFromHourly(hourly, index, elevM);
     return {
       time,
       ceilingFtAgl: s.ceilingFtAgl,

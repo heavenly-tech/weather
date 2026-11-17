@@ -5,6 +5,15 @@
 
 export type AndesModelId = "gfs_seamless" | "ecmwf_ifs025" | "icon_seamless" | "gem_seamless";
 
+const VALID_MODELS: AndesModelId[] = ["gfs_seamless", "ecmwf_ifs025", "icon_seamless", "gem_seamless"];
+
+export function parseAndesModelId(raw: string | null): AndesModelId | null {
+  const id = (raw ?? "gfs_seamless") as AndesModelId;
+  return VALID_MODELS.includes(id) ? id : null;
+}
+
+export const GRID_PRESSURE_LEVELS = [950, 925, 900, 850, 800, 700] as const;
+
 export type AndesModelMeta = {
   id: AndesModelId;
   label: string;
@@ -38,7 +47,7 @@ export const ANDES_MODELS: AndesModelMeta[] = [
     query: "icon_seamless",
     pressureLevels: true,
     cloudBaseField: "convective_cloud_base",
-    notes: "Supplies convective_cloud_base (m) where populated.",
+    notes: "convective_cloud_base is metres AMSL (not AGL); used only with convective cover ≥ BKN.",
   },
   {
     id: "gem_seamless",
@@ -55,17 +64,31 @@ export function modelById(id: string): AndesModelMeta | undefined {
 
 const PRESSURE_LEVELS = [1000, 975, 950, 925, 900, 850, 800, 700, 600, 500, 400, 300] as const;
 
-export function hourlyVariablesForModel(meta: AndesModelMeta): string {
+/** Levels requested on single-point fetches (keeps URLs under Open-Meteo limits; ceiling uses 1000–700). */
+const POINT_PRESSURE_LEVELS = [1000, 975, 950, 925, 900, 850, 800, 700, 600, 500] as const;
+
+export type HourlyVarMode = "point" | "validate";
+
+export function hourlyVariablesForModel(meta: AndesModelMeta, mode: HourlyVarMode = "point"): string {
+  const levels = mode === "validate" ? GRID_PRESSURE_LEVELS : POINT_PRESSURE_LEVELS;
   const levelVars = meta.pressureLevels
     ? [
-        ...PRESSURE_LEVELS.flatMap((hpa) => [
-          `cloud_cover_${hpa}hPa`,
-          `relative_humidity_${hpa}hPa`,
-          `geopotential_height_${hpa}hPa`,
-          `temperature_${hpa}hPa`,
-          `wind_speed_${hpa}hPa`,
-          `wind_direction_${hpa}hPa`,
-        ]),
+        ...levels.flatMap((hpa) => {
+          const base = [
+            `cloud_cover_${hpa}hPa`,
+            `geopotential_height_${hpa}hPa`,
+          ];
+          if (mode === "validate") {
+            return [...base, `relative_humidity_${hpa}hPa`];
+          }
+          return [
+            ...base,
+            `relative_humidity_${hpa}hPa`,
+            `temperature_${hpa}hPa`,
+            `wind_speed_${hpa}hPa`,
+            `wind_direction_${hpa}hPa`,
+          ];
+        }),
       ]
     : [];
   const surface = [
@@ -75,13 +98,20 @@ export function hourlyVariablesForModel(meta: AndesModelMeta): string {
     "cloud_cover_mid",
     "cloud_cover_high",
     "temperature_2m",
+    "dew_point_2m",
     "relative_humidity_2m",
+    "pressure_msl",
     "wind_speed_10m",
     "wind_direction_10m",
+    "wind_gusts_10m",
     "visibility",
+    "precipitation",
     "weather_code",
   ];
-  if (meta.cloudBaseField) surface.push(meta.cloudBaseField);
+  if (meta.cloudBaseField) {
+    surface.push(meta.cloudBaseField);
+    // Open-Meteo rejects convective_cloud_cover combined with layered cloud_cover_* on ICON.
+  }
   return [...surface, ...levelVars].join(",");
 }
 
@@ -97,6 +127,7 @@ export function openMeteoForecastUrl(
     longitude: String(lon),
     hourly: hourlyVariablesForModel(meta),
     forecast_days: String(days),
+    forecast_hours: "48",
     models: meta.query,
     timezone: "UTC",
   });
@@ -106,13 +137,11 @@ export function openMeteoForecastUrl(
 export function openMeteoMultiUrl(points: { lat: number; lon: number }[], model: AndesModelId, days = 1): string {
   const meta = modelById(model)!;
   const hourly = [
-    ...PRESSURE_LEVELS.map((hpa) => `cloud_cover_${hpa}hPa`),
-    ...PRESSURE_LEVELS.map((hpa) => `geopotential_height_${hpa}hPa`),
-    ...PRESSURE_LEVELS.map((hpa) => `relative_humidity_${hpa}hPa`),
+    ...GRID_PRESSURE_LEVELS.map((hpa) => `cloud_cover_${hpa}hPa`),
+    ...GRID_PRESSURE_LEVELS.map((hpa) => `geopotential_height_${hpa}hPa`),
     "surface_pressure",
-    "temperature_2m",
+    "cloud_cover_low",
   ];
-  if (meta.cloudBaseField) hourly.push(meta.cloudBaseField);
   const params = new URLSearchParams({
     latitude: points.map((p) => p.lat.toFixed(4)).join(","),
     longitude: points.map((p) => p.lon.toFixed(4)).join(","),

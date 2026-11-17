@@ -37,7 +37,12 @@ function cellsToCanvas(
       color = c.obscured ? "#78716c" : categoryColor(c.category);
     } else if (mode === "slice") {
       const s = cell as SliceValue;
-      const t = s.tempC ?? 0;
+      if (s.tempC == null) {
+        ctx.fillStyle = "rgba(0,0,0,0)";
+        ctx.fillRect(x, y, 1, 1);
+        return;
+      }
+      const t = s.tempC;
       const norm = Math.max(0, Math.min(1, (t + 10) / 30));
       const r = Math.round(40 + norm * 180);
       const b = Math.round(200 - norm * 120);
@@ -55,6 +60,7 @@ export function AndesScene({
   sliceValues,
   showSlice,
   pressureHpa,
+  sliceHeightM,
   gridRows,
   gridCols,
 }: {
@@ -62,6 +68,7 @@ export function AndesScene({
   sliceValues: SliceValue[];
   showSlice: boolean;
   pressureHpa: number;
+  sliceHeightM: number | null;
   gridRows: number;
   gridCols: number;
 }) {
@@ -89,7 +96,15 @@ export function AndesScene({
           document.head.appendChild(link);
         }
 
-        const ionToken = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN;
+        let ionToken = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN ?? "";
+        if (!ionToken) {
+          try {
+            const cfg = await fetch("/api/config").then((r) => r.json());
+            ionToken = cfg.cesiumIonToken ?? "";
+          } catch {
+            /* ellipsoid */
+          }
+        }
         if (ionToken) Cesium.Ion.defaultAccessToken = ionToken;
 
         let terrainProvider: import("cesium").TerrainProvider = new Cesium.EllipsoidTerrainProvider();
@@ -169,13 +184,19 @@ export function AndesScene({
     v.entities.removeById(`${id}-plane`);
 
     const { dataUrl, rectangle } = cellsToCanvas(ceilingCells, "ceiling", gridCols, gridRows);
+    const avgBaseMsl =
+      ceilingCells.reduce(
+        (sum, c) => sum + c.elevM + (c.ceilingFtAgl != null ? c.ceilingFtAgl * 0.3048 : 2000),
+        0
+      ) / Math.max(1, ceilingCells.length);
     v.entities.add({
       id,
       name: "Ceiling (ft AGL)",
       rectangle: {
         coordinates: Cesium.Rectangle.fromDegrees(rectangle[0], rectangle[1], rectangle[2], rectangle[3]),
         material: new Cesium.ImageMaterialProperty({ image: dataUrl, transparent: true }),
-        height: 50,
+        height: avgBaseMsl,
+        classificationType: Cesium.ClassificationType.TERRAIN,
       },
     });
 
@@ -204,7 +225,7 @@ export function AndesScene({
             sliceImg.rectangle[3]
           ),
           material: new Cesium.ImageMaterialProperty({ image: sliceImg.dataUrl, transparent: true }),
-          height: 8000 + pressureHpa * 2,
+          height: sliceHeightM ?? 3000,
         },
       });
     }
@@ -214,7 +235,7 @@ export function AndesScene({
     return () => {
       cancelled = true;
     };
-  }, [ceilingCells, sliceValues, showSlice, pressureHpa, gridCols, gridRows]);
+  }, [ceilingCells, sliceValues, showSlice, pressureHpa, sliceHeightM, gridCols, gridRows]);
 
   return (
     <div className="relative h-[560px] w-full overflow-hidden rounded-xl ring-1 ring-foreground/10">

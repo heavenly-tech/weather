@@ -29,13 +29,13 @@ export function coherenceView(
   hourly: Hourly,
   hourIndex: number,
   elevM: number,
-  cloudBaseKey: string | null,
+  _cloudBaseKey: string | null,
   metar: MetarObservation | null,
   taf: TafForecast | null,
   model: AndesModelId,
   runTime: string
 ): CoherenceSnapshot {
-  const modelSample = ceilingFromHourly(hourly, hourIndex, elevM, cloudBaseKey);
+  const modelSample = ceilingFromHourly(hourly, hourIndex, elevM);
   const metarCeilingFt = metar ? ceilingFtFromClouds(metar.clouds) : null;
   const tafCeilingFt = taf ? lowestTafCeiling(taf) : null;
 
@@ -51,7 +51,6 @@ export function coherenceView(
     model,
     runTime,
     hourly,
-    cloudBaseKey,
   });
 
   return {
@@ -59,7 +58,7 @@ export function coherenceView(
     metarCeilingFt,
     tafCeilingFt,
     modelVsMetar,
-    modelTafRaw: modelTaf.raw,
+    modelTafRaw: "raw" in modelTaf ? modelTaf.raw : modelTaf.error,
     officialTafRaw: taf?.raw ?? "(no TAF)",
   };
 }

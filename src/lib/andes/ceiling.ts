@@ -1,53 +1,53 @@
 /**
  * Ceiling derivation for the Andes ceiling map (ft AGL above local terrain).
  *
- * ## Algorithm (documented for scoring / briefing review)
+ * ## Algorithm
  *
- * 1. **Direct cloud-base fields** — When Open-Meteo returns `convective_cloud_base` or
- *    `cloud_base` (metres above ground / model surface), take the lowest non-null value
- *    as a candidate ceiling.
- *
- * 2. **Surface / underground levels** — At SCEL (~474 m) the surface is ~950–960 hPa;
- *    Andes gridpoints are higher still. Any pressure level **above** the local surface
- *    pressure (1000, 975 hPa, …) is underground; levels whose **geopotential height** is
- *    **≤ terrain elevation** are also skipped (extrapolated artefacts).
- *
- * 3. **Pressure-level cloud cover (BKN/OVC proxy)** — Scan from the surface upward. The
- *    lowest moist level **above ground** with **≥ 62.5 %** cover or RH ≥ 87 % sets the
- *    base MSL via `geopotential_height_*hPa`.
- *
- * 4. **AGL** — `(baseMslM - terrainElevM) * 3.28084`, floored at 0 ft (never negative).
- *
- * 5. **Mountain obscuration** — True when a qualifying cloud base exists above the
- *    surface-pressure stack but **MSL base ≤ terrain elevation** (terrain inside the layer),
- *    or when a direct cloud-base field reports 0 m AGL.
+ * 1. **Underground filter** — Skip levels with pressure > `surface_pressure` or
+ *    geopotential height ≤ terrain (SCEL ~957 hPa; 1000/975 hPa artefacts).
+ * 2. **Stratiform base (primary)** — Walk levels above ground. Where layer cloud
+ *    cover crosses **62.5 %** (BKN/OVC proxy), **linearly interpolate** base height
+ *    between the level below and above (in height vs cover). RH ≥ 87 % applies only
+ *    when cloud cover at that level is **missing**. `cloud_cover_low` ≥ 50 % can
+ *    reinforce the lowest level when present.
+ * 3. **ICON `convective_cloud_base`** — Documented as **m ASL** (not AGL). Values
+ *    ≤ 0 or ≤ −500 are ignored. Never added to terrain. Does **not** override the
+ *    pressure-level scan; we take the **lower** (more conservative) base MSL when
+ *    both exist and convective cover is BKN+.
+ * 4. **AGL** — `(baseMslM - terrainElevM)`, never negative for category; **null** = no ceiling.
+ * 5. **Obscuration** — True when interpolated base MSL ≤ terrain elevation (peak inside cloud).
+ * 6. **Map category** — Uses ceiling ft AGL **and** model visibility when available
+ *    (`flightCategoryFromWx`); label as *ceiling category* when vis is missing.
  */
 
 import type { FlightCategory } from "@/lib/types";
 import { flightCategoryFromWx } from "@/lib/visibility";
 
-/** Five-eighths cloud cover — BKN threshold on a 0–100 % model field. */
 export const BKN_CLOUD_COVER_PCT = 62.5;
+export const LOW_CLOUD_GATE_PCT = 50;
+const M_TO_FT = 3.280839895;
+const P0 = 1013.25;
+const OBSCURATION_EPS_M = 5;
 
 export const CEILING_LEGEND = {
-  VFR: { minFtAgl: 3001, label: "VFR", color: "#22c55e" },
+  VFR: { minFtAgl: 3000, label: "VFR", color: "#22c55e" },
   MVFR: { minFtAgl: 1000, maxFtAgl: 3000, label: "MVFR", color: "#38bdf8" },
   IFR: { minFtAgl: 500, maxFtAgl: 999, label: "IFR", color: "#fbbf24" },
   LIFR: { maxFtAgl: 499, label: "LIFR", color: "#f87171" },
 } as const;
-
-const M_TO_FT = 3.280839895;
-const P0 = 1013.25;
 
 export type CeilingSample = {
   ceilingFtAgl: number | null;
   ceilingCategory: FlightCategory;
   cloudBaseMslM: number | null;
   obscured: boolean;
-  method: "cloud_base_field" | "pressure_level" | "unlimited";
+  method: "cloud_base_field" | "pressure_level" | "interpolated" | "unlimited";
+  visM: number | null;
 };
 
 type Hourly = Record<string, Array<number | null> | string[]>;
+
+const LEVELS_DESC = [1000, 975, 950, 925, 900, 850, 800, 700, 600, 500, 400, 300];
 
 function numAt(hourly: Hourly | undefined, key: string, index: number): number | null {
   const series = hourly?.[key];
@@ -56,16 +56,12 @@ function numAt(hourly: Hourly | undefined, key: string, index: number): number |
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
-const LEVELS_DESC = [1000, 975, 950, 925, 900, 850, 800, 700, 600, 500, 400, 300];
-
-/** Local surface pressure (hPa): model `surface_pressure` or ISA from terrain elevation. */
 export function surfacePressureHpa(hourly: Hourly, index: number, terrainElevM: number): number {
   const sp = numAt(hourly, "surface_pressure", index);
   if (sp != null && sp > 400 && sp < 1100) return sp;
   return P0 * Math.pow(1 - terrainElevM / 44330, 5.255);
 }
 
-/** Level is above ground at this point (not underground in pressure or height). */
 export function pressureLevelAboveTerrain(
   levelHpa: number,
   geopotentialHeightM: number | null,
@@ -77,69 +73,132 @@ export function pressureLevelAboveTerrain(
   return geopotentialHeightM > terrainElevM;
 }
 
-function isMoist(hourly: Hourly, index: number, hpa: number): boolean {
-  const cover = numAt(hourly, `cloud_cover_${hpa}hPa`, index);
-  const rh = numAt(hourly, `relative_humidity_${hpa}hPa`, index);
-  return (cover != null && cover >= BKN_CLOUD_COVER_PCT) || (rh != null && rh >= 87);
-}
+type LevelSample = { hpa: number; heightM: number; cover: number | null; rh: number | null };
 
-export function ceilingFromHourly(
+function collectLevelsAboveGround(
   hourly: Hourly,
   index: number,
   terrainElevM: number,
-  cloudBaseKey: string | null
-): CeilingSample {
-  const surfaceHpa = surfacePressureHpa(hourly, index, terrainElevM);
-  let cloudBaseMslM: number | null = null;
-  let method: CeilingSample["method"] = "unlimited";
+  surfaceHpa: number
+): LevelSample[] {
+  const out: LevelSample[] = [];
+  for (const hpa of LEVELS_DESC) {
+    if (hpa > surfaceHpa) continue;
+    const hM = numAt(hourly, `geopotential_height_${hpa}hPa`, index);
+    if (!pressureLevelAboveTerrain(hpa, hM, terrainElevM, surfaceHpa) || hM == null) continue;
+    out.push({
+      hpa,
+      heightM: hM,
+      cover: numAt(hourly, `cloud_cover_${hpa}hPa`, index),
+      rh: numAt(hourly, `relative_humidity_${hpa}hPa`, index),
+    });
+  }
+  out.sort((a, b) => a.heightM - b.heightM);
+  return out;
+}
 
-  if (cloudBaseKey) {
-    const aglM = numAt(hourly, cloudBaseKey, index);
-    if (aglM != null && aglM >= 0) {
-      cloudBaseMslM = terrainElevM + aglM;
-      method = "cloud_base_field";
+/** Interpolate height where cover crosses BKN threshold between surface and first level, or between levels. */
+export function interpolateCloudBaseMsl(
+  hourly: Hourly,
+  index: number,
+  terrainElevM: number,
+  surfaceHpa: number
+): { baseMslM: number | null; method: "interpolated" | "unlimited" } {
+  const levels = collectLevelsAboveGround(hourly, index, terrainElevM, surfaceHpa);
+  const lowCover = numAt(hourly, "cloud_cover_low", index);
+
+  const floor: LevelSample = {
+    hpa: Math.round(surfaceHpa),
+    heightM: terrainElevM,
+    cover: lowCover ?? 0,
+    rh: numAt(hourly, "relative_humidity_2m", index),
+  };
+
+  const chain: LevelSample[] = [floor, ...levels];
+
+  for (let i = 1; i < chain.length; i++) {
+    const below = chain[i - 1]!;
+    const above = chain[i]!;
+    const c0 = below.cover ?? (below.rh != null && below.rh >= 87 ? BKN_CLOUD_COVER_PCT - 1 : 0);
+    const c1 = above.cover ?? (above.rh != null && above.rh >= 87 ? BKN_CLOUD_COVER_PCT : 0);
+
+    if (above.cover == null && above.rh != null && above.rh >= 87 && below.cover != null && below.cover < BKN_CLOUD_COVER_PCT) {
+      /* RH-only assist when cover missing at this level */
+    } else if (above.cover != null && above.cover < BKN_CLOUD_COVER_PCT) {
+      continue;
+    }
+
+    if (c1 >= BKN_CLOUD_COVER_PCT) {
+      if (c0 >= BKN_CLOUD_COVER_PCT) return { baseMslM: below.heightM, method: "interpolated" };
+      if (c1 === c0) return { baseMslM: above.heightM, method: "interpolated" };
+      const frac = (BKN_CLOUD_COVER_PCT - c0) / (c1 - c0);
+      const h = below.heightM + frac * (above.heightM - below.heightM);
+      return { baseMslM: Math.max(terrainElevM, h), method: "interpolated" };
     }
   }
 
-  if (cloudBaseMslM == null) {
-    for (const hpa of LEVELS_DESC) {
-      if (hpa > surfaceHpa) continue;
-      const hM = numAt(hourly, `geopotential_height_${hpa}hPa`, index);
-      if (!pressureLevelAboveTerrain(hpa, hM, terrainElevM, surfaceHpa)) continue;
-      if (!isMoist(hourly, index, hpa)) continue;
-      cloudBaseMslM = hM;
-      method = "pressure_level";
-      break;
+  if (lowCover != null && lowCover >= LOW_CLOUD_GATE_PCT && levels[0]) {
+    return { baseMslM: Math.max(terrainElevM, terrainElevM + 30), method: "interpolated" };
+  }
+
+  return { baseMslM: null, method: "unlimited" };
+}
+
+function iconConvectiveBaseMsl(hourly: Hourly, index: number): number | null {
+  const cb = numAt(hourly, "convective_cloud_base", index);
+  if (cb == null || cb <= 0 || cb <= -500) return null;
+  const convCover = numAt(hourly, "convective_cloud_cover", index);
+  if (convCover != null && convCover < BKN_CLOUD_COVER_PCT) return null;
+  return cb;
+}
+
+function visibilityM(hourly: Hourly, index: number): number | null {
+  const v = numAt(hourly, "visibility", index);
+  return v != null ? v : null;
+}
+
+export function ceilingFromHourly(hourly: Hourly, index: number, terrainElevM: number): CeilingSample {
+  const surfaceHpa = surfacePressureHpa(hourly, index, terrainElevM);
+  const visM = visibilityM(hourly, index);
+
+  const strat = interpolateCloudBaseMsl(hourly, index, terrainElevM, surfaceHpa);
+  const convMsl = iconConvectiveBaseMsl(hourly, index);
+
+  let cloudBaseMslM: number | null = strat.baseMslM;
+  let method: CeilingSample["method"] = strat.method;
+
+  if (convMsl != null) {
+    if (cloudBaseMslM == null || convMsl < cloudBaseMslM) {
+      cloudBaseMslM = convMsl;
+      method = "cloud_base_field";
     }
   }
 
   if (cloudBaseMslM == null) {
     return {
       ceilingFtAgl: null,
-      ceilingCategory: "VFR",
+      ceilingCategory: flightCategoryFromWx(visM, null),
       cloudBaseMslM: null,
       obscured: false,
       method: "unlimited",
+      visM,
     };
   }
 
+  const obscured = cloudBaseMslM <= terrainElevM + OBSCURATION_EPS_M;
   const aglM = cloudBaseMslM - terrainElevM;
-  const obscured =
-    cloudBaseMslM <= terrainElevM ||
-    (cloudBaseKey != null && numAt(hourly, cloudBaseKey, index) === 0);
+  const ceilingFtAgl = aglM > 0 ? aglM * M_TO_FT : obscured ? 0 : null;
 
-  let ceilingFtAgl: number | null = null;
-  if (aglM > 0) ceilingFtAgl = aglM * M_TO_FT;
-  else if (obscured) ceilingFtAgl = 0;
+  const ceilingCategory = flightCategoryFromWx(
+    visM,
+    ceilingFtAgl != null ? ceilingFtAgl : obscured ? 0 : null
+  );
 
-  const ceilingCategory = ceilingCategoryFromFtAgl(ceilingFtAgl);
-
-  return { ceilingFtAgl, ceilingCategory, cloudBaseMslM, obscured, method };
+  return { ceilingFtAgl, ceilingCategory, cloudBaseMslM, obscured, method, visM };
 }
 
-export function ceilingCategoryFromFtAgl(ceilingFtAgl: number | null): FlightCategory {
-  if (ceilingFtAgl == null) return "VFR";
-  return flightCategoryFromWx(null, ceilingFtAgl);
+export function ceilingCategoryFromFtAgl(ceilingFtAgl: number | null, visM: number | null = null): FlightCategory {
+  return flightCategoryFromWx(visM, ceilingFtAgl);
 }
 
 export function categoryColor(cat: FlightCategory): string {

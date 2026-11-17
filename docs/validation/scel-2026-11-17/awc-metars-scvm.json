@@ -1,6 +1,28 @@
 [
   {
     "icaoId": "SCVM",
+    "receiptTime": "2026-11-17T20:00:14.305Z",
+    "obsTime": 1794945600,
+    "reportTime": "2026-11-17T20:00:00.000Z",
+    "temp": 21,
+    "dewp": 12,
+    "wdir": 280,
+    "wspd": 11,
+    "visib": "6+",
+    "altim": 1014,
+    "qcField": 0,
+    "metarType": "METAR",
+    "rawOb": "METAR SCVM 172000Z 28011KT 240V320 CAVOK 21/12 Q1014",
+    "lat": -32.947,
+    "lon": -71.479,
+    "elev": 136,
+    "name": "Concon/Vina Del Mar Arpt, VS, CL",
+    "cover": "CAVOK",
+    "clouds": [],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCVM",
     "receiptTime": "2026-11-17T19:00:13.776Z",
     "obsTime": 1794942000,
     "reportTime": "2026-11-17T19:00:00.000Z",
@@ -1943,33 +1965,6 @@
       {
         "cover": "OVC",
         "base": 1600
-      }
-    ],
-    "fltCat": "MVFR"
-  },
-  {
-    "icaoId": "SCVM",
-    "receiptTime": "2026-11-14T20:00:31.725Z",
-    "obsTime": 1794686400,
-    "reportTime": "2026-11-14T20:00:00.000Z",
-    "temp": 18,
-    "dewp": 15,
-    "wdir": 340,
-    "wspd": 10,
-    "visib": 4.35,
-    "altim": 1014,
-    "qcField": 0,
-    "metarType": "METAR",
-    "rawOb": "METAR SCVM 142000Z 34010KT 7000 OVC010 18/15 Q1014",
-    "lat": -32.947,
-    "lon": -71.479,
-    "elev": 136,
-    "name": "Concon/Vina Del Mar Arpt, VS, CL",
-    "cover": "OVC",
-    "clouds": [
-      {
-        "cover": "OVC",
-        "base": 1000
       }
     ],
     "fltCat": "MVFR"

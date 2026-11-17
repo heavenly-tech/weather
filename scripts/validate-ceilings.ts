@@ -54,7 +54,7 @@ async function fetchModelPast(model: AndesModelId) {
   const params = new URLSearchParams({
     latitude: String(SCEL.lat),
     longitude: String(SCEL.lon),
-    hourly: hourlyVariablesForModel(meta),
+    hourly: hourlyVariablesForModel(meta, "validate"),
     models: meta.query,
     timezone: "UTC",
     past_days: String(PAST_DAYS),
@@ -174,7 +174,7 @@ async function main() {
   }
 
   const refTimes = (modelHourly.gfs_seamless.time ?? []) as string[];
-  const sampleEvery = 3;
+  const sampleEvery = 1;
   const comparison: {
     time: string;
     metarRaw: string | null;
@@ -198,7 +198,7 @@ async function main() {
         models[meta.id] = { ceilFt: null, cat: "UNK" };
         continue;
       }
-      const sample = ceilingFromHourly(hourly, idx, elevByModel[meta.id] ?? SCEL.elevM, meta.cloudBaseField);
+      const sample = ceilingFromHourly(hourly, idx, elevByModel[meta.id] ?? SCEL.elevM);
       models[meta.id] = {
         ceilFt: sample.ceilingFtAgl,
         cat: sample.ceilingCategory,
@@ -216,33 +216,64 @@ async function main() {
     });
   }
 
-  const stats: Record<
-    AndesModelId,
-    { categoryHit: number; categoryTotal: number; maeFt: number | null; maeCount: number }
-  > = {} as Record<
-    AndesModelId,
-    { categoryHit: number; categoryTotal: number; maeFt: number | null; maeCount: number }
-  >;
+  function isLowCeilEvent(cat: FlightCategory): boolean {
+    return cat === "MVFR" || cat === "IFR" || cat === "LIFR";
+  }
+
+  type ModelStats = {
+    categoryAgree: number;
+    categoryTotal: number;
+    hits: number;
+    misses: number;
+    falseAlarms: number;
+    pod: number | null;
+    far: number | null;
+    csi: number | null;
+    bias: number | null;
+    maeFt: number | null;
+    maeCount: number;
+  };
+  const stats: Record<AndesModelId, ModelStats> = {} as Record<AndesModelId, ModelStats>;
 
   for (const meta of ANDES_MODELS) {
+    let categoryAgree = 0;
+    let categoryTotal = 0;
     let hits = 0;
-    let total = 0;
+    let misses = 0;
+    let falseAlarms = 0;
     let errSum = 0;
     let errN = 0;
+
     for (const row of comparison) {
-      if (row.metarCeilFt == null) continue;
+      if (!row.metarRaw) continue;
+      categoryTotal++;
       const mod = row.models[meta.id];
-      if (mod.ceilFt == null) continue;
-      total++;
-      if (mod.cat === row.metarCat) hits++;
-      if (row.metarCeilFt < 10_000 && mod.ceilFt < 10_000) {
+      if (mod.cat === row.metarCat) categoryAgree++;
+
+      const obsEvent = isLowCeilEvent(row.metarCat);
+      const modEvent = isLowCeilEvent(mod.cat);
+      if (obsEvent && modEvent) hits++;
+      else if (obsEvent && !modEvent) misses++;
+      else if (!obsEvent && modEvent) falseAlarms++;
+
+      if (row.metarCeilFt != null && mod.ceilFt != null && row.metarCeilFt < 10_000 && mod.ceilFt < 10_000) {
         errSum += Math.abs(mod.ceilFt - row.metarCeilFt);
         errN++;
       }
     }
+    const denomPod = hits + misses;
+    const denomFar = hits + falseAlarms;
+    const denomCsi = hits + misses + falseAlarms;
     stats[meta.id] = {
-      categoryHit: hits,
-      categoryTotal: total,
+      categoryAgree,
+      categoryTotal,
+      hits,
+      misses,
+      falseAlarms,
+      pod: denomPod ? hits / denomPod : null,
+      far: denomFar ? falseAlarms / denomFar : null,
+      csi: denomCsi ? hits / denomCsi : null,
+      bias: misses ? (hits + falseAlarms) / (hits + misses) : null,
       maeFt: errN ? errSum / errN : null,
       maeCount: errN,
     };
@@ -271,7 +302,7 @@ async function main() {
     comparisonRows: comparison.length,
     stats,
     notes:
-      "Open-Meteo past_days provides archived hourly model states at SCEL coordinates; METAR from AWC. Category hits require both sides to have a ceiling or matching unlimited.",
+      "Hourly UTC pairing; METAR category includes vis/ceil; model unlimited scored as VFR. Contingency uses MVFR/IFR/LIFR events. past_days is smoke-only, not forecast skill.",
     comparison,
   };
 
@@ -279,13 +310,18 @@ async function main() {
   await fs.writeFile(
     path.join(OUT_DIR, "stats-table.md"),
     [
-      "| Model | Category hit rate | Mean |ceil err| (ft), both <10k ft | N |",
-      "| --- | ---: | ---: | ---: |",
+      "| Model | Cat agree | POD | FAR | CSI | MAE ft | N |",
+      "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
       ...ANDES_MODELS.map((m) => {
         const s = stats[m.id];
-        const rate = s.categoryTotal ? `${((100 * s.categoryHit) / s.categoryTotal).toFixed(1)}%` : "—";
+        const rate = s.categoryTotal
+          ? `${((100 * s.categoryAgree) / s.categoryTotal).toFixed(1)}% (${s.categoryAgree}/${s.categoryTotal})`
+          : "—";
+        const pod = s.pod != null ? s.pod.toFixed(2) : "—";
+        const far = s.far != null ? s.far.toFixed(2) : "—";
+        const csi = s.csi != null ? s.csi.toFixed(2) : "—";
         const mae = s.maeFt != null ? s.maeFt.toFixed(0) : "—";
-        return `| ${m.label} | ${rate} (${s.categoryHit}/${s.categoryTotal}) | ${mae} | ${s.maeCount} |`;
+        return `| ${m.label} | ${rate} | ${pod} | ${far} | ${csi} | ${mae} | ${s.maeCount} |`;
       }),
     ].join("\n")
   );

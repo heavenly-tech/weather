@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { andesAirfield } from "@/lib/andes/airfields";
 import { fetchPointHourly } from "@/lib/andes/fetch-field";
 import { generateModelTaf } from "@/lib/andes/generated-taf";
-import type { AndesModelId } from "@/lib/andes/models";
+import { parseAndesModelId } from "@/lib/andes/models";
 import { newLogId, productLogStore } from "@/lib/andes/product-log";
 import { requireStation } from "@/lib/stations";
 
@@ -11,7 +11,8 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const icao = (searchParams.get("icao") ?? "SCTB").toUpperCase();
-  const model = (searchParams.get("model") ?? "gfs_seamless") as AndesModelId;
+  const model = parseAndesModelId(searchParams.get("model"));
+  if (!model) return NextResponse.json({ error: "Invalid model" }, { status: 400 });
   const field = andesAirfield(icao) ?? requireStation(icao);
   const lat = field.lat;
   const lon = field.lon;
@@ -29,8 +30,10 @@ export async function GET(request: Request) {
     model,
     runTime,
     hourly: fetched.hourly,
-    cloudBaseKey: fetched.meta.cloudBaseField,
   });
+  if ("error" in generated) {
+    return NextResponse.json({ error: generated.error }, { status: 400 });
+  }
 
   const times = (fetched.hourly.time ?? []) as string[];
   const entry = {

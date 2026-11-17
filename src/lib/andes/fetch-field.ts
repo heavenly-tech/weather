@@ -60,6 +60,7 @@ export async function fetchCeilingGrid(
   cells: CeilingCell[];
   modelRun: string | null;
   gridShape: { rows: number; cols: number };
+  timeLabels?: string[];
   unavailable?: string;
 }> {
   const meta = modelById(model);
@@ -73,7 +74,6 @@ export async function fetchCeilingGrid(
   }
 
   const list = batched.list;
-  const metaCloud = meta.cloudBaseField;
   const cells: CeilingCell[] = [];
 
   list.forEach((point, idx) => {
@@ -81,7 +81,7 @@ export async function fetchCeilingGrid(
     const times = (hourly.time ?? []) as string[];
     const index = validTime ? pickHourIndex(times, new Date(validTime)) : pickHourIndex(times);
     const elevM = point.elevation ?? grid[idx]?.elevM ?? 0;
-    const sample = ceilingFromHourly(hourly, index, elevM, metaCloud);
+    const sample = ceilingFromHourly(hourly, index, elevM);
     cells.push({
       lat: point.latitude,
       lon: point.longitude,
@@ -97,7 +97,7 @@ export async function fetchCeilingGrid(
   const index = validTime ? pickHourIndex(times, new Date(validTime)) : pickHourIndex(times);
   const modelRun = times[index] ?? null;
 
-  return { cells, modelRun, gridShape };
+  return { cells, modelRun, gridShape, timeLabels: times };
 }
 
 export async function fetchPointHourly(model: AndesModelId, lat: number, lon: number, days = 2) {

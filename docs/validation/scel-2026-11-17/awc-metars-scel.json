@@ -1,6 +1,33 @@
 [
   {
     "icaoId": "SCEL",
+    "receiptTime": "2026-11-17T19:56:40.332Z",
+    "obsTime": 1794945600,
+    "reportTime": "2026-11-17T20:00:00.000Z",
+    "temp": 24,
+    "dewp": 12,
+    "wdir": 210,
+    "wspd": 16,
+    "visib": "6+",
+    "altim": 1012,
+    "qcField": 16,
+    "metarType": "METAR",
+    "rawOb": "METAR SCEL 172000Z 21016KT 9999 SCT080 24/12 Q1012 NOSIG",
+    "lat": -33.393,
+    "lon": -70.786,
+    "elev": 478,
+    "name": "Santiago/Benítez Intl, RM, CL",
+    "cover": "SCT",
+    "clouds": [
+      {
+        "cover": "SCT",
+        "base": 8000
+      }
+    ],
+    "fltCat": "VFR"
+  },
+  {
+    "icaoId": "SCEL",
     "receiptTime": "2026-11-17T18:54:52.208Z",
     "obsTime": 1794942000,
     "reportTime": "2026-11-17T19:00:00.000Z",
@@ -2136,28 +2163,6 @@
     "qcField": 16,
     "metarType": "METAR",
     "rawOb": "METAR SCEL 142100Z 16015KT CAVOK 22/16 Q1012 NOSIG",
-    "lat": -33.393,
-    "lon": -70.786,
-    "elev": 478,
-    "name": "Santiago/Benítez Intl, RM, CL",
-    "cover": "CAVOK",
-    "clouds": [],
-    "fltCat": "VFR"
-  },
-  {
-    "icaoId": "SCEL",
-    "receiptTime": "2026-11-14T19:53:47.279Z",
-    "obsTime": 1794686400,
-    "reportTime": "2026-11-14T20:00:00.000Z",
-    "temp": 24,
-    "dewp": 16,
-    "wdir": 210,
-    "wspd": 15,
-    "visib": "6+",
-    "altim": 1012,
-    "qcField": 16,
-    "metarType": "METAR",
-    "rawOb": "METAR SCEL 142000Z 21015KT CAVOK 24/16 Q1012 NOSIG",
     "lat": -33.393,
     "lon": -70.786,
     "elev": 478,

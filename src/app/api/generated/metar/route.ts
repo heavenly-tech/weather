@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { andesAirfield } from "@/lib/andes/airfields";
 import { fetchPointHourly } from "@/lib/andes/fetch-field";
 import { generateModelMetar } from "@/lib/andes/generated-metar";
-import type { AndesModelId } from "@/lib/andes/models";
+import { parseAndesModelId } from "@/lib/andes/models";
 import { newLogId, productLogStore } from "@/lib/andes/product-log";
 import { pickHourIndex } from "@/lib/open-meteo";
 import { requireStation } from "@/lib/stations";
@@ -12,7 +12,8 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const icao = (searchParams.get("icao") ?? "SCTB").toUpperCase();
-  const model = (searchParams.get("model") ?? "gfs_seamless") as AndesModelId;
+  const model = parseAndesModelId(searchParams.get("model"));
+  if (!model) return NextResponse.json({ error: "Invalid model" }, { status: 400 });
   const custom = andesAirfield(icao);
   const station = custom ?? requireStation(icao);
   const lat = station.lat;
@@ -30,15 +31,12 @@ export async function GET(request: Request) {
   const validTime = times[index] ?? runTime;
   const generated = generateModelMetar({
     icao,
-    lat,
-    lon,
     elevM,
     model,
     runTime,
     validTime,
     hourly: fetched.hourly,
     hourIndex: index,
-    cloudBaseKey: fetched.meta.cloudBaseField,
   });
 
   const entry = {

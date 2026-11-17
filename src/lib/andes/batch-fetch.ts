@@ -25,7 +25,11 @@ export async function fetchMultiBatched(
 
   for (let i = 0; i < batches.length; i++) {
     const url = openMeteoMultiUrl(batches[i]!, model, days);
-    const res = await cachedFetchUrl(url, model);
+    let res = await cachedFetchUrl(url, model);
+    if (res.status === 429) {
+      await sleep(OPEN_METEO_BATCH_DELAY_MS * 4);
+      res = await cachedFetchUrl(url, model);
+    }
     if (!res.ok) {
       const err = await res.text();
       return { ok: false, error: err.slice(0, 200) || `HTTP ${res.status}` };
