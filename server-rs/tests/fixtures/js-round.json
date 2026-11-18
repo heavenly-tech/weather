@@ -1,0 +1,33 @@
+{
+  "label": "EXAMPLE",
+  "source": "node Math.round (ECMA-262 half toward +infinity)",
+  "cases": [
+    { "input": "-2.5", "output": "-2", "neg_zero": false },
+    { "input": "-1.5", "output": "-1", "neg_zero": false },
+    { "input": "-1.4", "output": "-1", "neg_zero": false },
+    { "input": "-1.6", "output": "-2", "neg_zero": false },
+    { "input": "-0.6", "output": "-1", "neg_zero": false },
+    { "input": "-0.5", "output": "0", "neg_zero": true },
+    { "input": "-0.4", "output": "0", "neg_zero": true },
+    { "input": "-0", "output": "0", "neg_zero": true },
+    { "input": "0", "output": "0", "neg_zero": false },
+    { "input": "0.4", "output": "0", "neg_zero": false },
+    { "input": "0.5", "output": "1", "neg_zero": false },
+    { "input": "1.4", "output": "1", "neg_zero": false },
+    { "input": "1.5", "output": "2", "neg_zero": false },
+    { "input": "2.5", "output": "3", "neg_zero": false },
+    { "input": "1.4999999999999998", "output": "1", "neg_zero": false },
+    { "input": "-1.4999999999999998", "output": "-1", "neg_zero": false },
+    { "input": "0.49999999999999994", "output": "0", "neg_zero": false },
+    { "input": "-0.49999999999999994", "output": "0", "neg_zero": true },
+    { "input": "Infinity", "output": "Infinity", "neg_zero": false },
+    { "input": "-Infinity", "output": "-Infinity", "neg_zero": false },
+    { "input": "NaN", "output": "NaN", "neg_zero": false },
+    { "input": "90.5", "output": "91", "neg_zero": false },
+    { "input": "-0.1", "output": "0", "neg_zero": true },
+    { "input": "-10.5", "output": "-10", "neg_zero": false },
+    { "input": "10.5", "output": "11", "neg_zero": false },
+    { "input": "8.5", "output": "9", "neg_zero": false },
+    { "input": "-8.5", "output": "-8", "neg_zero": false }
+  ]
+}
