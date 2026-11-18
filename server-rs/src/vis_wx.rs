@@ -31,6 +31,12 @@ pub fn fog_allowed(
         && lowest_saturated
 }
 
+/// PROB30 BR/FG. Night, a spread of at most 2 °C, and wind of at most 5 kt.
+/// The saturated-level test and the 1 °C FG gate are not required.
+pub fn fog_risk(night: bool, spread_c: Option<f64>, wind_kt: Option<f64>) -> bool {
+    night && spread_c.is_some_and(|spread| spread <= 2.0) && wind_kt.is_some_and(|kt| kt <= 5.0)
+}
+
 pub fn is_night(icao: &str, iso: &str) -> bool {
     let Ok(stamp) = parse_utc_iso(iso) else {
         return false;
@@ -120,5 +126,16 @@ mod tests {
         assert!(!fog_allowed(true, Some(0.0), Some(0.0), false));
         assert!(!fog_allowed(true, None, Some(0.0), true));
         assert!(!fog_allowed(true, Some(0.0), None, true));
+    }
+
+    #[test]
+    fn fog_risk_is_the_wider_night_gate() {
+        assert!(fog_risk(true, Some(2.0), Some(5.0)));
+        assert!(fog_risk(true, Some(1.5), Some(0.0)));
+        assert!(!fog_risk(false, Some(0.0), Some(0.0)));
+        assert!(!fog_risk(true, Some(2.1), Some(0.0)));
+        assert!(!fog_risk(true, Some(0.0), Some(5.1)));
+        assert!(!fog_risk(true, None, Some(0.0)));
+        assert!(!fog_risk(true, Some(0.0), None));
     }
 }

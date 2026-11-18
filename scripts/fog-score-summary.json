@@ -20,6 +20,13 @@
         "false_alarm": 0,
         "pod": 0.0,
         "far": null
+      },
+      "risk": {
+        "hit": 0,
+        "miss": 3,
+        "false_alarm": 4,
+        "pod": 0.0,
+        "far": 1.0
       }
     },
     {
@@ -39,6 +46,13 @@
         "false_alarm": 20,
         "pod": 0.0,
         "far": 1.0
+      },
+      "risk": {
+        "hit": 1,
+        "miss": 0,
+        "false_alarm": 253,
+        "pod": 1.0,
+        "far": 0.9960629921259843
       }
     }
   ],
@@ -58,6 +72,13 @@
       "false_alarm": 20,
       "pod": 0.0,
       "far": 1.0
+    },
+    "risk": {
+      "hit": 1,
+      "miss": 3,
+      "false_alarm": 257,
+      "pod": 0.25,
+      "far": 0.9961240310077519
     }
   }
 }

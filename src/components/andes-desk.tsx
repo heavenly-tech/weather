@@ -6,7 +6,9 @@ import { AndesScene } from "@/components/andes-scene";
 import { CeilingLegend } from "@/components/ceiling-legend";
 import { CeilingTimelineChart } from "@/components/ceiling-timeline-chart";
 import { CoherencePanels, type CoherencePayload } from "@/components/coherence-panels";
+import { FogGuidanceNote } from "@/components/fog-guidance-note";
 import { ModelOutputStamp } from "@/components/model-output-stamp";
+import { forecastHasFogGuidance } from "@/lib/fog-guidance";
 import { clientFetch } from "@/lib/client-fetch";
 import { TIMELINE_AIRFIELDS } from "@/lib/andes/domain";
 import type { CeilingCell } from "@/lib/andes/ceiling-cell";
@@ -238,6 +240,11 @@ export function AndesDesk() {
               <ModelOutputStamp />
             </div>
           </div>
+          {forecastHasFogGuidance(generatedMetar) ? (
+            <div className="mb-2">
+              <FogGuidanceNote />
+            </div>
+          ) : null}
           <pre className="whitespace-pre-wrap font-mono text-xs">{generatedMetar ?? "Loading…"}</pre>
         </div>
         <div className="rounded-xl border border-border/60 p-4">
@@ -265,6 +272,11 @@ export function AndesDesk() {
               <ModelOutputStamp />
             </div>
           </div>
+          {forecastHasFogGuidance(generatedTaf) ? (
+            <div className="mb-2">
+              <FogGuidanceNote />
+            </div>
+          ) : null}
           <p className="mb-2 text-[10px] text-muted-foreground">
             NSC gating uses AIP Chile MSA for SCTB, SCEL, and SCVM. SCVH and SCPD have no
             published MSA; those two stay labelled assumptions in{" "}

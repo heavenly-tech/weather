@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Score the old and new FG rules against Ogimet METARs.
+"""Score the old FG rule, the new FG rule, and PROB30 against Ogimet METARs.
 
 Window: 2026-10-01 00:00 UTC through 2026-11-17 23:00 UTC (seven weeks).
 Stations: SCTB and SCEL.
@@ -19,6 +19,8 @@ New FG: that same visibility gate, plus all of night (solar elevation < 0
 at the aerodrome), T-Td <= 1 C, wind <= 5 kt, and a saturated lowest level
 (relative humidity >= 95 at the lowest pressure level above the field, or
 at the surface when no pressure level is above the field).
+PROB30 BR/FG (`risk`): night, T-Td <= 2 C, and wind <= 5 kt. Saturation is
+not required. A hit is still an observed FG or FZFG hour.
 
 A METAR matches a model hour when the Ogimet timestamp is that exact hour.
 Observed fog is an exact token FG or FZFG before RMK. BCFG, MIFG, PRFG, and
@@ -137,10 +139,10 @@ def model_flags(icao: str, hourly: dict) -> dict[str, tuple[bool, bool]]:
         capture_output=True,
         cwd=ROOT,
     )
-    flags: dict[str, tuple[bool, bool]] = {}
+    flags: dict[str, tuple[bool, bool, bool]] = {}
     for line in run.stdout.splitlines():
-        stamp, old, new = line.split("\t")
-        flags[stamp] = (old == "1", new == "1")
+        stamp, old, new, risk = line.split("\t")
+        flags[stamp] = (old == "1", new == "1", risk == "1")
     return flags
 
 
@@ -153,18 +155,18 @@ def rates(hits: int, misses: int, false_alarms: int) -> dict[str, float | None]:
     }
 
 
-def score_station(icao: str, observed: dict[str, bool], flags: dict[str, tuple[bool, bool]]) -> dict:
-    counts = {
-        "old": {"hit": 0, "miss": 0, "false_alarm": 0},
-        "new": {"hit": 0, "miss": 0, "false_alarm": 0},
-    }
+def score_station(
+    icao: str, observed: dict[str, bool], flags: dict[str, tuple[bool, bool, bool]]
+) -> dict:
+    names = ("old", "new", "risk")
+    counts = {name: {"hit": 0, "miss": 0, "false_alarm": 0} for name in names}
     matched = 0
     for stamp, saw_fog in observed.items():
         if stamp not in flags:
             continue
         matched += 1
-        old, new = flags[stamp]
-        for name, predicted in (("old", old), ("new", new)):
+        old, new, risk = flags[stamp]
+        for name, predicted in (("old", old), ("new", new), ("risk", risk)):
             if predicted and saw_fog:
                 counts[name]["hit"] += 1
             elif saw_fog:
@@ -172,7 +174,7 @@ def score_station(icao: str, observed: dict[str, bool], flags: dict[str, tuple[b
             elif predicted:
                 counts[name]["false_alarm"] += 1
     out = {"icao": icao, "matched_hours": matched, "observed_fog_hours": sum(observed.values())}
-    for name in ("old", "new"):
+    for name in ("old", "new", "risk"):
         hit = counts[name]["hit"]
         miss = counts[name]["miss"]
         false_alarm = counts[name]["false_alarm"]
@@ -200,7 +202,7 @@ def main() -> None:
         flags = model_flags(icao, model["hourly"])
         summary["stations"].append(score_station(icao, observed, flags))
     combined = {"matched_hours": 0, "observed_fog_hours": 0}
-    for name in ("old", "new"):
+    for name in ("old", "new", "risk"):
         hit = miss = false_alarm = 0
         for station in summary["stations"]:
             hit += station[name]["hit"]

@@ -1,18 +1,21 @@
-//! Score one model series for the old and new FG rules.
+//! Score one model series for the old FG rule, the new FG rule, and PROB30.
 //!
-//! stdin JSON: `{"icao","model","hourly"}`. stdout is `time<TAB>old<TAB>new`
-//! with 1 when that rule would emit an `FG` token. Old is the previous
-//! visibility gate (coded visibility below 1000 m). New is that gate plus
-//! night, T−Td ≤ 1 °C, wind ≤ 5 kt, and a saturated lowest level.
+//! stdin JSON: `{"icao","model","hourly"}`. stdout is
+//! `time<TAB>old<TAB>new<TAB>risk` with 1 when that rule fires. Old is the
+//! previous visibility gate (coded visibility below 1000 m). New is that gate
+//! plus night, T−Td ≤ 1 °C, wind ≤ 5 kt, and a saturated lowest level.
+//! `risk` is PROB30 BR/FG: night, T−Td ≤ 2 °C, and wind ≤ 5 kt.
 
 use std::io::Read;
 
 use serde_json::Value;
+use weather::annex3::kmh_to_kt;
 use weather::ceiling::ceiling_from_hourly;
 use weather::metar_wx::derive_metar_wx_and_cloud;
 use weather::round::js_round;
 use weather::series::Series;
 use weather::stations;
+use weather::vis_wx::{fog_risk, is_night};
 use weather::visibility::resolve_visibility_meters;
 
 fn main() {
@@ -45,11 +48,23 @@ fn main() {
             .weather
             .split_whitespace()
             .any(|token| token == "FG");
+        let temp = series.num("temperature_2m", index);
+        let dew = series.num("dew_point_2m", index);
+        let spread = match (temp, dew) {
+            (Some(temp), Some(dew)) => Some(temp - dew),
+            _ => None,
+        };
+        let risk = fog_risk(
+            is_night(icao, &series.time[index]),
+            spread,
+            kmh_to_kt(series.num("wind_speed_10m", index)),
+        );
         println!(
-            "{}\t{}\t{}",
+            "{}\t{}\t{}\t{}",
             series.time[index],
             u8::from(old),
-            u8::from(new_fg)
+            u8::from(new_fg),
+            u8::from(risk)
         );
     }
 }
