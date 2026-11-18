@@ -382,7 +382,8 @@ fn taf_payload(
     let age_seconds = issued
         .map(|stamp| official_ifis::age_seconds(now, stamp))
         .unwrap_or(-1);
-    let stale = age_seconds >= 0 && official_ifis::stale_taf(age_seconds);
+    let stale =
+        !entry.parsed.raw.is_empty() && official_ifis::stale_taf(&entry.parsed.raw, now, issued);
     OfficialTafPayload {
         icao: icao.to_string(),
         raw: entry.parsed.raw,
@@ -541,6 +542,32 @@ mod tests {
         let payload = client.metar("SCTB").await;
         assert!(payload.stale);
         assert!(payload.age_seconds > official_ifis::METAR_STALE_SECS);
+    }
+
+    #[tokio::test]
+    async fn taf_valid_despite_old_issue() {
+        let client = OfficialIfis::new(
+            fixture_fetch(),
+            Clock::at(parse_utc_iso("2026-11-18T13:05:00Z").unwrap().epoch_ms()),
+        );
+        let payload = client.taf("SCTB").await;
+        assert!(!payload.unavailable);
+        assert!(
+            !payload.stale,
+            "TAF inside 1812/1824 validity must not be age-stale"
+        );
+        assert!(payload.age_seconds > 60 * 60);
+    }
+
+    #[tokio::test]
+    async fn taf_stale_after_validity_ends() {
+        let client = OfficialIfis::new(
+            fixture_fetch(),
+            Clock::at(parse_utc_iso("2026-11-19T04:00:00Z").unwrap().epoch_ms()),
+        );
+        let payload = client.taf("SCTB").await;
+        assert!(!payload.unavailable);
+        assert!(payload.stale);
     }
 
     #[tokio::test]

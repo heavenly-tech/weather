@@ -8,7 +8,11 @@ import { chromium } from "playwright";
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const dist = path.join(root, "dist");
-const out = process.env.SCREENSHOT_OUT ?? "/opt/cursor/artifacts/official-vs-model-metar-taf.png";
+const outMain =
+  process.env.SCREENSHOT_OUT ?? "/opt/cursor/artifacts/official-vs-model-metar-taf.png";
+const outUnavailable =
+  process.env.SCREENSHOT_UNAVAILABLE_OUT ??
+  "/opt/cursor/artifacts/official-taf-unavailable-scvh.png";
 
 const officialMetar = {
   icao: "SCTB",
@@ -34,9 +38,23 @@ const officialTaf = {
   fetchedAt: "2026-11-18T13:05:00.000Z",
   issuedAt: "2026-11-18T11:00:00.000Z",
   ageSeconds: 7500,
-  stale: true,
+  stale: false,
   unavailable: false,
   unavailableReason: null,
+};
+
+const officialTafScvh = {
+  icao: "SCVH",
+  raw: "",
+  source: "dgac-ifis",
+  officialLabel: "Oficial DGAC",
+  sourceUrl: "https://aipchile.dgac.gob.cl/taf?designador=SCVH",
+  fetchedAt: "2026-11-18T13:05:00.000Z",
+  issuedAt: null,
+  ageSeconds: -1,
+  stale: false,
+  unavailable: true,
+  unavailableReason: "no_taf_for_designator",
 };
 
 const awcMetar = {
@@ -81,12 +99,35 @@ const awcTaf = {
   fetchedAt: "2026-11-18T13:05:00.000Z",
 };
 
-const mocks = {
-  "/api/official/metar?icao=SCTB": officialMetar,
-  "/api/official/taf?icao=SCTB": officialTaf,
-  "/api/metar?icao=SCTB": awcMetar,
-  "/api/taf?icao=SCTB": awcTaf,
+const awcTafScvh = {
+  data: {
+    icao: "SCVH",
+    name: "Villarrica",
+    raw: "TAF SCVH 180300Z 1800/1824 18010KT 9999 FEW050 SCT120",
+    issuedAt: "2026-11-18T00:00:00.000Z",
+    validFrom: "2026-11-18T01:00:00.000Z",
+    validTo: "2026-11-19T01:00:00.000Z",
+    periods: [],
+    lat: -39.28,
+    lon: -72.22,
+  },
+  source: "live",
+  sourceLabel: "Live TAF from NOAA Aviation Weather Center",
+  fetchedAt: "2026-11-18T13:05:00.000Z",
 };
+
+function buildMocks(icao) {
+  const upper = icao.toUpperCase();
+  return {
+    [`/api/official/metar?icao=${upper}`]:
+      upper === "SCVH"
+        ? { ...officialMetar, icao: "SCVH" }
+        : officialMetar,
+    [`/api/official/taf?icao=${upper}`]: upper === "SCVH" ? officialTafScvh : officialTaf,
+    [`/api/metar?icao=${upper}`]: upper === "SCVH" ? { ...awcMetar, data: { ...awcMetar.data, icao: "SCVH" } } : awcMetar,
+    [`/api/taf?icao=${upper}`]: upper === "SCVH" ? awcTafScvh : awcTaf,
+  };
+}
 
 const mime = {
   ".html": "text/html",
@@ -98,9 +139,11 @@ const mime = {
   ".woff2": "font/woff2",
 };
 
+let activeMocks = buildMocks("SCTB");
+
 const server = http.createServer((req, res) => {
   const url = new URL(req.url ?? "/", "http://127.0.0.1");
-  const mock = mocks[url.pathname + url.search];
+  const mock = activeMocks[url.pathname + url.search];
   if (mock) {
     res.writeHead(200, { "content-type": "application/json" });
     res.end(JSON.stringify(mock));
@@ -120,11 +163,21 @@ await new Promise((resolve) => server.listen(43125, "127.0.0.1", resolve));
 const browser = await chromium.launch({
   args: ["--disable-dev-shm-usage", "--use-angle=swiftshader", "--enable-webgl", "--ignore-gpu-blocklist"],
 });
-const page = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
-await page.goto("http://127.0.0.1:43125/metar-taf?icao=SCTB", { waitUntil: "networkidle" });
-await page.waitForTimeout(1500);
-fs.mkdirSync(path.dirname(out), { recursive: true });
-await page.screenshot({ path: out, fullPage: true });
+
+async function shot(routePath, outPath) {
+  const icao = new URL(routePath, "http://x").searchParams.get("icao") ?? "SCTB";
+  activeMocks = buildMocks(icao);
+  const page = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
+  await page.goto(`http://127.0.0.1:43125${routePath}`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(1500);
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  await page.screenshot({ path: outPath, fullPage: true });
+  await page.close();
+  console.log(`Saved ${outPath}`);
+}
+
+await shot("/metar-taf?icao=SCTB", outMain);
+await shot("/metar-taf?icao=SCVH", outUnavailable);
+
 await browser.close();
 server.close();
-console.log(`Saved ${out}`);

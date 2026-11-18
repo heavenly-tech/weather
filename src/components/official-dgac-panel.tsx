@@ -57,7 +57,7 @@ export function OfficialMetarPanel({ product }: { product: OfficialMetarProduct 
           <p className="text-sm text-muted-foreground">No official METAR available from DGAC IFIS for this station.</p>
         ) : (
           <pre
-            className={`wx-raw rounded-lg p-3 ring-1 ring-sky-500/30 ${product.stale ? "bg-muted/50 text-muted-foreground" : "bg-background/60"}`}
+            className={`wx-raw whitespace-pre-wrap break-words rounded-lg p-3 ring-1 ring-sky-500/30 ${product.stale ? "bg-muted/50 text-muted-foreground" : "bg-background/60"}`}
           >
             {product.raw}
           </pre>
@@ -86,7 +86,7 @@ export function OfficialTafPanel({ product }: { product: OfficialTafProduct }) {
           </p>
         ) : (
           <pre
-            className={`wx-raw rounded-lg p-3 ring-1 ring-sky-500/30 ${product.stale ? "bg-muted/50 text-muted-foreground" : "bg-background/60"}`}
+            className={`wx-raw whitespace-pre-wrap break-words rounded-lg p-3 ring-1 ring-sky-500/30 ${product.stale ? "bg-muted/50 text-muted-foreground" : "bg-background/60"}`}
           >
             {product.raw}
           </pre>

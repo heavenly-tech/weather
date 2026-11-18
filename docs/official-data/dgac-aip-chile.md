@@ -312,6 +312,8 @@ Visual separation: distinct badge colour for **Oficial DGAC** vs **model output,
 
 **Politeness:** Single global semaphore to IFIS; `User-Agent: heavenly-weather/0.1 (server-side dgac-ifis cache)`; at most **1 req/min per ICAO** and **6 req/min** overall; 5 min METAR cache; exponential backoff on errors and HTTP 4xx/5xx.
 
+**Staleness (PR 2):** METAR/SPECI → age-based (**75 min**). TAF → validity window (`DDHH/DDHH` from the bulletin vs injected server clock); not stale while `now` is before validity end (+ **3 h** grace for late replacement issues). Always expose `issuedAt`, `ageSeconds`, and `sourceUrl`.
+
 ---
 
 ### PR 3 — SIGMET/AIRMET SCEZ map + text

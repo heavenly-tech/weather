@@ -8,8 +8,12 @@ pub const OFFICIAL_LABEL: &str = "Oficial DGAC";
 
 pub const METAR_TTL_MS: i64 = 5 * 60 * 1000;
 pub const TAF_TTL_MS: i64 = 30 * 60 * 1000;
-pub const METAR_STALE_SECS: i64 = 60 * 60;
-pub const TAF_STALE_SECS: i64 = 6 * 60 * 60;
+/// METAR/SPECI older than this is marked stale (see docs/official-data/dgac-aip-chile.md).
+pub const METAR_STALE_SECS: i64 = 75 * 60;
+/// When validity cannot be parsed, fall back to issue age (generous).
+pub const TAF_ISSUE_AGE_FALLBACK_SECS: i64 = 30 * 60 * 60;
+/// After validity ends, allow this long before marking stale if the bulletin is still the latest we have.
+pub const TAF_POST_VALIDITY_GRACE_SECS: i64 = 3 * 60 * 60;
 
 pub const GLOBAL_MIN_INTERVAL_MS: i64 = 10_000;
 pub const PER_ICAO_MIN_INTERVAL_MS: i64 = 60_000;
@@ -267,13 +271,81 @@ pub fn stale_metar(age_secs: i64) -> bool {
     age_secs > METAR_STALE_SECS
 }
 
-pub fn stale_taf(age_secs: i64) -> bool {
-    age_secs > TAF_STALE_SECS
+/// TAF is current while `now` is inside the bulletin validity window; after `validTo` we wait a
+/// short grace before marking stale (next issue may be slightly late). Issue age alone does not expire
+/// an in-window TAF.
+pub fn stale_taf(raw: &str, now: UtcStamp, issued: Option<UtcStamp>) -> bool {
+    let issued = match issued.or_else(|| issue_from_metar_raw(raw, now)) {
+        Some(stamp) => stamp,
+        None => return true,
+    };
+    match taf_validity_window(raw, issued) {
+        Some((valid_from, valid_to)) => {
+            let now_ms = now.epoch_ms();
+            if now_ms < valid_from.epoch_ms() {
+                return false;
+            }
+            if now_ms > valid_to.epoch_ms() {
+                let overdue_secs = (now_ms - valid_to.epoch_ms()) / 1000;
+                return overdue_secs > TAF_POST_VALIDITY_GRACE_SECS;
+            }
+            false
+        }
+        None => age_seconds(now, issued) > TAF_ISSUE_AGE_FALLBACK_SECS,
+    }
+}
+
+/// Parse `DDHH/DDHH` from a TAF body using the issue time as month/year anchor.
+pub fn taf_validity_window(raw: &str, issue: UtcStamp) -> Option<(UtcStamp, UtcStamp)> {
+    let body = raw.trim().trim_start_matches("TAF:").trim();
+    let mut tokens = body.split_whitespace();
+    if tokens.next()? != "TAF" {
+        return None;
+    }
+    let icao = tokens.next()?;
+    if icao.len() != 4 {
+        return None;
+    }
+    let issue_token = tokens.next()?;
+    if !issue_token.ends_with('Z') || issue_token.len() != 7 {
+        return None;
+    }
+    let validity = tokens.next()?;
+    let (from_str, to_str) = validity.split_once('/')?;
+    if from_str.len() != 4 || to_str.len() != 4 {
+        return None;
+    }
+    let valid_from = ddhh_to_stamp(from_str, issue, false)?;
+    let valid_to = ddhh_to_stamp(to_str, issue, true)?;
+    Some((valid_from, valid_to))
+}
+
+fn ddhh_to_stamp(ddhh: &str, anchor: UtcStamp, as_validity_end: bool) -> Option<UtcStamp> {
+    let day: i32 = ddhh[..2].parse().ok()?;
+    let hour: i32 = ddhh[2..4].parse().ok()?;
+    let parts = anchor.parts();
+    if as_validity_end && hour == 24 {
+        return Some(UtcStamp::from_parts(
+            parts.year,
+            parts.month0,
+            day + 1,
+            0,
+            0,
+            0,
+            0,
+        ));
+    }
+    let mut stamp = UtcStamp::from_parts(parts.year, parts.month0, day, hour, 0, 0, 0);
+    if stamp.epoch_ms() < anchor.epoch_ms() - 20 * 86_400_000 {
+        stamp = UtcStamp::from_parts(parts.year, parts.month0 + 1, day, hour, 0, 0, 0);
+    }
+    Some(stamp)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utc::parse_utc_iso;
     use std::path::PathBuf;
 
     fn read_fixture(name: &str) -> String {
@@ -309,11 +381,33 @@ mod tests {
     }
 
     #[test]
-    fn stale_thresholds() {
-        assert!(!stale_metar(3599));
-        assert!(stale_metar(3601));
-        assert!(!stale_taf(6 * 3600));
-        assert!(stale_taf(6 * 3600 + 1));
+    fn stale_metar_threshold() {
+        assert!(!stale_metar(METAR_STALE_SECS));
+        assert!(stale_metar(METAR_STALE_SECS + 1));
+    }
+
+    #[test]
+    fn stale_taf_validity_window() {
+        let raw = "TAF SCTB 181100Z 1812/1824 VRB02KT 9999 NSC";
+        let issue = parse_utc_iso("2026-11-18T11:00:00Z").unwrap();
+        let during = parse_utc_iso("2026-11-18T13:05:00Z").unwrap();
+        assert!(
+            !stale_taf(raw, during, Some(issue)),
+            "in-window TAF stays current despite issue age"
+        );
+        let expired = parse_utc_iso("2026-11-19T04:00:00Z").unwrap();
+        assert!(
+            stale_taf(raw, expired, Some(issue)),
+            "past validity end (+ grace) is stale"
+        );
+    }
+
+    #[test]
+    fn taf_validity_parses_dd24_end() {
+        let raw = "TAF SCTB 181100Z 1812/1824 VRB02KT 9999 NSC";
+        let issue = parse_utc_iso("2026-11-18T11:00:00Z").unwrap();
+        let (_, end) = taf_validity_window(raw, issue).unwrap();
+        assert_eq!(end.to_iso(), "2026-11-19T00:00:00.000Z");
     }
 
     #[test]
