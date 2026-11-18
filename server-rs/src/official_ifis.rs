@@ -80,8 +80,8 @@ pub fn allowed_fir(fir: &str) -> bool {
 
 pub fn parse_metar_html(html: &str, icao: &str) -> Result<ParsedMetar, ParseFailure> {
     let want = icao.trim().to_ascii_uppercase();
-    let header =
-        parse_spanish_header(html, "METAR del ", '-').or_else(|| parse_spanish_header(html, "SPECI del ", '-'));
+    let header = parse_spanish_header(html, "METAR del ", '-')
+        .or_else(|| parse_spanish_header(html, "SPECI del ", '-'));
     for prefix in ["METAR", "SPECI"] {
         if let Some(raw) = extract_bulletin_line(html, prefix, &want) {
             return Ok(ParsedMetar {
@@ -149,7 +149,9 @@ pub fn parse_taf_html(html: &str, icao: &str) -> Result<ParsedTaf, ParseFailure>
 
 fn extract_bulletin_line(html: &str, kind: &str, icao: &str) -> Option<String> {
     let needle = format!("{kind} {icao} ");
-    let idx = html.to_ascii_uppercase().find(&needle.to_ascii_uppercase())?;
+    let idx = html
+        .to_ascii_uppercase()
+        .find(&needle.to_ascii_uppercase())?;
     let raw = &html[idx..];
     let end = raw.find('<').unwrap_or(raw.len().min(280));
     let line = raw[..end].trim();
@@ -161,10 +163,7 @@ fn extract_bulletin_line(html: &str, kind: &str, icao: &str) -> Option<String> {
 }
 
 fn strip_taf_prefix(raw: &str) -> String {
-    raw.trim()
-        .trim_start_matches("TAF:")
-        .trim()
-        .to_string()
+    raw.trim().trim_start_matches("TAF:").trim().to_string()
 }
 
 fn extract_codification_lines(html: &str) -> Vec<String> {
@@ -250,14 +249,13 @@ pub fn issue_from_metar_raw(raw: &str, now: UtcStamp) -> Option<UtcStamp> {
             year += 1;
         }
     }
-    parse_utc_iso(&format!("{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:00Z")).ok()
+    parse_utc_iso(&format!(
+        "{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:00Z"
+    ))
+    .ok()
 }
 
-pub fn resolved_issue(
-    header: Option<UtcStamp>,
-    raw: &str,
-    now: UtcStamp,
-) -> Option<UtcStamp> {
+pub fn resolved_issue(header: Option<UtcStamp>, raw: &str, now: UtcStamp) -> Option<UtcStamp> {
     header.or_else(|| issue_from_metar_raw(raw, now))
 }
 

@@ -23,7 +23,8 @@ fn ifis_fetch() -> FetchFn {
     )
     .unwrap();
     let no_taf = std::fs::read_to_string(
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/official/taf-scvh-none.html"),
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/official/taf-scvh-none.html"),
     )
     .unwrap();
     Arc::new(move |url: String| {

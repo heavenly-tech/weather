@@ -39,9 +39,9 @@ pub mod visibility;
 #[cfg(test)]
 mod desk_parity;
 #[cfg(test)]
-mod official_parity;
-#[cfg(test)]
 mod encoder_tests;
+#[cfg(test)]
+mod official_parity;
 #[cfg(test)]
 mod parity;
 #[cfg(test)]

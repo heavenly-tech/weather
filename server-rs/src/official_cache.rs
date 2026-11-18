@@ -175,10 +175,11 @@ impl OfficialIfis {
         match self.fetch_html(&source_url).await {
             Ok(html) => {
                 self.clear_failure(icao, ProductKind::Metar).await;
-                let parsed = official_ifis::parse_metar_html(&html, icao).map_err(|err| match err {
-                    ParseFailure::NoMetar => "parse_no_metar",
-                    _ => "parse_error",
-                })?;
+                let parsed =
+                    official_ifis::parse_metar_html(&html, icao).map_err(|err| match err {
+                        ParseFailure::NoMetar => "parse_no_metar",
+                        _ => "parse_error",
+                    })?;
                 let entry = CachedProduct {
                     parsed,
                     fetched_at_ms: now,
@@ -214,11 +215,12 @@ impl OfficialIfis {
         match self.fetch_html(&source_url).await {
             Ok(html) => {
                 self.clear_failure(icao, ProductKind::Taf).await;
-                let parsed = official_ifis::parse_taf_html(&html, icao).map_err(|err| match err {
-                    ParseFailure::NoTafForDesignator => "no_taf_for_designator",
-                    ParseFailure::NoTaf => "parse_no_taf",
-                    _ => "parse_error",
-                })?;
+                let parsed =
+                    official_ifis::parse_taf_html(&html, icao).map_err(|err| match err {
+                        ParseFailure::NoTafForDesignator => "no_taf_for_designator",
+                        ParseFailure::NoTaf => "parse_no_taf",
+                        _ => "parse_error",
+                    })?;
                 let entry = CachedProduct {
                     parsed,
                     fetched_at_ms: now,
@@ -255,12 +257,20 @@ impl OfficialIfis {
 
     async fn stale_metar(&self, icao: &str, now: i64) -> Option<CachedProduct<ParsedMetar>> {
         let guard = self.inner.state.lock().await;
-        guard.metar.get(icao).filter(|entry| entry.expires_at_ms <= now).cloned()
+        guard
+            .metar
+            .get(icao)
+            .filter(|entry| entry.expires_at_ms <= now)
+            .cloned()
     }
 
     async fn stale_taf(&self, icao: &str, now: i64) -> Option<CachedProduct<ParsedTaf>> {
         let guard = self.inner.state.lock().await;
-        guard.taf.get(icao).filter(|entry| entry.expires_at_ms <= now).cloned()
+        guard
+            .taf
+            .get(icao)
+            .filter(|entry| entry.expires_at_ms <= now)
+            .cloned()
     }
 
     async fn store_metar(&self, icao: &str, entry: CachedProduct<ParsedMetar>) {
@@ -340,11 +350,8 @@ fn metar_payload(
     entry: CachedProduct<ParsedMetar>,
     now: crate::utc::UtcStamp,
 ) -> OfficialMetarPayload {
-    let issued = official_ifis::resolved_issue(
-        entry.parsed.header_issued_at,
-        &entry.parsed.raw,
-        now,
-    );
+    let issued =
+        official_ifis::resolved_issue(entry.parsed.header_issued_at, &entry.parsed.raw, now);
     let age_seconds = issued
         .map(|stamp| official_ifis::age_seconds(now, stamp))
         .unwrap_or(-1);
@@ -370,11 +377,8 @@ fn taf_payload(
     entry: CachedProduct<ParsedTaf>,
     now: crate::utc::UtcStamp,
 ) -> OfficialTafPayload {
-    let issued = official_ifis::resolved_issue(
-        entry.parsed.header_issued_at,
-        &entry.parsed.raw,
-        now,
-    );
+    let issued =
+        official_ifis::resolved_issue(entry.parsed.header_issued_at, &entry.parsed.raw, now);
     let age_seconds = issued
         .map(|stamp| official_ifis::age_seconds(now, stamp))
         .unwrap_or(-1);
@@ -447,7 +451,8 @@ mod tests {
 
     fn fixture_fetch() -> FetchFn {
         let metar = std::fs::read_to_string(
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/official/metar-sctb.html"),
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("tests/fixtures/official/metar-sctb.html"),
         )
         .unwrap();
         let taf = std::fs::read_to_string(
@@ -455,7 +460,8 @@ mod tests {
         )
         .unwrap();
         let no_taf = std::fs::read_to_string(
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/official/taf-scvh-none.html"),
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("tests/fixtures/official/taf-scvh-none.html"),
         )
         .unwrap();
         Arc::new(move |url: String| {
@@ -480,7 +486,8 @@ mod tests {
     async fn cache_serves_second_call_without_upstream() {
         let calls = Arc::new(AtomicUsize::new(0));
         let metar_fixture = std::fs::read_to_string(
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/official/metar-sctb.html"),
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("tests/fixtures/official/metar-sctb.html"),
         )
         .unwrap();
         let fetch: FetchFn = {

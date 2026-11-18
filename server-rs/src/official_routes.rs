@@ -34,10 +34,7 @@ pub async fn official_taf(State(state): State<AppState>, request: Request) -> Re
 
 pub async fn official_gamet(State(state): State<AppState>, request: Request) -> Response {
     let query = query_map(request.uri().query());
-    let fir = query
-        .get("fir")
-        .map(String::as_str)
-        .unwrap_or("SANTIAGO");
+    let fir = query.get("fir").map(String::as_str).unwrap_or("SANTIAGO");
     let payload = state.official.gamet(fir);
     json_response(StatusCode::OK, gamet_bytes(&payload))
 }
@@ -64,7 +61,10 @@ fn metar_bytes(payload: &OfficialMetarPayload) -> Vec<u8> {
         ("ageSeconds", Js::Num(payload.age_seconds as f64)),
         ("stale", Js::Bool(payload.stale)),
         ("unavailable", Js::Bool(payload.unavailable)),
-        ("unavailableReason", opt_str(payload.unavailable_reason.as_deref())),
+        (
+            "unavailableReason",
+            opt_str(payload.unavailable_reason.as_deref()),
+        ),
     ])
     .to_bytes()
 }
@@ -81,7 +81,10 @@ fn taf_bytes(payload: &OfficialTafPayload) -> Vec<u8> {
         ("ageSeconds", Js::Num(payload.age_seconds as f64)),
         ("stale", Js::Bool(payload.stale)),
         ("unavailable", Js::Bool(payload.unavailable)),
-        ("unavailableReason", opt_str(payload.unavailable_reason.as_deref())),
+        (
+            "unavailableReason",
+            opt_str(payload.unavailable_reason.as_deref()),
+        ),
     ])
     .to_bytes()
 }
