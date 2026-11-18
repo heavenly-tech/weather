@@ -4,10 +4,28 @@ use axum::routing::get;
 use axum::Router;
 
 use crate::health;
+use crate::routes;
+use crate::state::AppState;
 use crate::static_files;
 
 pub fn router(dist: PathBuf) -> Router {
-    static_files::attach(Router::new().route("/api/health", get(health::get)), &dist)
+    let state = AppState::production().expect("Open-Meteo client");
+    router_with(dist, state)
+}
+
+pub fn router_with(dist: PathBuf, state: AppState) -> Router {
+    let api = Router::new()
+        .route("/api/health", get(health::get))
+        .route("/api/andes/models", get(routes::models))
+        .route("/api/andes/times", get(routes::times))
+        .route("/api/andes/ceiling", get(routes::ceiling))
+        .route("/api/andes/slice", get(routes::slice))
+        .route("/api/andes/timeline", get(routes::timeline))
+        .route("/api/andes/coherence", get(routes::coherence))
+        .route("/api/generated/metar", get(routes::generated_metar))
+        .route("/api/generated/taf", get(routes::generated_taf))
+        .with_state(state);
+    static_files::attach(api, &dist)
 }
 
 #[cfg(test)]

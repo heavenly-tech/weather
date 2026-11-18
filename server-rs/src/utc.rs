@@ -20,8 +20,27 @@ pub struct UtcParts {
 }
 
 impl UtcStamp {
+    pub fn from_epoch_ms(ms: i64) -> Self {
+        Self { ms }
+    }
+
     pub fn epoch_ms(self) -> i64 {
         self.ms
+    }
+
+    /// `Date.prototype.toISOString`, always with milliseconds.
+    pub fn to_iso(self) -> String {
+        let parts = self.parts();
+        format!(
+            "{:04}-{:02}-{:02}T{:02}:{:02}:{:02}.{:03}Z",
+            parts.year,
+            parts.month0 + 1,
+            parts.day,
+            parts.hour,
+            parts.minute,
+            parts.second,
+            parts.millis
+        )
     }
 
     pub fn parts(self) -> UtcParts {

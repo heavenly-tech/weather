@@ -16,3 +16,12 @@ pub fn build() -> reqwest::Result<reqwest::Client> {
         .redirect(reqwest::redirect::Policy::none())
         .build()
 }
+
+/// Open-Meteo fetch has no timeout in the TypeScript cache. Redirects stay off
+/// so a free-tier URL cannot be bounced onto a customer host.
+pub fn open_meteo() -> reqwest::Result<reqwest::Client> {
+    reqwest::Client::builder()
+        .user_agent(USER_AGENT)
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+}
