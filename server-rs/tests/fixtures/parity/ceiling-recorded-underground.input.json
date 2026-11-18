@@ -1,0 +1,48 @@
+{
+  "label": "EXAMPLE",
+  "op": "ceilingFromHourly",
+  "note": "Recorded tests/fixtures/underground-cloud-levels.json. 1000/975 hPa are underground at 474 m.",
+  "terrainElevM": 474,
+  "index": 0,
+  "hourly": {
+    "time": [
+      "2026-11-17T12:00"
+    ],
+    "surface_pressure": [
+      955
+    ],
+    "cloud_cover_1000hPa": [
+      95
+    ],
+    "cloud_cover_975hPa": [
+      90
+    ],
+    "cloud_cover_925hPa": [
+      5
+    ],
+    "cloud_cover_850hPa": [
+      80
+    ],
+    "relative_humidity_1000hPa": [
+      99
+    ],
+    "relative_humidity_975hPa": [
+      99
+    ],
+    "relative_humidity_850hPa": [
+      88
+    ],
+    "geopotential_height_1000hPa": [
+      110
+    ],
+    "geopotential_height_975hPa": [
+      200
+    ],
+    "geopotential_height_925hPa": [
+      900
+    ],
+    "geopotential_height_850hPa": [
+      1600
+    ]
+  }
+}

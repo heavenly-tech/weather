@@ -1,0 +1,26 @@
+{
+  "label": "EXAMPLE",
+  "op": "ceilingFromHourly",
+  "terrainElevM": 480,
+  "index": 0,
+  "hourly": {
+    "time": [
+      "t"
+    ],
+    "surface_pressure": [
+      980
+    ],
+    "cloud_cover_925hPa": [
+      80
+    ],
+    "geopotential_height_925hPa": [
+      620
+    ],
+    "cloud_cover_850hPa": [
+      20
+    ],
+    "geopotential_height_850hPa": [
+      1600
+    ]
+  }
+}

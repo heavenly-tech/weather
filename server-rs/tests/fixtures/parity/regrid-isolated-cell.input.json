@@ -1,0 +1,713 @@
+{
+  "label": "EXAMPLE",
+  "op": "refineCeilingGrid",
+  "note": "EXAMPLE isolated coarse cell inside the 11×8 domain. Fine lat/lon run from the north-west corner (-32.1, -71.8) to the south-east corner (-34.8, -70). Neighbourhood keeps min base and max precip, not a bilinear blend.",
+  "rows": 11,
+  "cols": 8,
+  "cells": [
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": 1800,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 6
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    }
+  ]
+}

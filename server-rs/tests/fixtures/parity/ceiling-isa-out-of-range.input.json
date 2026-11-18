@@ -1,0 +1,12 @@
+{
+  "label": "EXAMPLE",
+  "op": "surfacePressureHpa",
+  "note": "EXAMPLE surface pressure below 400 hPa falls through to the ISA formula.",
+  "terrainElevM": 649,
+  "index": 0,
+  "hourly": {
+    "surface_pressure": [
+      50
+    ]
+  }
+}

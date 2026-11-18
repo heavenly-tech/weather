@@ -1,0 +1,31 @@
+{
+  "label": "EXAMPLE",
+  "op": "neighbourhoodBaseAndPrecip",
+  "corners": [
+    {
+      "lat": 1,
+      "lon": 1,
+      "baseMslM": 1500,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 4.2
+    },
+    {
+      "lat": 1,
+      "lon": 2,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0
+    },
+    null,
+    {
+      "lat": 2,
+      "lon": 2,
+      "baseMslM": 3200,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 0.1
+    }
+  ]
+}

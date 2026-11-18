@@ -1,0 +1,51 @@
+{
+  "label": "EXAMPLE",
+  "op": "ceilingFromHourly",
+  "note": "EXAMPLE nulls, a negative convective base, negative terrain, and non-finite cover. Surface RH stays below the fog gate so the interpolated base stays negative and feet stay positive. Null does not become 0.",
+  "terrainElevM": -100,
+  "index": 0,
+  "hourly": {
+    "time": [
+      "t"
+    ],
+    "surface_pressure": [
+      null
+    ],
+    "convective_cloud_base": [
+      -40
+    ],
+    "showers": [
+      -2
+    ],
+    "rain": [
+      null
+    ],
+    "precipitation": [
+      "NaN"
+    ],
+    "cloud_cover_low": [
+      null
+    ],
+    "cape": [
+      -5
+    ],
+    "visibility": [
+      null
+    ],
+    "relative_humidity_2m": [
+      50
+    ],
+    "cloud_cover_850hPa": [
+      80
+    ],
+    "geopotential_height_850hPa": [
+      -40
+    ],
+    "cloud_cover_700hPa": [
+      "Infinity"
+    ],
+    "geopotential_height_700hPa": [
+      3000
+    ]
+  }
+}

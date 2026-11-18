@@ -1,0 +1,24 @@
+{
+  "label": "EXAMPLE",
+  "op": "ceilingFromHourly",
+  "note": "EXAMPLE visibility under 1000 m. Fog replaces the higher stratiform base.",
+  "terrainElevM": 474,
+  "index": 0,
+  "hourly": {
+    "time": [
+      "t"
+    ],
+    "surface_pressure": [
+      980
+    ],
+    "visibility": [
+      400
+    ],
+    "cloud_cover_850hPa": [
+      80
+    ],
+    "geopotential_height_850hPa": [
+      1600
+    ]
+  }
+}

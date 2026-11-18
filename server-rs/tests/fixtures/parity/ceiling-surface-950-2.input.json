@@ -1,0 +1,12 @@
+{
+  "label": "EXAMPLE",
+  "op": "surfacePressureHpa",
+  "note": "A valid surface pressure is returned as-is. Math.round is only applied to the interpolation floor.",
+  "terrainElevM": 649,
+  "index": 0,
+  "hourly": {
+    "surface_pressure": [
+      950.2
+    ]
+  }
+}

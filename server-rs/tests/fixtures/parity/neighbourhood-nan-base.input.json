@@ -1,0 +1,23 @@
+{
+  "label": "EXAMPLE",
+  "op": "neighbourhoodBaseAndPrecip",
+  "note": "A NaN base is not null, so Math.min returns NaN and JSON.stringify writes null.",
+  "corners": [
+    {
+      "lat": 0,
+      "lon": 0,
+      "baseMslM": "NaN",
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": 1
+    },
+    {
+      "lat": 0,
+      "lon": 1,
+      "baseMslM": 1500,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": null
+    }
+  ]
+}

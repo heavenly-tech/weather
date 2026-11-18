@@ -1,0 +1,12 @@
+{
+  "label": "recorded",
+  "icao": "SCTB",
+  "fetchedAt": "2026-11-18T02:00:43Z",
+  "model": "icon_seamless",
+  "latitude": -33.456,
+  "longitude": -70.546,
+  "terrainElevM": 649,
+  "url": "https://api.open-meteo.com/v1/forecast?latitude=-33.456&longitude=-70.546&hourly=surface_pressure%2Ccloud_cover%2Ccloud_cover_low%2Ccloud_cover_mid%2Ccloud_cover_high%2Ctemperature_2m%2Cdew_point_2m%2Crelative_humidity_2m%2Cpressure_msl%2Cwind_speed_10m%2Cwind_direction_10m%2Cwind_gusts_10m%2Cvisibility%2Cprecipitation%2Crain%2Cshowers%2Csnowfall%2Cweather_code%2Cconvective_cloud_base%2Ccape%2Ccloud_cover_1000hPa%2Cgeopotential_height_1000hPa%2Crelative_humidity_1000hPa%2Ctemperature_1000hPa%2Cwind_speed_1000hPa%2Cwind_direction_1000hPa%2Ccloud_cover_975hPa%2Cgeopotential_height_975hPa%2Crelative_humidity_975hPa%2Ctemperature_975hPa%2Cwind_speed_975hPa%2Cwind_direction_975hPa%2Ccloud_cover_950hPa%2Cgeopotential_height_950hPa%2Crelative_humidity_950hPa%2Ctemperature_950hPa%2Cwind_speed_950hPa%2Cwind_direction_950hPa%2Ccloud_cover_925hPa%2Cgeopotential_height_925hPa%2Crelative_humidity_925hPa%2Ctemperature_925hPa%2Cwind_speed_925hPa%2Cwind_direction_925hPa%2Ccloud_cover_900hPa%2Cgeopotential_height_900hPa%2Crelative_humidity_900hPa%2Ctemperature_900hPa%2Cwind_speed_900hPa%2Cwind_direction_900hPa%2Ccloud_cover_850hPa%2Cgeopotential_height_850hPa%2Crelative_humidity_850hPa%2Ctemperature_850hPa%2Cwind_speed_850hPa%2Cwind_direction_850hPa%2Ccloud_cover_800hPa%2Cgeopotential_height_800hPa%2Crelative_humidity_800hPa%2Ctemperature_800hPa%2Cwind_speed_800hPa%2Cwind_direction_800hPa%2Ccloud_cover_700hPa%2Cgeopotential_height_700hPa%2Crelative_humidity_700hPa%2Ctemperature_700hPa%2Cwind_speed_700hPa%2Cwind_direction_700hPa%2Ccloud_cover_600hPa%2Cgeopotential_height_600hPa%2Crelative_humidity_600hPa%2Ctemperature_600hPa%2Cwind_speed_600hPa%2Cwind_direction_600hPa%2Ccloud_cover_500hPa%2Cgeopotential_height_500hPa%2Crelative_humidity_500hPa%2Ctemperature_500hPa%2Cwind_speed_500hPa%2Cwind_direction_500hPa&forecast_hours=48&past_hours=36&models=icon_seamless&timezone=UTC",
+  "response": "tests/fixtures/recorded/sctb-icon-seamless-2026-11-18.json",
+  "note": "Raw Open-Meteo body for the SCTB focus point. The grid point in the body is the API snap (-33.5, -70.5, 647 m). Ceiling uses the airfield elevation 649 m. visibility is null at every hour. cloud_cover_400hPa and the 300 hPa series are absent because this point query does not request them. No API key."
+}

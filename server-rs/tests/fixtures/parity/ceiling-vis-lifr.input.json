@@ -1,0 +1,24 @@
+{
+  "label": "EXAMPLE",
+  "op": "ceilingFromHourly",
+  "note": "EXAMPLE high base with 1200 m visibility. That is LIFR visibility (under 1 SM) but not the fog gate (under 1000 m), so the ceiling stays high.",
+  "terrainElevM": 474,
+  "index": 0,
+  "hourly": {
+    "time": [
+      "t"
+    ],
+    "surface_pressure": [
+      955
+    ],
+    "visibility": [
+      1200
+    ],
+    "cloud_cover_850hPa": [
+      80
+    ],
+    "geopotential_height_850hPa": [
+      5000
+    ]
+  }
+}
