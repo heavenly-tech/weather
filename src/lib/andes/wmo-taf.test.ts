@@ -399,6 +399,67 @@ describe("generateModelTaf", () => {
     const kept = assertModelTafFormat(`${head} BECMG 1823/1824 VRB01KT 9999 NSC RMK GEN=x`);
     expect(kept.ok).toBe(true);
   });
+
+  it("keeps BECMG 1823/1901 inside validity 1812/1912 and applies DD24 only at midnight", () => {
+    // EXAMPLE hours. Validity runs through the next noon, so a 2 h change
+    // that crosses midnight ends at 1901 and is not clamped to 1824.
+    const n = 30;
+    const time: string[] = [];
+    const wind: number[] = [];
+    for (let i = 0; i < n; i++) {
+      const d = new Date("2026-11-18T12:00:00Z");
+      d.setUTCHours(d.getUTCHours() + i);
+      const iso = d.toISOString().slice(0, 16);
+      time.push(iso);
+      wind.push(iso >= "2026-11-18T23:00" ? 50 : 18);
+    }
+    const fill = (value: number) => Array(n).fill(value);
+    const taf = generateModelTaf({
+      icao: "SCTB",
+      elevM: 649,
+      model: "gfs_seamless",
+      runTime: "2026-11-18T11:17:00Z",
+      hourly: {
+        time,
+        temperature_2m: fill(16),
+        dew_point_2m: fill(6),
+        relative_humidity_2m: fill(40),
+        visibility: fill(9999),
+        wind_speed_10m: wind,
+        wind_direction_10m: fill(200),
+        wind_gusts_10m: wind,
+        precipitation: fill(0),
+        rain: fill(0),
+        showers: fill(0),
+        surface_pressure: fill(980),
+        cloud_cover_low: fill(5),
+        cloud_cover_925hPa: fill(5),
+        geopotential_height_925hPa: fill(1600),
+      },
+    });
+    expect("error" in taf).toBe(false);
+    if ("error" in taf) return;
+    expect(taf.raw).toMatch(/\b1812\/1912\b/);
+    expect(taf.raw).toMatch(/\bBECMG 1823\/1901\b/);
+    expect(taf.raw).not.toMatch(/\bBECMG 1823\/1824\b/);
+    expect(taf.raw).not.toMatch(/\/1900\b/);
+    const built = assertModelTafFormat(taf.raw);
+    expect(built.ok, built.ok ? "" : built.reasons.join("; ")).toBe(true);
+
+    const head = "MODEL OUTPUT — NOT OFFICIAL\nTAF SCTB 181117Z 1812/1912 20010KT 9999 NSC";
+    const cross = assertModelTafFormat(`${head} BECMG 1823/1901 20027KT 9999 NSC RMK GEN=x`);
+    expect(cross.ok, cross.ok ? "" : cross.reasons.join("; ")).toBe(true);
+    const midnightAs00 = assertModelTafFormat(`${head} BECMG 1823/1900 20027KT 9999 NSC RMK GEN=x`);
+    expect(midnightAs00.ok).toBe(false);
+    if (!midnightAs00.ok) expect(midnightAs00.reasons.join(" ")).toMatch(/1823\/1900/);
+    const midnightAs24 = assertModelTafFormat(`${head} BECMG 1823/1824 20010KT 9999 NSC RMK GEN=x`);
+    expect(midnightAs24.ok, midnightAs24.ok ? "" : midnightAs24.reasons.join("; ")).toBe(true);
+    const badPeriod = assertModelTafFormat(
+      "MODEL OUTPUT — NOT OFFICIAL\nTAF SCTB 181117Z 1812/1900 20010KT 9999 NSC RMK GEN=x"
+    );
+    expect(badPeriod.ok).toBe(false);
+    if (!badPeriod.ok) expect(badPeriod.reasons.join(" ")).toMatch(/1812\/1900/);
+  });
 });
 
 function ddhhSpanHours(from: string, to: string): number {

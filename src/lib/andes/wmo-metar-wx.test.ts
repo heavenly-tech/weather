@@ -727,6 +727,95 @@ describe("deriveMetarWxAndCloud", () => {
     const d = deriveMetarWxAndCloud(hourly, 0, 100, "SCVM", ceil, 9999, false);
     expect(d.weather).not.toContain("FG");
   });
+
+  it("ECMWF falls back to 600 hPa when the 700 hPa height is missing", () => {
+    // EXAMPLE hour. No 700 hPa geopotential, so the estimated base is 600 hPa.
+    const gh600 = 4200;
+    const elev = 649;
+    const agl600 = (gh600 - elev) * 3.280839895;
+    const hundreds = String(cloudHeightHundredsFt(agl600)).padStart(3, "0");
+    const light = {
+      time: ["2026-11-17T06:00"],
+      temperature_2m: [9],
+      dew_point_2m: [8.6],
+      relative_humidity_2m: [96],
+      precipitation: [0.3],
+      rain: [0.3],
+      showers: [0],
+      visibility: [8000],
+      cloud_cover_low: [2],
+      cloud_cover_mid: [8],
+      cloud_cover: [12],
+      surface_pressure: [980],
+      geopotential_height_600hPa: [gh600],
+    };
+    const lightCeil = ceilingFromHourly(light, 0, elev);
+    const few = deriveMetarWxAndCloud(light, 0, elev, "SCTB", lightCeil, 8000, false, false, "ecmwf_ifs025");
+    expect(few.clouds).toBe(`FEW${hundreds}`);
+    expect(few.weather).toMatch(/SHRA/);
+
+    const deck = {
+      time: ["2026-11-17T18:00"],
+      temperature_2m: [12],
+      dew_point_2m: [8],
+      relative_humidity_2m: [70],
+      precipitation: [0.4],
+      rain: [0.4],
+      showers: [0],
+      visibility: [9000],
+      cloud_cover_low: [8],
+      cloud_cover_mid: [60],
+      cloud_cover: [40],
+      surface_pressure: [980],
+      geopotential_height_700hPa: [null],
+      geopotential_height_600hPa: [gh600],
+      cape: [0],
+    };
+    const deckCeil = ceilingFromHourly(deck, 0, elev);
+    const rain = deriveMetarWxAndCloud(deck, 0, elev, "SCTB", deckCeil, 9000, false, false, "ecmwf_ifs025");
+    expect(rain.clouds).toBe(`BKN${hundreds}`);
+    expect(rain.effectiveCeilFt).toBeCloseTo(agl600, 4);
+    expect(rain.rmkExtra).toContain("CLD EST");
+    expect(rain.weather).toMatch(/(?:^|\s)-RA(?:\s|$)/);
+    expect(rain.weather).not.toMatch(/SHRA/);
+  });
+
+  it("ECMWF with no mid-cloud series stays on the low-cloud decision", () => {
+    // EXAMPLE hour. Absent and null cloud_cover_mid both mean no mid deck.
+    const gh = 3100;
+    const elev = 649;
+    const agl700 = (gh - elev) * 3.280839895;
+    const few = `FEW${String(cloudHeightHundredsFt(agl700)).padStart(3, "0")}`;
+    const shared = {
+      time: ["2026-11-17T18:00"],
+      temperature_2m: [16],
+      dew_point_2m: [8],
+      relative_humidity_2m: [55],
+      precipitation: [0.4],
+      rain: [0.4],
+      showers: [0],
+      visibility: [9000],
+      cloud_cover_low: [8],
+      cloud_cover: [40],
+      surface_pressure: [980],
+      geopotential_height_700hPa: [gh],
+      cape: [0],
+    };
+    const encode = (hourly: Record<string, Array<number | null> | string[]>) => {
+      const ceil = ceilingFromHourly(hourly, 0, elev);
+      return deriveMetarWxAndCloud(hourly, 0, elev, "SCTB", ceil, 9000, false, false, "ecmwf_ifs025");
+    };
+    for (const hourly of [shared, { ...shared, cloud_cover_mid: [null] }]) {
+      const d = encode(hourly);
+      expect(d.clouds).toBe(few);
+      expect(d.weather).toMatch(/SHRA/);
+      expect(d.weather).not.toMatch(/(?:^|\s)-RA(?:\s|$)/);
+    }
+    const deck = encode({ ...shared, cloud_cover_mid: [60] });
+    expect(deck.clouds).toMatch(/^BKN/);
+    expect(deck.weather).toMatch(/(?:^|\s)-RA(?:\s|$)/);
+    expect(deck.weather).not.toMatch(/SHRA/);
+  });
 });
 
 function expectNoRaDzWithClearSky(raw: string) {
