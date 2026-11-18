@@ -47,7 +47,6 @@ export function SynopticDesk({ envelope }: { envelope: ProductEnvelope<SynopticP
                     </Button>
                   </div>
                 ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={chart.imagePath}
                     alt={chart.title}

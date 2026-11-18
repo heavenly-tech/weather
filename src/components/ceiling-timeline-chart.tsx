@@ -1,7 +1,7 @@
 "use client";
 
 import type { ModelCeilingSeries, ObservedCeilingSeries } from "@/lib/andes/timeline";
-import { categoryColor } from "@/lib/andes/ceiling";
+import { categoryColor } from "@/lib/andes/ceiling-style";
 
 const W = 640;
 const H = 200;

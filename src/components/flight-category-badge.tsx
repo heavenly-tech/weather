@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/client/next-link";
 import { flightCategoryBg } from "@/lib/format";
 import type { FlightCategory } from "@/lib/types";
 import { vfrSvfrHref } from "@/lib/visibility";

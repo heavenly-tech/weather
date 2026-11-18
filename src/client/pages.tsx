@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams } from "@/client/next-navigation";
 import { BriefingView } from "@/components/briefing-view";
 import { ForecastView } from "@/components/forecast-view";
 import { GametDesk } from "@/components/gamet-desk";

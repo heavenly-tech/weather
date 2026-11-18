@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "@/client/next-navigation";
 import { Button } from "@/components/ui/button";
 import { GrametChart } from "@/components/gramet-chart";
 import { ProductEmpty } from "@/components/product-state";

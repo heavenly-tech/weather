@@ -1,34 +1,60 @@
 # syntax=docker/dockerfile:1
 
-FROM node:22-alpine AS deps
-WORKDIR /app
+# Production image. Build it on omarchibald or the Mac mini (linux/amd64).
+# Do not build it on the heavenly VPS. deploy.sh only loads a prebuilt image.
+# The image is the static musl binary, the Vite dist, CA certificates, and /app/data.
+
+FROM node:22-alpine AS client
+WORKDIR /src
 COPY package.json package-lock.json ./
-# GitHub may carry a stub lockfile; npm ci needs a fully resolved one.
-# --ignore-scripts skips postinstall until sources are copied in the builder.
-RUN npm install --ignore-scripts --no-audit --no-fund
+RUN npm ci --ignore-scripts
+COPY index.html vite.config.ts tsconfig.json ./
+COPY src ./src
+RUN mkdir -p public && npm run build:client
 
-FROM node:22-alpine AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-RUN node scripts/copy-cesium.mjs && npm run build
+FROM rust:1.98.0-alpine AS chef
+WORKDIR /src
+RUN apk add --no-cache musl-dev file
+# Do not set RUSTFLAGS=-C target-feature=+crt-static here. On the musl host
+# that flag also applies to proc-macros, which cannot be static dylibs.
+# The musl target still links the weather binary statically by default.
+RUN cargo install cargo-chef --locked
 
-FROM node:22-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=4310
-ENV HOSTNAME=0.0.0.0
-RUN addgroup --system --gid 65534 nogroup \
-  && adduser --system --uid 65534 --ingroup nogroup app
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=65534:65534 /app/.next/standalone ./
-COPY --from=builder --chown=65534:65534 /app/.next/static ./.next/static
-RUN mkdir -p /app/data && chown 65534:65534 /app/data
-USER 65534
+FROM chef AS planner
+COPY Cargo.toml Cargo.lock ./
+COPY server-rs ./server-rs
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM chef AS builder
+COPY --from=planner /src/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
+COPY Cargo.toml Cargo.lock ./
+COPY server-rs ./server-rs
+RUN cargo build --release --locked --bin weather \
+    && file target/release/weather | grep -E 'statically linked|static-pie linked'
+
+FROM alpine:3 AS certs
+RUN apk add --no-cache ca-certificates \
+    && mkdir -p /out/etc/ssl /out/app/data \
+    && cp -a /etc/ssl/certs /out/etc/ssl/certs \
+    && cp -a /etc/ssl/cert.pem /out/etc/ssl/cert.pem \
+    && chown 65534:65534 /out/app/data
+COPY --from=client /src/dist /out/app/dist
+COPY data/andes-fine-elevation.json /out/app/data/andes-fine-elevation.json
+RUN chown -R 65534:65534 /out/app
+
+FROM scratch
+COPY --from=certs /out/etc/ssl /etc/ssl
+COPY --from=certs --chown=65534:65534 /out/app /app
+COPY --from=builder /src/target/release/weather /weather
+ENV PORT=4310 \
+    SSL_CERT_FILE=/etc/ssl/cert.pem \
+    WEATHER_DIST=/app/dist \
+    WEATHER_ELEVATION=/app/data/andes-fine-elevation.json \
+    PRODUCT_LOG_PATH=/app/data/product-log.jsonl \
+    PRODUCT_LOG_ENABLED=0
+USER 65534:65534
 EXPOSE 4310
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:4310/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
-CMD ["node", "server.js"]
+    CMD ["/weather", "healthcheck"]
+CMD ["/weather"]
