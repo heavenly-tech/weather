@@ -32,6 +32,7 @@ pub mod taf_format;
 pub mod utc;
 pub mod vis_wx;
 pub mod visibility;
+pub mod wrf_local;
 
 #[cfg(test)]
 mod desk_parity;

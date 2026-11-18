@@ -1,5 +1,6 @@
 //! Shared server state for the Open-Meteo routes.
 
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -26,6 +27,10 @@ pub struct AppState {
     pub random: Arc<dyn Fn() -> f64 + Send + Sync>,
     pub log: Arc<ProductLog>,
     pub probes: Arc<ProbeCache>,
+    /// Directory that holds `latest.json` from the local WRF orchestrator.
+    pub wrf_output_dir: Option<PathBuf>,
+    /// A cycle older than this many hours is "No run available yet".
+    pub wrf_max_age_hours: i64,
 }
 
 impl AppState {
@@ -50,6 +55,14 @@ impl AppState {
             random: Arc::new(production_random),
             log: Arc::new(ProductLog::new(clock)),
             probes: Arc::new(ProbeCache::new()),
+            wrf_output_dir: std::env::var("WRF_OUTPUT_DIR")
+                .ok()
+                .filter(|value| !value.is_empty())
+                .map(PathBuf::from),
+            wrf_max_age_hours: std::env::var("WRF_LOCAL_MAX_AGE_HOURS")
+                .ok()
+                .and_then(|value| value.parse().ok())
+                .unwrap_or(18),
         })
     }
 
@@ -80,6 +93,8 @@ impl AppState {
             random,
             log: Arc::new(ProductLog::new(clock)),
             probes: Arc::new(ProbeCache::new()),
+            wrf_output_dir: None,
+            wrf_max_age_hours: 18,
         }
     }
 }

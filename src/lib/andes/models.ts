@@ -2,9 +2,20 @@
  * Model list shown on the Andes desk. Forecast URLs are built by the Rust server.
  */
 
-export type AndesModelId = "gfs_seamless" | "ecmwf_ifs025" | "icon_seamless" | "gem_seamless";
+export type AndesModelId =
+  | "gfs_seamless"
+  | "ecmwf_ifs025"
+  | "icon_seamless"
+  | "gem_seamless"
+  | "wrf_local";
 
-const VALID_MODELS: AndesModelId[] = ["gfs_seamless", "ecmwf_ifs025", "icon_seamless", "gem_seamless"];
+const VALID_MODELS: AndesModelId[] = [
+  "gfs_seamless",
+  "ecmwf_ifs025",
+  "icon_seamless",
+  "gem_seamless",
+  "wrf_local",
+];
 
 export function parseAndesModelId(raw: string | null): AndesModelId | null {
   const id = (raw ?? "gfs_seamless") as AndesModelId;
@@ -58,6 +69,14 @@ export const ANDES_MODELS: AndesModelMeta[] = [
     query: "gem_seamless",
     pressureLevels: true,
     cloudBaseField: null,
+  },
+  {
+    id: "wrf_local",
+    label: "WRF (local)",
+    query: "wrf_local",
+    pressureLevels: false,
+    cloudBaseField: null,
+    notes: "Local 3 km run. The desk says no run available yet when output is missing or stale.",
   },
 ];
 

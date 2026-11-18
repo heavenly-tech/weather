@@ -35,7 +35,11 @@ export function AndesControls({
           {ANDES_MODELS.map((m) => (
             <option key={m.id} value={m.id} disabled={modelAvailability[m.id] === false}>
               {m.label}
-              {modelAvailability[m.id] === false ? " (unavailable)" : ""}
+              {modelAvailability[m.id] === false
+                ? m.id === "wrf_local"
+                  ? " (no run available yet)"
+                  : " (unavailable)"
+                : ""}
             </option>
           ))}
         </select>
