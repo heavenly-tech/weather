@@ -6,8 +6,9 @@
 #   docker build --platform linux/amd64 -t app-heavenly-weather:latest .
 #   docker save app-heavenly-weather:latest | ssh heavenly docker load
 #
-# Before the first Rust load, keep the running Node image on heavenly:
-#   docker tag app-heavenly-weather:latest app-heavenly-weather:node
+# Before the swap, load Infrastructure's prebuilt Node image
+# app-heavenly-weather:node (see docs/cutover-checklist.md) and check its digest.
+# Do not rebuild that image on the VPS.
 #
 # Rollback, one command, from a machine that can ssh heavenly:
 #   ssh heavenly 'docker tag app-heavenly-weather:node app-heavenly-weather:latest && cd /opt/stacks/app-heavenly-weather && docker compose up -d --no-build --force-recreate'

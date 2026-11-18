@@ -98,7 +98,7 @@ docker build --platform linux/amd64 -t app-heavenly-weather:latest .
 docker save app-heavenly-weather:latest | ssh heavenly docker load
 ```
 
-Keep the previous Node image before the first Rust load, on heavenly: `docker tag app-heavenly-weather:latest app-heavenly-weather:node`.
+Load Infrastructure's prebuilt `app-heavenly-weather:node` and check its digest before the swap. The digest and the rollback command are in [docs/cutover-checklist.md](docs/cutover-checklist.md).
 
 On a machine that can `ssh heavenly`, after that image is loaded:
 

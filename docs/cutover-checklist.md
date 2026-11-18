@@ -44,11 +44,14 @@ Zero unexplained diffs. Re-run if the only mismatch is an observation that chang
 
 ## 3. Rollback
 
-Before the first Rust image is loaded onto heavenly, keep the running Node image:
+The rollback image is Infrastructure's prebuilt `app-heavenly-weather:node`, built on omarchibald. Digest `sha256:e5e39b4686a93f862bc790b4ed09815330cf118a11e55cf4e4926710b6ac1972` (381 MB). Load it onto heavenly and check the digest before the swap:
 
 ```bash
-ssh heavenly 'docker tag app-heavenly-weather:latest app-heavenly-weather:node'
+docker save app-heavenly-weather:node | ssh heavenly docker load
+ssh heavenly 'docker image inspect app-heavenly-weather:node --format "{{.Id}} {{json .RepoDigests}} {{.Size}}"'
 ```
+
+The inspect output must contain `sha256:e5e39b4686a93f862bc790b4ed09815330cf118a11e55cf4e4926710b6ac1972` before `app-heavenly-weather:latest` is pointed at the scratch image. `docker load` keeps the image id; a registry digest shows up in `RepoDigests` when one was recorded. Do not rebuild this Node image on the VPS. `main`'s Node Dockerfile no longer builds on current `node:22-alpine` (Alpine 3.24.4): `nogroup` and `nobody` already exist as 65533 and 65534, so `addgroup --system --gid 65534 nogroup` exits 1. The workaround on that Dockerfile is to skip `addgroup` / `adduser` and keep `USER 65534`. There is no separate PR for that, because the Node Dockerfile leaves the runtime image at cutover.
 
 One-command rollback, from a machine that can `ssh heavenly`:
 
@@ -71,6 +74,10 @@ There is no database and no migration.
 
 Do not point `weather.heavenly.cl` at the scratch image until Pablo says so. This PR does not deploy.
 
+## 6. Post-cutover WRF smoke
+
+After the scratch image is on `weather.heavenly.cl`, Infrastructure opens the WRF page on production with the real `METEOCHILE_USER` and `METEOCHILE_TOKEN`. The page must show the live WRF-DMC series. Any mismatch with the Node image is a rollback, using the command in item 3.
+
 ## What Infrastructure runs
 
 Build on omarchibald or the Mac mini, for `linux/amd64`. Do not build on the heavenly VPS.
@@ -80,7 +87,7 @@ docker build --platform linux/amd64 -t app-heavenly-weather:latest .
 docker save app-heavenly-weather:latest | ssh heavenly docker load
 ```
 
-Tag the Node image first (item 3), then `./deploy.sh`. That git-updates `/opt/stacks/app-heavenly-weather` and runs `docker compose up -d --no-build --pull never`. If `app-heavenly-weather:latest` is not loaded, the script stops.
+Load and verify the Node image digest first (item 3), then `./deploy.sh`. That git-updates `/opt/stacks/app-heavenly-weather` and runs `docker compose up -d --no-build --pull never`. If `app-heavenly-weather:latest` is not loaded, the script stops.
 
 `METEOCHILE_USER` and `METEOCHILE_TOKEN` stay in the env file beside compose on the server. They are not arguments to `deploy.sh`.
 
