@@ -1,0 +1,51 @@
+{
+  "estacionDatos": {
+    "NombreEstacion": "Pudahuel Santiago",
+    "LatitudDecimal": -33.378332,
+    "LongitudDecimal": -70.787777
+  },
+  "elementos": {
+    "temperatura": {
+      "nombreElemento": { "nombre": "Temperatura del aire", "campo": "Ts_Valor" },
+      "26_00_gfs": {
+        "h11": { "fecha": "2025-10-27T11:00:00.000Z", "valorPronosticado": 10.48 },
+        "h12": { "fecha": "2025-10-27T12:00:00.000Z", "valorPronosticado": 12.1 }
+      }
+    },
+    "humedad": {
+      "nombreElemento": { "nombre": "Humedad relativa", "campo": "HR" },
+      "26_00_gfs": {
+        "h11": { "fecha": "2025-10-27T11:00:00.000Z", "valorPronosticado": 64 },
+        "h12": { "fecha": "2025-10-27T12:00:00.000Z", "valorPronosticado": 60 }
+      }
+    },
+    "precipitacion": {
+      "nombreElemento": { "nombre": "Precipitacion", "campo": "Agua" },
+      "26_00_gfs": {
+        "h11": { "fecha": "2025-10-27T11:00:00.000Z", "valorPronosticado": 0 },
+        "h12": { "fecha": "2025-10-27T12:00:00.000Z", "valorPronosticado": 0.2 }
+      }
+    },
+    "nubosidad": {
+      "nombreElemento": { "nombre": "Nubosidad", "campo": "Cloud" },
+      "26_00_gfs": {
+        "h11": { "fecha": "2025-10-27T11:00:00.000Z", "valorPronosticado": 80 },
+        "h12": { "fecha": "2025-10-27T12:00:00.000Z", "valorPronosticado": 40 }
+      }
+    },
+    "vientoDireccion": {
+      "nombreElemento": { "nombre": "Direccion del viento", "campo": "dd" },
+      "26_00_gfs": {
+        "h11": { "fecha": "2025-10-27T11:00:00.000Z", "valorPronosticado": 220 },
+        "h12": { "fecha": "2025-10-27T12:00:00.000Z", "valorPronosticado": 230 }
+      }
+    },
+    "vientoVelocidad": {
+      "nombreElemento": { "nombre": "Velocidad del viento", "campo": "ff" },
+      "26_00_gfs": {
+        "h11": { "fecha": "2025-10-27T11:00:00.000Z", "valorPronosticado": 18.52 },
+        "h12": { "fecha": "2025-10-27T12:00:00.000Z", "valorPronosticado": 20 }
+      }
+    }
+  }
+}

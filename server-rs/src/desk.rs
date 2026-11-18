@@ -1031,7 +1031,8 @@ fn live_gamet_json(
     let freeze = levels
         .iter()
         .find(|level| level.temp_c.unwrap_or(99.0) <= 0.0);
-    let valid_from_ms = state.clock.now_ms() / 60_000 * 60_000;
+    // Node `validFrom.setUTCMinutes(0, 0, 0)` floors to the UTC hour.
+    let valid_from_ms = state.clock.now_ms().div_euclid(3_600_000) * 3_600_000;
     let valid_to_ms = valid_from_ms + 6 * 3_600_000;
     let valid_from = UtcStamp::from_epoch_ms(valid_from_ms).to_iso();
     let valid_to = UtcStamp::from_epoch_ms(valid_to_ms).to_iso();

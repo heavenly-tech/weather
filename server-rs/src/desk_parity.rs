@@ -29,8 +29,23 @@ struct Case {
     cache_control: Option<String>,
 }
 
+struct ClearMeteochileEnv;
+
+impl Drop for ClearMeteochileEnv {
+    fn drop(&mut self) {
+        std::env::remove_var("METEOCHILE_USER");
+        std::env::remove_var("METEOCHILE_TOKEN");
+    }
+}
+
+fn meteochile_env_lock() -> &'static tokio::sync::Mutex<()> {
+    static LOCK: std::sync::OnceLock<tokio::sync::Mutex<()>> = std::sync::OnceLock::new();
+    LOCK.get_or_init(|| tokio::sync::Mutex::new(()))
+}
+
 #[tokio::test]
 async fn desk_routes_match_typescript_bytes() {
+    let _env = meteochile_env_lock().lock().await;
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/desk");
     let recorded = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../tests/fixtures/recorded");
     let manifest: Vec<Case> =
@@ -368,4 +383,119 @@ async fn invalid_awc_json_stays_on_the_mock_envelope() {
     let text = String::from_utf8(bytes.to_vec()).unwrap();
     assert!(text.contains("\"source\":\"mock\""));
     assert!(text.contains("expected ident at line 1 column 2"), "{text}");
+}
+
+#[tokio::test]
+async fn gamet_validity_floors_to_the_utc_hour() {
+    let cases = ["2026-11-18T05:04:37.000Z", "2026-11-18T05:00:00.000Z"];
+    for clock in cases {
+        let text = gamet_body(clock).await;
+        assert!(
+            text.contains("GAMET VALID 180500/181100"),
+            "{clock} raw validity was not the floored hour: {text}"
+        );
+        assert!(
+            text.contains("\"validFrom\":\"2026-11-18T05:00:00.000Z\""),
+            "{clock} validFrom: {text}"
+        );
+        assert!(
+            text.contains("\"validTo\":\"2026-11-18T11:00:00.000Z\""),
+            "{clock} validTo: {text}"
+        );
+        assert!(
+            !text.contains("180504"),
+            "{clock} kept the minute in the VALID group"
+        );
+    }
+}
+
+#[tokio::test]
+async fn meteochile_wrf_matches_typescript_bytes() {
+    let _env = meteochile_env_lock().lock().await;
+    // Dummy values. The fixture has no credentials, and the scripted fetch
+    // ignores the query string.
+    std::env::set_var("METEOCHILE_USER", "example-user");
+    std::env::set_var("METEOCHILE_TOKEN", "example-token");
+    let _clear = ClearMeteochileEnv;
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let payload = std::fs::read_to_string(
+        root.join("../tests/fixtures/recorded/meteochile/wrf-scel-330021.json"),
+    )
+    .unwrap();
+    let fetch: FetchFn = Arc::new(move |url: String| {
+        let payload = payload.clone();
+        Box::pin(async move {
+            if url.contains("climatologia.meteochile.gob.cl") {
+                Ok(response(200, &payload, "OK"))
+            } else {
+                Ok(response(404, "not used", "Not Found"))
+            }
+        })
+    });
+    let clock = parse_utc_iso("2026-11-18T03:00:00.000Z")
+        .unwrap()
+        .epoch_ms();
+    let state = AppState::for_tests(fetch, Clock::at(clock), Arc::new(|| 0.5));
+    let dist = tempfile::tempdir().unwrap();
+    let http = crate::app::router_with(dist.path().to_path_buf(), state)
+        .oneshot(
+            Request::builder()
+                .uri("/api/forecast?icao=SCEL")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(http.status(), StatusCode::OK);
+    let bytes = http.into_body().collect().await.unwrap().to_bytes();
+    let expected = std::fs::read(root.join("tests/fixtures/desk/forecast-wrf-scel.body")).unwrap();
+    assert_eq!(bytes.as_ref(), expected.as_slice());
+}
+
+async fn gamet_body(clock: &str) -> String {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let recorded_dir = root.join("../tests/fixtures/recorded");
+    let gfs =
+        std::fs::read_to_string(recorded_dir.join("sctb-gfs-seamless-2026-11-18.json")).unwrap();
+    let live_metar =
+        std::fs::read_to_string(recorded_dir.join("awc/metar-sctb-scel-2026-11-18.json")).unwrap();
+    let night_metar =
+        std::fs::read_to_string(recorded_dir.join("awc/metar-scel-night-2026-11-17.json")).unwrap();
+    let cavok_metar =
+        std::fs::read_to_string(recorded_dir.join("awc/metar-scel-cavok-2026-11-15.json")).unwrap();
+    let live_taf =
+        std::fs::read_to_string(recorded_dir.join("awc/taf-sctb-scel-2026-11-18.json")).unwrap();
+    let empty_taf =
+        std::fs::read_to_string(recorded_dir.join("awc/taf-sctb-2026-11-18.json")).unwrap();
+    let sigmet = std::fs::read_to_string(recorded_dir.join("awc/sigmet-2026-11-18.json")).unwrap();
+    let clock_ms = parse_utc_iso(clock).unwrap().epoch_ms();
+    let state = AppState::for_tests(
+        scripted(
+            "recorded",
+            Recorded {
+                gfs,
+                live_metar,
+                night_metar,
+                cavok_metar,
+                live_taf,
+                empty_taf,
+                sigmet,
+            },
+        ),
+        Clock::at(clock_ms),
+        Arc::new(|| 0.5),
+    );
+    let dist = tempfile::tempdir().unwrap();
+    let response = crate::app::router_with(dist.path().to_path_buf(), state)
+        .oneshot(
+            Request::builder()
+                .uri("/api/gamet?fir=SANTIAGO")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    String::from_utf8(bytes.to_vec()).unwrap()
 }
