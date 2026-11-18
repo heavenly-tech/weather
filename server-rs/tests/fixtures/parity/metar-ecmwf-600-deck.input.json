@@ -1,0 +1,67 @@
+{
+  "label": "EXAMPLE",
+  "op": "generateModelMetar",
+  "note": "700 hPa height is null and mid cloud is 60%, so the stratiform deck is BKN at 600 hPa.",
+  "icao": "SCTB",
+  "elevM": 649,
+  "model": "ecmwf_ifs025",
+  "runTime": "2026-11-17T18:00:00Z",
+  "validTime": "2026-11-17T18:00:00Z",
+  "hourIndex": 0,
+  "hourly": {
+    "time": [
+      "2026-11-17T18:00"
+    ],
+    "temperature_2m": [
+      12
+    ],
+    "dew_point_2m": [
+      8
+    ],
+    "relative_humidity_2m": [
+      70
+    ],
+    "precipitation": [
+      0.4
+    ],
+    "rain": [
+      0.4
+    ],
+    "showers": [
+      0
+    ],
+    "visibility": [
+      9000
+    ],
+    "cloud_cover_low": [
+      8
+    ],
+    "cloud_cover_mid": [
+      60
+    ],
+    "cloud_cover": [
+      40
+    ],
+    "surface_pressure": [
+      980
+    ],
+    "geopotential_height_700hPa": [
+      null
+    ],
+    "geopotential_height_600hPa": [
+      4200
+    ],
+    "cape": [
+      0
+    ],
+    "pressure_msl": [
+      1013
+    ],
+    "wind_speed_10m": [
+      12
+    ],
+    "wind_direction_10m": [
+      200
+    ]
+  }
+}

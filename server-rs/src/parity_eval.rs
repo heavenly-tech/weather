@@ -63,6 +63,9 @@ pub fn render_input(value: &Value) -> Result<Vec<u8>, String> {
             let cols = required_usize(value, "cols")?;
             Ok(refine_ceiling_grid(&cells, rows, cols)?.to_json_bytes())
         }
+        "generateModelMetar" | "generateModelTaf" | "assertModelTafFormat" => {
+            crate::product::render_parity(value)
+        }
         other => Err(format!("unknown parity op {other}")),
     }
 }

@@ -5,6 +5,11 @@
  */
 import { ceilingFromHourly, interpolateCloudBaseMsl, surfacePressureHpa } from "../src/lib/andes/ceiling";
 import { neighbourhoodBaseAndPrecip, refineCeilingGrid } from "../src/lib/andes/ceiling-regrid";
+import type { AndesModelId } from "../src/lib/andes/models";
+import { assertEstOnlyInTrailingRmk } from "../src/lib/andes/product-rmk";
+import { assertModelTafFormat } from "../src/lib/andes/taf-format";
+import { generateModelMetar } from "../src/lib/andes/wmo-metar";
+import { generateModelTaf } from "../src/lib/andes/wmo-taf";
 
 type Hourly = Parameters<typeof ceilingFromHourly>[0];
 
@@ -43,6 +48,21 @@ function requiredNumber(obj: Record<string, unknown>, key: string): number {
     throw new Error(`parity input missing ${key}`);
   }
   return value;
+}
+
+function requiredString(obj: Record<string, unknown>, key: string): string {
+  const value = obj[key];
+  if (typeof value !== "string") throw new Error(`parity input missing ${key}`);
+  return value;
+}
+
+function estResult(raw: string): { ok: true } | { ok: false; error: string } {
+  try {
+    assertEstOnlyInTrailingRmk(raw);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+  }
 }
 
 function asHourly(value: unknown): Hourly {
@@ -97,6 +117,31 @@ export async function renderCeilingParity(raw: unknown): Promise<unknown> {
         requiredNumber(revived, "cols")
       );
     }
+    case "generateModelMetar": {
+      const result = generateModelMetar({
+        icao: requiredString(revived, "icao"),
+        elevM: requiredNumber(revived, "elevM"),
+        model: requiredString(revived, "model") as AndesModelId,
+        runTime: requiredString(revived, "runTime"),
+        validTime: requiredString(revived, "validTime"),
+        hourly,
+        hourIndex: typeof revived.hourIndex === "number" ? revived.hourIndex : index,
+      });
+      return { raw: result.raw, est: estResult(result.raw) };
+    }
+    case "generateModelTaf": {
+      const result = generateModelTaf({
+        icao: requiredString(revived, "icao"),
+        elevM: requiredNumber(revived, "elevM"),
+        model: requiredString(revived, "model") as AndesModelId,
+        runTime: requiredString(revived, "runTime"),
+        hourly,
+      });
+      if ("error" in result) return { error: result.error };
+      return { raw: result.raw, est: estResult(result.raw), format: assertModelTafFormat(result.raw) };
+    }
+    case "assertModelTafFormat":
+      return assertModelTafFormat(requiredString(revived, "raw"));
     default:
       throw new Error(`unknown parity op ${revived.op}`);
   }

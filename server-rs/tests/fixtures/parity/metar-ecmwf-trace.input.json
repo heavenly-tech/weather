@@ -1,0 +1,64 @@
+{
+  "label": "EXAMPLE",
+  "op": "generateModelMetar",
+  "note": "ECMWF trace rain 0.15 mm/h with total cloud under 25% drops -SHRA and -RA.",
+  "icao": "SCTB",
+  "elevM": 649,
+  "model": "ecmwf_ifs025",
+  "runTime": "2026-11-17T18:00:00Z",
+  "validTime": "2026-11-17T18:00:00Z",
+  "hourIndex": 0,
+  "hourly": {
+    "time": [
+      "2026-11-17T18:00"
+    ],
+    "temperature_2m": [
+      16
+    ],
+    "dew_point_2m": [
+      8
+    ],
+    "relative_humidity_2m": [
+      55
+    ],
+    "precipitation": [
+      0.15
+    ],
+    "rain": [
+      0.15
+    ],
+    "showers": [
+      0
+    ],
+    "visibility": [
+      9000
+    ],
+    "cloud_cover_low": [
+      4
+    ],
+    "cloud_cover_mid": [
+      6
+    ],
+    "cloud_cover": [
+      12
+    ],
+    "surface_pressure": [
+      980
+    ],
+    "geopotential_height_700hPa": [
+      3100
+    ],
+    "cape": [
+      0
+    ],
+    "pressure_msl": [
+      1013
+    ],
+    "wind_speed_10m": [
+      12
+    ],
+    "wind_direction_10m": [
+      200
+    ]
+  }
+}

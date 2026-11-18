@@ -1,0 +1,1 @@
+{"ok":false,"reasons":["BECMG 1823/1900 codes midnight as 00; write hour 24 on the previous day"],"warnings":[]}

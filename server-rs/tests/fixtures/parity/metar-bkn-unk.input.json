@@ -1,0 +1,67 @@
+{
+  "label": "EXAMPLE",
+  "op": "generateModelMetar",
+  "note": "Hot spread makes the LCL implausible, so the METAR cloud group is BKN/// and the remark is CLD BASE UNK.",
+  "icao": "SCTB",
+  "elevM": 649,
+  "model": "gfs_seamless",
+  "runTime": "2026-08-18T12:00:00Z",
+  "validTime": "2026-08-18T12:00:00Z",
+  "hourIndex": 0,
+  "hourly": {
+    "time": [
+      "2026-08-18T12:00"
+    ],
+    "temperature_2m": [
+      26
+    ],
+    "dew_point_2m": [
+      9
+    ],
+    "relative_humidity_2m": [
+      40
+    ],
+    "pressure_msl": [
+      1010
+    ],
+    "wind_speed_10m": [
+      10
+    ],
+    "wind_direction_10m": [
+      230
+    ],
+    "wind_gusts_10m": [
+      20
+    ],
+    "visibility": [
+      9999
+    ],
+    "precipitation": [
+      0
+    ],
+    "rain": [
+      0
+    ],
+    "showers": [
+      0
+    ],
+    "cloud_cover_low": [
+      90
+    ],
+    "surface_pressure": [
+      980
+    ],
+    "cloud_cover_925hPa": [
+      10
+    ],
+    "geopotential_height_925hPa": [
+      800
+    ],
+    "cloud_cover_850hPa": [
+      20
+    ],
+    "geopotential_height_850hPa": [
+      1600
+    ]
+  }
+}
