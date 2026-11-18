@@ -139,10 +139,10 @@ def model_flags(icao: str, hourly: dict) -> dict[str, tuple[bool, bool]]:
         capture_output=True,
         cwd=ROOT,
     )
-    flags: dict[str, tuple[bool, bool, bool]] = {}
+    flags: dict[str, tuple[bool, bool, bool, bool]] = {}
     for line in run.stdout.splitlines():
-        stamp, old, new, risk = line.split("\t")
-        flags[stamp] = (old == "1", new == "1", risk == "1")
+        stamp, old, new, risk, night = line.split("\t")
+        flags[stamp] = (old == "1", new == "1", risk == "1", night == "1")
     return flags
 
 
@@ -155,8 +155,26 @@ def rates(hits: int, misses: int, false_alarms: int) -> dict[str, float | None]:
     }
 
 
+def observed_fog_rows(
+    icao: str, observed: dict[str, bool], flags: dict[str, tuple[bool, bool, bool, bool]]
+) -> list[dict]:
+    rows = []
+    for stamp, saw_fog in sorted(observed.items()):
+        if not saw_fog:
+            continue
+        night = flags[stamp][3] if stamp in flags else None
+        rows.append(
+            {
+                "station": icao,
+                "time": f"{stamp}Z",
+                "day_night": "night" if night else "day" if night is False else "unknown",
+            }
+        )
+    return rows
+
+
 def score_station(
-    icao: str, observed: dict[str, bool], flags: dict[str, tuple[bool, bool, bool]]
+    icao: str, observed: dict[str, bool], flags: dict[str, tuple[bool, bool, bool, bool]]
 ) -> dict:
     names = ("old", "new", "risk")
     counts = {name: {"hit": 0, "miss": 0, "false_alarm": 0} for name in names}
@@ -165,7 +183,7 @@ def score_station(
         if stamp not in flags:
             continue
         matched += 1
-        old, new, risk = flags[stamp]
+        old, new, risk, _night = flags[stamp]
         for name, predicted in (("old", old), ("new", new), ("risk", risk)):
             if predicted and saw_fog:
                 counts[name]["hit"] += 1
@@ -173,7 +191,13 @@ def score_station(
                 counts[name]["miss"] += 1
             elif predicted:
                 counts[name]["false_alarm"] += 1
-    out = {"icao": icao, "matched_hours": matched, "observed_fog_hours": sum(observed.values())}
+    fog_rows = observed_fog_rows(icao, observed, flags)
+    out = {
+        "icao": icao,
+        "matched_hours": matched,
+        "observed_fog_hours": len(fog_rows),
+        "observed_fog": fog_rows,
+    }
     for name in ("old", "new", "risk"):
         hit = counts[name]["hit"]
         miss = counts[name]["miss"]
@@ -201,6 +225,9 @@ def main() -> None:
         model = json.loads((cache / f"om-{icao.lower()}.json").read_text())
         flags = model_flags(icao, model["hourly"])
         summary["stations"].append(score_station(icao, observed, flags))
+    summary["observed_fog"] = [
+        row for station in summary["stations"] for row in station["observed_fog"]
+    ]
     combined = {"matched_hours": 0, "observed_fog_hours": 0}
     for name in ("old", "new", "risk"):
         hit = miss = false_alarm = 0

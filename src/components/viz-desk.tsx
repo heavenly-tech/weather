@@ -39,7 +39,12 @@ export function VizDesk({
         </p>
       </div>
 
-      {envelope.data?.length ? (
+      {envelope.source === "unavailable" ? (
+        <ProductEmpty
+          title="Observations unavailable"
+          body="The Aviation Weather Center did not return a usable METAR. This view is not showing a stand-in field."
+        />
+      ) : envelope.data?.length ? (
         <div className="space-y-4">
           <ProductMeta envelope={envelope} />
           <WeatherScene stations={envelope.data} focusIcao={icao} />

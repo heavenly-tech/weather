@@ -110,6 +110,14 @@ mod tests {
     use super::*;
 
     #[test]
+    fn sctb_twilight_brackets_sunset() {
+        // Sunset on 2026-11-17 at SCTB is the minute solar elevation crosses
+        // below 0: 23:20Z is still day, 23:21Z is night.
+        assert!(!is_night("SCTB", "2026-11-17T23:20:00Z"));
+        assert!(is_night("SCTB", "2026-11-17T23:21:00Z"));
+    }
+
+    #[test]
     fn santiago_november_night_and_day() {
         assert!(is_night("SCTB", "2026-11-17T05:00"));
         assert!(is_night("SCEL", "2026-11-17T05:00:00Z"));

@@ -1,7 +1,7 @@
 //! Score one model series for the old FG rule, the new FG rule, and PROB30.
 //!
 //! stdin JSON: `{"icao","model","hourly"}`. stdout is
-//! `time<TAB>old<TAB>new<TAB>risk` with 1 when that rule fires. Old is the
+//! `time<TAB>old<TAB>new<TAB>risk<TAB>night` with 1 when that rule fires. Old is the
 //! previous visibility gate (coded visibility below 1000 m). New is that gate
 //! plus night, T−Td ≤ 1 °C, wind ≤ 5 kt, and a saturated lowest level.
 //! `risk` is PROB30 BR/FG: night, T−Td ≤ 2 °C, and wind ≤ 5 kt.
@@ -54,17 +54,19 @@ fn main() {
             (Some(temp), Some(dew)) => Some(temp - dew),
             _ => None,
         };
+        let night = is_night(icao, &series.time[index]);
         let risk = fog_risk(
-            is_night(icao, &series.time[index]),
+            night,
             spread,
             kmh_to_kt(series.num("wind_speed_10m", index)),
         );
         println!(
-            "{}\t{}\t{}\t{}",
+            "{}\t{}\t{}\t{}\t{}",
             series.time[index],
             u8::from(old),
             u8::from(new_fg),
-            u8::from(risk)
+            u8::from(risk),
+            u8::from(night)
         );
     }
 }

@@ -7,6 +7,23 @@
       "icao": "SCTB",
       "matched_hours": 586,
       "observed_fog_hours": 3,
+      "observed_fog": [
+        {
+          "station": "SCTB",
+          "time": "2026-10-30T11:00Z",
+          "day_night": "day"
+        },
+        {
+          "station": "SCTB",
+          "time": "2026-10-30T12:00Z",
+          "day_night": "day"
+        },
+        {
+          "station": "SCTB",
+          "time": "2026-10-31T12:00Z",
+          "day_night": "day"
+        }
+      ],
       "old": {
         "hit": 0,
         "miss": 3,
@@ -33,6 +50,13 @@
       "icao": "SCEL",
       "matched_hours": 1152,
       "observed_fog_hours": 1,
+      "observed_fog": [
+        {
+          "station": "SCEL",
+          "time": "2026-10-13T10:00Z",
+          "day_night": "night"
+        }
+      ],
       "old": {
         "hit": 0,
         "miss": 1,
@@ -54,6 +78,28 @@
         "pod": 1.0,
         "far": 0.9960629921259843
       }
+    }
+  ],
+  "observed_fog": [
+    {
+      "station": "SCTB",
+      "time": "2026-10-30T11:00Z",
+      "day_night": "day"
+    },
+    {
+      "station": "SCTB",
+      "time": "2026-10-30T12:00Z",
+      "day_night": "day"
+    },
+    {
+      "station": "SCTB",
+      "time": "2026-10-31T12:00Z",
+      "day_night": "day"
+    },
+    {
+      "station": "SCEL",
+      "time": "2026-10-13T10:00Z",
+      "day_night": "night"
     }
   ],
   "combined": {

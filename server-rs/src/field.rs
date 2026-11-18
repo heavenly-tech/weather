@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use serde_json::Value;
 use tokio::sync::Mutex;
 
-use crate::cache::{batch_delay_ms, batch_size, CachedResponse, OpenMeteoCache};
+use crate::cache::{batch_delay_ms, batch_size, OpenMeteoCache};
 use crate::ceiling::ceiling_from_hourly;
 use crate::domain::{self, GridPoint};
 use crate::models::{self, ModelMeta, ANDES_MODELS};
@@ -47,13 +47,13 @@ pub async fn fetch_point_hourly(
     let url = models::open_meteo_forecast_url(lat, lon, model, forecast_hours, past_hours);
     let response = match cache.cached_fetch(&url, Some(model)).await {
         Ok(response) => response,
-        Err(error) => {
+        Err(_error) => {
             return PointFetch {
                 ok: false,
                 hourly: Value::Null,
                 elev_m: 0.0,
                 times: Vec::new(),
-                error,
+                error: "Upstream unavailable (transport)".to_string(),
                 code: "transport".to_string(),
                 meta: Some(meta),
             };
@@ -72,13 +72,13 @@ pub async fn fetch_point_hourly(
     }
     let parsed = match serde_json::from_str::<Value>(&response.body) {
         Ok(value) => value,
-        Err(error) => {
+        Err(_error) => {
             return PointFetch {
                 ok: false,
                 hourly: Value::Null,
                 elev_m: 0.0,
                 times: Vec::new(),
-                error: error.to_string(),
+                error: "Upstream unavailable (bad-json)".to_string(),
                 code: "bad-json".to_string(),
                 meta: Some(meta),
             };
@@ -115,16 +115,22 @@ pub async fn fetch_multi(
             .map(|point| (point.lat, point.lon))
             .collect();
         let url = models::open_meteo_multi_url(&pairs, model);
-        let mut response = cache.cached_fetch(&url, Some(model)).await?;
+        let mut response = cache
+            .cached_fetch(&url, Some(model))
+            .await
+            .map_err(|_| "Upstream unavailable (transport)".to_string())?;
         if response.status == 429 {
             (cache.sleep)(batch_delay_ms().saturating_mul(4)).await;
-            response = cache.cached_fetch(&url, Some(model)).await?;
+            response = cache
+                .cached_fetch(&url, Some(model))
+                .await
+                .map_err(|_| "Upstream unavailable (transport)".to_string())?;
         }
         if response.status != 200 {
-            return Err(batch_error(&response));
+            return Err(format!("Upstream unavailable (http-{})", response.status));
         }
-        let parsed: Value =
-            serde_json::from_str(&response.body).map_err(|error| error.to_string())?;
+        let parsed: Value = serde_json::from_str(&response.body)
+            .map_err(|_| "Upstream unavailable (bad-json)".to_string())?;
         list.extend(as_list(&parsed));
         index = end;
         batch_index += 1;
@@ -266,12 +272,12 @@ pub async fn probe_models(cache: &OpenMeteoCache, lat: f64, lon: f64) -> Vec<Mod
         let url = models::open_meteo_forecast_url(lat, lon, meta.id, 1, 0);
         let response = match cache.cached_fetch(&url, Some(meta.id)).await {
             Ok(response) => response,
-            Err(error) => {
+            Err(_error) => {
                 out.push(ModelAvailability {
                     id: meta.id,
                     label: meta.label,
                     available: false,
-                    warning: Some(error),
+                    warning: Some("Upstream unavailable (transport)".to_string()),
                 });
                 continue;
             }
@@ -281,7 +287,7 @@ pub async fn probe_models(cache: &OpenMeteoCache, lat: f64, lon: f64) -> Vec<Mod
                 id: meta.id,
                 label: meta.label,
                 available: false,
-                warning: Some(upstream_error(&response)),
+                warning: Some(format!("Upstream unavailable (http-{})", response.status)),
             });
             continue;
         }
@@ -395,27 +401,5 @@ pub fn as_list(value: &Value) -> Vec<Value> {
     match value.as_array() {
         Some(items) => items.clone(),
         None => vec![value.clone()],
-    }
-}
-
-fn batch_error(response: &CachedResponse) -> String {
-    let sliced: String = response.body.chars().take(200).collect();
-    if sliced.is_empty() {
-        format!("HTTP {}", response.status)
-    } else {
-        sliced
-    }
-}
-
-fn upstream_error(response: &CachedResponse) -> String {
-    let sliced: String = response.body.chars().take(200).collect();
-    if sliced.is_empty() {
-        if response.status_text.is_empty() {
-            format!("HTTP {}", response.status)
-        } else {
-            response.status_text.clone()
-        }
-    } else {
-        sliced
     }
 }

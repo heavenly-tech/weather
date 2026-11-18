@@ -16,7 +16,7 @@ use serde_json::Value;
 
 use crate::airfields;
 use crate::awc::{self, CloudLayer, MetarObs, TafObs, TafPeriod};
-use crate::cache::{error_text, UpstreamResponse};
+use crate::cache::UpstreamResponse;
 use crate::field::pick_hour_index;
 use crate::js_json::{js_opt_num, Js};
 use crate::round::js_round;
@@ -123,13 +123,14 @@ pub async fn forecast(State(state): State<AppState>, request: Request) -> Respon
     }
     let url = surface_url(station.lat, station.lon, 5);
     match fetch_open_meteo(&state, &url).await {
-        Err(OpenFail::BadJson(_error)) => gateway("bad-json"),
-        Err(OpenFail::Down(error)) => product(
+        Err(OpenFail::BadJson) => gateway("bad-json"),
+        Err(OpenFail::Down { code }) => product_coded(
             &state,
             mock_forecast_json(&state, station),
             "mock",
             "Mock point forecast (model circuit down)",
-            Some(error),
+            "Upstream unavailable",
+            &code,
         ),
         Ok(value) => {
             let data = point_forecast(
@@ -173,17 +174,15 @@ pub async fn gramet(State(state): State<AppState>, request: Request) -> Response
     let points = great_circle(from.lat, from.lon, to.lat, to.lon, 6);
     let url = pressure_url_multi(&points, 1);
     match fetch_open_meteo(&state, &url).await {
-        Err(OpenFail::BadJson(_error)) => gateway("bad-json"),
-        Err(OpenFail::Down(error)) => {
-            let warning = format!("Open-Meteo did not return a route sounding: {error}");
-            product(
-                &state,
-                mock_gramet_json(&state, from, to),
-                "mock",
-                "Mock GRAMET (model circuit down)",
-                Some(warning),
-            )
-        }
+        Err(OpenFail::BadJson) => gateway("bad-json"),
+        Err(OpenFail::Down { code }) => product_coded(
+            &state,
+            mock_gramet_json(&state, from, to),
+            "mock",
+            "Mock GRAMET (model circuit down)",
+            "Upstream unavailable",
+            &code,
+        ),
         Ok(value) => {
             let list = as_list(&value);
             let mut snaps = Vec::new();
@@ -286,7 +285,9 @@ pub async fn gamet(State(state): State<AppState>, request: Request) -> Response 
             Some(station) => {
                 fetch_open_meteo(&state, &pressure_url(station.lat, station.lon, 1)).await
             }
-            None => Err(OpenFail::Down("No station".to_string())),
+            None => Err(OpenFail::Down {
+                code: "model-down".to_string(),
+            }),
         }
     };
     let (sigmet_result, model_result) = tokio::join!(sigmet_fetch, model_fetch);
@@ -298,18 +299,18 @@ pub async fn gamet(State(state): State<AppState>, request: Request) -> Response 
             .collect(),
         Err(_) => Vec::new(),
     };
-    if let Err(OpenFail::BadJson(_)) = &model_result {
+    if let Err(OpenFail::BadJson) = &model_result {
         return gateway("bad-json");
     }
     let sigmet_json = sigmet_list(&sigmets);
-    if let Err(OpenFail::Down(error)) = &model_result {
-        let warning = format!("Could not build a live-derived GAMET: {error}");
-        return product(
+    if let Err(OpenFail::Down { code }) = &model_result {
+        return product_coded(
             &state,
             mock_gamet_json(&state, fir, &sigmet_json),
             "mock",
             "Mock GAMET (model circuit down)",
-            Some(warning),
+            "Upstream unavailable",
+            code,
         );
     }
     let value = model_result.ok().unwrap_or(Value::Null);
@@ -401,24 +402,30 @@ pub async fn viz(State(state): State<AppState>, request: Request) -> Response {
         fetch_rows(&state, &metar_url),
         fetch_open_meteo(&state, &model_url)
     );
-    if let Err(OpenFail::BadJson(_)) = &model_result {
+    if let Err(OpenFail::BadJson) = &model_result {
         return gateway("bad-json");
     }
     let metars_down = matches!(metar_result, Err(HttpFail::Down { .. }));
-    let model_down = matches!(model_result, Err(OpenFail::Down(_)));
+    let model_down = matches!(model_result, Err(OpenFail::Down { .. }));
     if metars_down && model_down {
-        let warning = match (&metar_result, &model_result) {
-            (Ok(_), Err(OpenFail::Down(error))) => error.clone(),
-            (Err(HttpFail::Down { code }), _) => code.to_string(),
-            _ => String::new(),
+        let code = match &metar_result {
+            Err(HttpFail::Down { code }) => (*code).to_string(),
+            _ => match &model_result {
+                Err(OpenFail::Down { code }) => code.clone(),
+                _ => "model-down".to_string(),
+            },
         };
-        return product(
-            &state,
-            mock_viz_json(),
-            "mock",
-            "Mock 3D field (weather circuit down)",
-            Some(warning),
-        );
+        if state.dev_mock {
+            return product_coded(
+                &state,
+                mock_viz_json(),
+                "mock",
+                "Mock 3D field (dev flag; not an observation)",
+                "Upstream unavailable",
+                &code,
+            );
+        }
+        return observations_unavailable(&state, &code);
     }
     let mut metars = BTreeMap::new();
     if let Ok(rows) = &metar_result {
@@ -441,8 +448,10 @@ pub async fn viz(State(state): State<AppState>, request: Request) -> Response {
             snap.cloud_pct,
             snap.precip_mm,
         )
-    } else {
+    } else if state.dev_mock {
         (mock_levels(14.0), None, None)
+    } else {
+        (Vec::new(), None, None)
     };
     let mut prepared = Vec::new();
     for station in &stations_list {
@@ -465,24 +474,41 @@ pub async fn viz(State(state): State<AppState>, request: Request) -> Response {
             )
         })
         .collect();
-    let (source, label, warning) = if metars_down {
-        let error = match &metar_result {
-            Err(HttpFail::Down { code }) => code.to_string(),
-            _ => String::new(),
+    if metars_down {
+        let code = match &metar_result {
+            Err(HttpFail::Down { code }) => (*code).to_string(),
+            _ => "awc-down".to_string(),
         };
-        (
+        return product_coded(
+            &state,
+            Js::Arr(data).to_bytes(),
             "fallback",
             "GFS column only (METAR circuit down)",
-            Some(error),
-        )
-    } else {
-        (
+            "Upstream unavailable",
+            &code,
+        );
+    }
+    if model_down {
+        let code = match &model_result {
+            Err(OpenFail::Down { code }) => code.clone(),
+            _ => "model-down".to_string(),
+        };
+        return product_coded(
+            &state,
+            Js::Arr(data).to_bytes(),
             "live",
-            "Live METARs plus GFS column at the selected aerodrome",
-            None,
-        )
-    };
-    product(&state, Js::Arr(data).to_bytes(), source, label, warning)
+            "Live METARs (model column unavailable)",
+            "Upstream unavailable",
+            &code,
+        );
+    }
+    product(
+        &state,
+        Js::Arr(data).to_bytes(),
+        "live",
+        "Live METARs plus GFS column at the selected aerodrome",
+        None,
+    )
 }
 
 enum HttpFail {
@@ -490,8 +516,8 @@ enum HttpFail {
 }
 
 enum OpenFail {
-    Down(String),
-    BadJson(String),
+    Down { code: String },
+    BadJson,
 }
 
 async fn fetch_rows(state: &AppState, url: &str) -> Result<Vec<Value>, HttpFail> {
@@ -515,15 +541,15 @@ async fn fetch_open_meteo(state: &AppState, url: &str) -> Result<Value, OpenFail
         .cache
         .cached_fetch(url, None)
         .await
-        .map_err(OpenFail::Down)?;
+        .map_err(|_| OpenFail::Down {
+            code: "transport".to_string(),
+        })?;
     if response.status != 200 {
-        return Err(OpenFail::Down(error_text(
-            &response.body,
-            response.status,
-            &response.status_text,
-        )));
+        return Err(OpenFail::Down {
+            code: format!("http-{}", response.status),
+        });
     }
-    serde_json::from_str(&response.body).map_err(|error| OpenFail::BadJson(error.to_string()))
+    serde_json::from_str(&response.body).map_err(|_| OpenFail::BadJson)
 }
 
 async fn fetch_retry(fetch: &crate::cache::FetchFn, url: &str) -> Result<UpstreamResponse, String> {
@@ -1232,6 +1258,28 @@ fn product(
     label: &str,
     warning: Option<String>,
 ) -> Response {
+    finish_product(state, data, source, label, warning.as_deref(), None)
+}
+
+fn product_coded(
+    state: &AppState,
+    data: Vec<u8>,
+    source: &str,
+    label: &str,
+    warning: &str,
+    code: &str,
+) -> Response {
+    finish_product(state, data, source, label, Some(warning), Some(code))
+}
+
+fn finish_product(
+    state: &AppState,
+    data: Vec<u8>,
+    source: &str,
+    label: &str,
+    warning: Option<&str>,
+    code: Option<&str>,
+) -> Response {
     let fetched = state.clock.now_iso();
     let data_text = String::from_utf8(data).unwrap_or_default();
     let mut body = format!(
@@ -1242,7 +1290,11 @@ fn product(
     );
     if let Some(warning) = warning {
         body.push_str(",\"warning\":");
-        body.push_str(&json_string(&warning));
+        body.push_str(&json_string(warning));
+    }
+    if let Some(code) = code {
+        body.push_str(",\"code\":");
+        body.push_str(&json_string(code));
     }
     body.push('}');
     Response::builder()

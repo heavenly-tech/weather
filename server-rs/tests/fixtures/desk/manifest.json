@@ -223,7 +223,7 @@
     "upstream": "down",
     "label": "EXAMPLE",
     "role": null,
-    "note": "Both circuits down. EXAMPLE mock field.",
+    "note": "Both circuits down. Observations unavailable. A mock field is returned only when WEATHER_DEV_MOCK=1.",
     "contentType": "application/json",
     "cacheControl": "no-store"
   },

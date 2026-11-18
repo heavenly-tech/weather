@@ -9,7 +9,7 @@ Night rows: live SCEL `180300Z` (00:00 CLST), the archived SCEL `170500Z` timeli
 ## Known deviations from TS
 
 1. **Open-Meteo 200 that is not JSON.** `res.json()` throws in `fetchOpenMeteo`, and Next serves an HTML 500. Rust returns `502` `{"error":"Upstream unavailable","code":"bad-json"}` with `content-type: application/json` and no `cache-control`. The body does not include the serde message. Pinned by `desk_parity::invalid_open_meteo_json_is_502_json`.
-2. **AWC 200 that is not JSON.** `fetchJson` catches the parse error and the TypeScript METAR/TAF routes return a mock envelope. Rust returns an observations-unavailable envelope (`source` `unavailable`, `data` null, code `awc-bad-json`) and does not include the serde message. A mock METAR or TAF is returned only when `WEATHER_DEV_MOCK=1`. Pinned by `desk_parity::invalid_awc_json_is_observations_unavailable` and `desk_parity::dev_mock_flag_returns_a_marked_metar_without_upstream_text`.
+2. **AWC 200 that is not JSON.** `fetchJson` catches the parse error and the TypeScript METAR/TAF routes return a mock envelope. Rust returns an observations-unavailable envelope (`source` `unavailable`, `data` null, code `awc-bad-json`) and does not include the serde message. A mock METAR or TAF is returned only when `WEATHER_DEV_MOCK=1`. Pinned by `desk_parity::invalid_awc_json_is_observations_unavailable` and `desk_parity::dev_mock_flag_returns_a_marked_metar_without_upstream_text`. The 3D field does the same when AWC is down (`viz-down`). GRAMET, GAMET, and the point-forecast 200 warnings are `Upstream unavailable` plus a short `code`, and they do not include upstream bytes.
 
 ## MeteoChile WRF
 
