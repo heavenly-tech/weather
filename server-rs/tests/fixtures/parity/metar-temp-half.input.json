@@ -1,0 +1,40 @@
+{
+  "label": "EXAMPLE",
+  "op": "generateModelMetar",
+  "note": "Math.round(Math.abs(-1.5)) is 2 and Math.round(Math.abs(-0.5)) is 1, so the group is M02/M01. The signed JS half (-1.5 → -1) is not what this formatter does.",
+  "icao": "SCTB",
+  "elevM": 649,
+  "model": "gfs_seamless",
+  "runTime": "2026-11-17T06:00:00Z",
+  "validTime": "2026-11-17T06:00:00Z",
+  "hourIndex": 0,
+  "hourly": {
+    "time": [
+      "2026-11-17T06:00"
+    ],
+    "temperature_2m": [
+      -1.5
+    ],
+    "dew_point_2m": [
+      -0.5
+    ],
+    "pressure_msl": [
+      1013
+    ],
+    "relative_humidity_2m": [
+      90
+    ],
+    "visibility": [
+      9999
+    ],
+    "wind_speed_10m": [
+      10
+    ],
+    "wind_direction_10m": [
+      180
+    ],
+    "surface_pressure": [
+      940
+    ]
+  }
+}

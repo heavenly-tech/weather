@@ -1,0 +1,40 @@
+{
+  "label": "EXAMPLE",
+  "op": "generateModelMetar",
+  "note": "Values in (-0.5, 0) round through Math.abs to 0 and are encoded M00. The later M00 branch in the source is unreachable.",
+  "icao": "SCTB",
+  "elevM": 649,
+  "model": "gfs_seamless",
+  "runTime": "2026-11-17T06:00:00Z",
+  "validTime": "2026-11-17T06:00:00Z",
+  "hourIndex": 0,
+  "hourly": {
+    "time": [
+      "2026-11-17T06:00"
+    ],
+    "temperature_2m": [
+      -0.4
+    ],
+    "dew_point_2m": [
+      -0.1
+    ],
+    "pressure_msl": [
+      1013
+    ],
+    "relative_humidity_2m": [
+      95
+    ],
+    "visibility": [
+      9999
+    ],
+    "wind_speed_10m": [
+      10
+    ],
+    "wind_direction_10m": [
+      180
+    ],
+    "surface_pressure": [
+      940
+    ]
+  }
+}

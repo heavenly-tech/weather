@@ -1,6 +1,6 @@
 {
   "label": "EXAMPLE",
-  "description": "Byte-identical TypeScript vs Rust outputs. Each case id has a sibling <id>.body captured from the TypeScript function. Ceiling and regrid cases also have <id>.input.json. Recorded cases are real SCTB Open-Meteo responses and are labeled recorded. The set includes a night hour and a missing-field hour. Add a case and a renderer in both languages; the compare stays exact.",
+  "description": "Byte-identical TypeScript vs Rust outputs. Each case id has a sibling <id>.body captured from the TypeScript function. Recorded cases are real SCTB Open-Meteo responses. The set includes a night hour and a missing-field hour (null or absent series), plus EXAMPLE cases. METAR and TAF bodies are JSON.stringify of the raw string and the validator result. Add a case and a renderer in both languages; the compare stays exact.",
   "cases": [
     {
       "id": "api-health",
@@ -110,6 +110,99 @@
       "source": "tests/fixtures/recorded/sctb-icon-seamless-2026-11-18.json",
       "label": "recorded",
       "role": "missing-field"
+    },
+    {
+      "id": "metar-sctb-ecmwf-night",
+      "source": "tests/fixtures/recorded/sctb-ecmwf-ifs025-2026-11-18.json",
+      "label": "recorded",
+      "role": "night"
+    },
+    {
+      "id": "metar-sctb-ecmwf-missing-field",
+      "source": "tests/fixtures/recorded/sctb-ecmwf-ifs025-2026-11-18.json",
+      "label": "recorded",
+      "role": "missing-field"
+    },
+    {
+      "id": "taf-sctb-ecmwf",
+      "source": "tests/fixtures/recorded/sctb-ecmwf-ifs025-2026-11-18.json",
+      "label": "recorded"
+    },
+    {
+      "id": "metar-sctb-gfs",
+      "source": "tests/fixtures/recorded/sctb-gfs-seamless-2026-11-18.json",
+      "label": "recorded",
+      "role": "night"
+    },
+    {
+      "id": "taf-sctb-gfs",
+      "source": "tests/fixtures/recorded/sctb-gfs-seamless-2026-11-18.json",
+      "label": "recorded"
+    },
+    {
+      "id": "metar-temp-half",
+      "source": "src/lib/andes/wmo-metar.ts formatTempGroup",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "metar-temp-m00",
+      "source": "src/lib/andes/wmo-metar.ts formatTempGroup",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "taf-dd24",
+      "source": "src/lib/andes/wmo-taf.ts changeWindow",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "taf-cross-midnight",
+      "source": "src/lib/andes/wmo-taf.ts changeWindow",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "metar-ecmwf-trace",
+      "source": "src/lib/andes/wmo-metar-wx.ts",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "metar-ecmwf-mid-deck",
+      "source": "src/lib/andes/wmo-metar-wx.ts",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "metar-ecmwf-600",
+      "source": "src/lib/andes/wmo-metar-wx.ts",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "metar-ecmwf-600-deck",
+      "source": "src/lib/andes/wmo-metar-wx.ts",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "metar-ecmwf-missing-mid",
+      "source": "src/lib/andes/wmo-metar-wx.ts",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "metar-ecmwf-null-mid",
+      "source": "src/lib/andes/wmo-metar-wx.ts",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "metar-bkn-unk",
+      "source": "src/lib/andes/wmo-metar-wx.ts",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "taf-validator-dd24",
+      "source": "src/lib/andes/taf-format.ts",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "taf-validator-dd00",
+      "source": "src/lib/andes/taf-format.ts",
+      "label": "EXAMPLE"
     }
   ]
 }
