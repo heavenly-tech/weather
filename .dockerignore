@@ -1,7 +1,9 @@
 .git
 .gitignore
 .next
+dist
 node_modules
+public/cesium
 target
 server-rs/target
 agent-tools

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Viewer } from "cesium";
+import type { CesiumWidget } from "cesium";
 import type { VizStation } from "@/lib/types";
 import { CHILE_COAST } from "@/lib/geo";
 
@@ -34,7 +34,7 @@ export function WeatherScene({
   focusIcao: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const viewerRef = useRef<Viewer | null>(null);
+  const viewerRef = useRef<CesiumWidget | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [error, setError] = useState<string | null>(null);
   const stationKey = useMemo(
@@ -50,7 +50,7 @@ export function WeatherScene({
     const start = async () => {
       try {
         (window as unknown as { CESIUM_BASE_URL: string }).CESIUM_BASE_URL = "/cesium/";
-        const Cesium = await import("cesium");
+        const Cesium = await import("@/client/cesium-api");
         if (cancelled || !containerRef.current) return;
 
         if (!document.querySelector("link[data-cesium-widgets]")) {
@@ -72,17 +72,7 @@ export function WeatherScene({
           throw new Error("This browser has no WebGL, so the Cesium globe cannot start.");
         }
 
-        const viewer = new Cesium.Viewer(containerRef.current, {
-          animation: false,
-          timeline: false,
-          geocoder: false,
-          homeButton: false,
-          sceneModePicker: true,
-          baseLayerPicker: false,
-          navigationHelpButton: false,
-          fullscreenButton: true,
-          infoBox: true,
-          selectionIndicator: true,
+        const viewer = new Cesium.CesiumWidget(containerRef.current, {
           terrainProvider: new Cesium.EllipsoidTerrainProvider(),
           baseLayer: new Cesium.ImageryLayer(
             new Cesium.OpenStreetMapImageryProvider({

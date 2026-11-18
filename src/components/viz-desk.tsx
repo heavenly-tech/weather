@@ -1,6 +1,6 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import dynamic from "@/client/next-dynamic";
 import { ProductEmpty } from "@/components/product-state";
 import { ProductMeta } from "@/components/product-meta";
 import type { ProductEnvelope, VizStation } from "@/lib/types";

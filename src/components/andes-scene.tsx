@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Viewer } from "cesium";
+import type { CesiumWidget } from "cesium";
 import { clientFetch } from "@/lib/client-fetch";
 import { ANDES_DOMAIN, SCTB_FOCUS } from "@/lib/andes/domain";
-import { categoryColor } from "@/lib/andes/ceiling";
-import type { CeilingCell } from "@/lib/andes/fetch-field";
+import { categoryColor } from "@/lib/andes/ceiling-style";
+import type { CeilingCell } from "@/lib/andes/ceiling-cell";
 
 type SliceValue = { lat: number; lon: number; tempC: number | null; cloudPct: number | null };
 
@@ -81,7 +81,7 @@ export function AndesScene({
   gridCols: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const viewerRef = useRef<Viewer | null>(null);
+  const viewerRef = useRef<CesiumWidget | null>(null);
   const overlayKey = useRef(0);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
@@ -93,7 +93,7 @@ export function AndesScene({
     const boot = async () => {
       try {
         (window as unknown as { CESIUM_BASE_URL: string }).CESIUM_BASE_URL = "/cesium/";
-        const Cesium = await import("cesium");
+        const Cesium = await import("@/client/cesium-api");
         if (cancelled) return;
 
         if (!document.querySelector("link[data-cesium-widgets]")) {
@@ -115,7 +115,8 @@ export function AndesScene({
         }
         if (ionToken) Cesium.Ion.defaultAccessToken = ionToken;
 
-        let terrainProvider: import("cesium").TerrainProvider = new Cesium.EllipsoidTerrainProvider();
+        let terrainProvider: import("@/client/cesium-api").TerrainProvider =
+          new Cesium.EllipsoidTerrainProvider();
         if (ionToken) {
           try {
             terrainProvider = await Cesium.createWorldTerrainAsync();
@@ -124,15 +125,7 @@ export function AndesScene({
           }
         }
 
-        const viewer = new Cesium.Viewer(el, {
-          animation: false,
-          timeline: false,
-          geocoder: false,
-          homeButton: false,
-          sceneModePicker: true,
-          baseLayerPicker: false,
-          navigationHelpButton: false,
-          fullscreenButton: true,
+        const viewer = new Cesium.CesiumWidget(el, {
           terrainProvider,
           baseLayer: new Cesium.ImageryLayer(
             new Cesium.OpenStreetMapImageryProvider({ url: "https://tile.openstreetmap.org/" })
@@ -184,7 +177,7 @@ export function AndesScene({
     const id = `andes-overlay-${overlayKey.current++}`;
 
     const paint = async () => {
-      const Cesium = await import("cesium");
+      const Cesium = await import("@/client/cesium-api");
       const v = viewerRef.current;
       if (cancelled || !v) return;
     v.entities.removeById(id);

@@ -1,13 +1,17 @@
 # Production stack for nginx-proxy on heavenly.
 # Path on the VPS: /opt/stacks/app-heavenly-weather
 # Public site: https://weather.heavenly.cl
+#
+# There is no `build:` key. The image is built on omarchibald or the Mac mini
+# and loaded onto the VPS before `docker compose up`. See deploy.sh.
 services:
   weather:
-    build: .
     image: app-heavenly-weather:latest
     container_name: app-heavenly-weather
     restart: unless-stopped
     environment:
+      # The binary ignores NODE_ENV and HOSTNAME. They stay so an existing
+      # env file does not have to change. The process binds 0.0.0.0:$PORT.
       NODE_ENV: production
       PORT: "4310"
       HOSTNAME: "0.0.0.0"
@@ -20,13 +24,7 @@ services:
       - proxy_network
       - default
     healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:4310/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
-        ]
+      test: ["CMD", "/weather", "healthcheck"]
       interval: 30s
       timeout: 5s
       retries: 3

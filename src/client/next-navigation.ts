@@ -11,10 +11,10 @@ export function useSearchParams(): URLSearchParams {
 export function useRouter() {
   const { navigate } = useNav();
   return {
-    push(href: string) {
+    push(href: string, _options?: { scroll?: boolean }) {
       navigate(href, false);
     },
-    replace(href: string) {
+    replace(href: string, _options?: { scroll?: boolean }) {
       navigate(href, true);
     },
   };

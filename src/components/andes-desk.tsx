@@ -9,7 +9,7 @@ import { CoherencePanels, type CoherencePayload } from "@/components/coherence-p
 import { ModelOutputStamp } from "@/components/model-output-stamp";
 import { clientFetch } from "@/lib/client-fetch";
 import { TIMELINE_AIRFIELDS } from "@/lib/andes/domain";
-import type { CeilingCell } from "@/lib/andes/fetch-field";
+import type { CeilingCell } from "@/lib/andes/ceiling-cell";
 import type { ModelCeilingSeries, ObservedCeilingSeries } from "@/lib/andes/timeline";
 
 export function AndesDesk() {

@@ -37,4 +37,11 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
   },
+  server: {
+    port: 43123,
+    host: "0.0.0.0",
+    proxy: {
+      "/api": "http://127.0.0.1:4310",
+    },
+  },
 });

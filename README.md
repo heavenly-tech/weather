@@ -16,7 +16,7 @@ Chile-first aviation briefing desk for METAR, TAF, GRAMET, GAMET, MeteoChile WRF
 
 ### Ceiling derivation
 
-Documented in `src/lib/andes/ceiling.ts`. Summary:
+Documented in `server-rs/src/ceiling.rs`. Summary:
 
 1. Skip pressure levels **above** `surface_pressure` or with geopotential height **≤ terrain** (underground artefacts in the Andes).
 2. **Interpolate** the BKN (62.5 %) crossing in height between adjacent layers (linear in cover vs geopotential height); prefer `cloud_cover_low/mid/high` where present.
@@ -71,7 +71,7 @@ Repeatable pipeline: `npm run validate:ceilings` → writes `docs/validation/sce
 - `past_days` hours are Open-Meteo archived states, not a formal archived forecast run.
 - Clear-sky METAR (no BKN/OVC base) vs model “unlimited” is only partially aligned in scoring.
 
-**Honest gaps:** No official `cloud_base` from ECMWF/GFS on Open-Meteo; ceilings use pressure-level cover. Underground 1000/975 hPa layers are ignored via `surface_pressure` and terrain height (see `ceiling.ts`).
+**Honest gaps:** No official `cloud_base` from ECMWF/GFS on Open-Meteo; ceilings use pressure-level cover. Underground 1000/975 hPa layers are ignored via `surface_pressure` and terrain height (see `server-rs/src/ceiling.rs`).
 
 DGAC product research: [docs/dgac-chile-products.md](docs/dgac-chile-products.md).
 
@@ -80,32 +80,33 @@ DGAC product research: [docs/dgac-chile-products.md](docs/dgac-chile-products.md
 ```bash
 npm install
 cp .env.example .env.local   # optional MeteoChile token
-npm run dev
-npm test                     # fixture-only unit tests (no network)
+cargo run --bin weather      # API on port 4310
+npm run dev                  # Vite on 43123, proxying /api to port 4310
+npm test                     # client tests (no network)
 ```
 
-The dev server binds `0.0.0.0:43123`. Open http://127.0.0.1:43123.
+The Vite dev server binds `0.0.0.0:43123` and proxies `/api` to the Rust binary on port 4310.
 
 ## Production (weather.heavenly.cl)
 
 Same nginx-proxy stack as [flight.heavenly.cl](https://flight.heavenly.cl) and [mora.oficinaslascondes.cl](https://mora.oficinaslascondes.cl). Internal listen port is **4310**. The compose file sets `VIRTUAL_HOST`, `LETSENCRYPT_HOST`, and `VIRTUAL_PORT` and joins the external `proxy_network`.
 
-On a machine that can `ssh heavenly`:
+Build the image on omarchibald or the Mac mini (`linux/amd64`), not on the VPS:
+
+```bash
+docker build --platform linux/amd64 -t app-heavenly-weather:latest .
+docker save app-heavenly-weather:latest | ssh heavenly docker load
+```
+
+Load Infrastructure's prebuilt `app-heavenly-weather:node` and check its digest before the swap. The digest and the rollback command are in [docs/cutover-checklist.md](docs/cutover-checklist.md).
+
+On a machine that can `ssh heavenly`, after that image is loaded:
 
 ```bash
 ./deploy.sh
 ```
 
-That clones or updates `/opt/stacks/app-heavenly-weather` and runs `docker compose up -d --build`.
-
-Manual equivalent on the VPS:
-
-```bash
-mkdir -p /opt/stacks
-git clone https://github.com/heavenly-tech/weather.git /opt/stacks/app-heavenly-weather
-cd /opt/stacks/app-heavenly-weather
-docker compose up -d --build
-```
+That updates `/opt/stacks/app-heavenly-weather` and runs `docker compose up -d --no-build`. It does not build. Rollback and the staging dual run are in [docs/cutover-checklist.md](docs/cutover-checklist.md).
 
 Optional environment next to compose (MeteoChile WRF-DMC). Without these, the WRF page uses live Open-Meteo GFS:
 

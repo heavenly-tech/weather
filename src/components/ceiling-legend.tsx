@@ -1,4 +1,4 @@
-import { CEILING_LEGEND } from "@/lib/andes/ceiling";
+import { CEILING_LEGEND } from "@/lib/andes/ceiling-style";
 
 export function CeilingLegend() {
   return (

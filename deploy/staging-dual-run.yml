@@ -1,0 +1,26 @@
+# Side-by-side staging. Not the production compose file, and not for heavenly.
+# Load both images first. Point the diff script at the published ports.
+#
+#   docker compose -f deploy/staging-dual-run.yml up -d
+#   node scripts/dual-run-diff.mjs --node http://127.0.0.1:4311 --rust http://127.0.0.1:4310
+#
+# NODE_IMAGE is the previous Node tag (app-heavenly-weather:node).
+# RUST_IMAGE is the scratch image (app-heavenly-weather:latest).
+# Optional METEOCHILE_* come from the environment, not from this file.
+services:
+  node:
+    image: ${NODE_IMAGE:-app-heavenly-weather:node}
+    environment:
+      PORT: "4310"
+      METEOCHILE_USER: ${METEOCHILE_USER:-}
+      METEOCHILE_TOKEN: ${METEOCHILE_TOKEN:-}
+    ports:
+      - "4311:4310"
+  rust:
+    image: ${RUST_IMAGE:-app-heavenly-weather:latest}
+    environment:
+      PORT: "4310"
+      METEOCHILE_USER: ${METEOCHILE_USER:-}
+      METEOCHILE_TOKEN: ${METEOCHILE_TOKEN:-}
+    ports:
+      - "4310:4310"

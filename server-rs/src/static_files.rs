@@ -51,6 +51,12 @@ fn safe_file(dist: &Path, url_path: &str) -> Option<PathBuf> {
     }
 }
 
+/// HTML only. API responses are not served here, so this header is not on `/api`.
+/// `connect-src` is `'self'` plus the OSM tile host: desk data is fetched from `/api`,
+/// and the globe loads tiles from that host. `style-src` allows inline style attributes
+/// that Cesium writes onto its widget. `script-src` has no `'unsafe-eval'`.
+pub const HTML_CSP: &str = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tile.openstreetmap.org; connect-src 'self' https://tile.openstreetmap.org; font-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'";
+
 fn file_response(path: &Path, cache: &'static str) -> Response {
     let bytes = match std::fs::read(path) {
         Ok(bytes) => bytes,
@@ -61,12 +67,14 @@ fn file_response(path: &Path, cache: &'static str) -> Response {
                 .expect("response");
         }
     };
-    Response::builder()
+    let mut response = Response::builder()
         .status(StatusCode::OK)
         .header(header::CONTENT_TYPE, content_type(path))
-        .header(header::CACHE_CONTROL, cache)
-        .body(Body::from(bytes))
-        .expect("response")
+        .header(header::CACHE_CONTROL, cache);
+    if path.extension().and_then(|ext| ext.to_str()) == Some("html") {
+        response = response.header(header::CONTENT_SECURITY_POLICY, HTML_CSP);
+    }
+    response.body(Body::from(bytes)).expect("response")
 }
 
 fn cache_control(path: &Path) -> &'static str {
@@ -162,6 +170,13 @@ mod tests {
                 .and_then(|v| v.to_str().ok()),
             Some("no-cache")
         );
+        assert_eq!(
+            root.headers()
+                .get(header::CONTENT_SECURITY_POLICY)
+                .and_then(|v| v.to_str().ok()),
+            Some(HTML_CSP)
+        );
+        assert!(!HTML_CSP.contains("'unsafe-eval'"));
         assert_eq!(body(root).await, index);
 
         let hashed = app
@@ -189,6 +204,10 @@ mod tests {
                 .and_then(|v| v.to_str().ok()),
             Some("public, max-age=31536000, immutable")
         );
+        assert!(hashed
+            .headers()
+            .get(header::CONTENT_SECURITY_POLICY)
+            .is_none());
         assert_eq!(body(hashed).await, asset);
 
         let spa = app
@@ -206,6 +225,12 @@ mod tests {
                 .get(header::CONTENT_TYPE)
                 .and_then(|v| v.to_str().ok()),
             Some("text/html; charset=utf-8")
+        );
+        assert_eq!(
+            spa.headers()
+                .get(header::CONTENT_SECURITY_POLICY)
+                .and_then(|v| v.to_str().ok()),
+            Some(HTML_CSP)
         );
         assert_eq!(body(spa).await, index);
     }

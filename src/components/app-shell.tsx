@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Link from "@/client/next-link";
+import { usePathname, useRouter, useSearchParams } from "@/client/next-navigation";
 import { useEffect, useState } from "react";
 import {
   CloudSun,

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/client/next-link";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FlightCategoryBadge } from "@/components/flight-category-badge";
