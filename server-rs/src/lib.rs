@@ -4,9 +4,11 @@
 pub mod airfields;
 pub mod annex3;
 pub mod app;
+pub mod awc;
 pub mod cache;
 pub mod ceiling;
 pub mod client;
+pub mod desk;
 pub mod domain;
 pub mod field;
 pub mod health;
@@ -31,6 +33,8 @@ pub mod utc;
 pub mod vis_wx;
 pub mod visibility;
 
+#[cfg(test)]
+mod desk_parity;
 #[cfg(test)]
 mod encoder_tests;
 #[cfg(test)]

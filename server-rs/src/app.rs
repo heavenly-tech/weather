@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use axum::routing::get;
 use axum::Router;
 
+use crate::desk;
 use crate::health;
 use crate::routes;
 use crate::state::AppState;
@@ -24,6 +25,15 @@ pub fn router_with(dist: PathBuf, state: AppState) -> Router {
         .route("/api/andes/coherence", get(routes::coherence))
         .route("/api/generated/metar", get(routes::generated_metar))
         .route("/api/generated/taf", get(routes::generated_taf))
+        .route("/api/config", get(desk::config))
+        .route("/api/metar", get(desk::metar))
+        .route("/api/taf", get(desk::taf))
+        .route("/api/forecast", get(desk::forecast))
+        .route("/api/gramet", get(desk::gramet))
+        .route("/api/gamet", get(desk::gamet))
+        .route("/api/synoptic", get(desk::synoptic))
+        .route("/api/synoptic/image", get(desk::synoptic_image))
+        .route("/api/viz", get(desk::viz))
         .with_state(state);
     static_files::attach(api, &dist)
 }

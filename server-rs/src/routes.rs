@@ -668,7 +668,7 @@ async fn observed(fetch: &FetchFn, icao: &str) -> Option<(String, Vec<TimelinePo
         "https://aviationweather.gov/api/data/metar?ids={}&format=json&hours=36",
         form_encode(icao)
     );
-    let response = fetch_json_retry(fetch, &url).await.ok()?;
+    let response = fetch(url).await.ok()?;
     if response.status != 200 {
         return None;
     }
@@ -676,39 +676,21 @@ async fn observed(fetch: &FetchFn, icao: &str) -> Option<(String, Vec<TimelinePo
     let rows = parsed.as_array()?;
     let mut points = Vec::new();
     for row in rows {
-        let time = row.get("reportTime").and_then(Value::as_str).unwrap_or("");
+        let metar = crate::awc::parse_metar(row);
+        let Some(time) = metar.observed_at else {
+            continue;
+        };
         if time.is_empty() {
             continue;
         }
-        let category = row.get("fltCat").and_then(Value::as_str).unwrap_or("UNK");
         points.push(TimelinePoint {
-            time: time.to_string(),
-            ceiling_ft: cloud_ceiling(row.get("clouds")),
-            category: category.to_string(),
+            time,
+            ceiling_ft: metar.ceiling_ft,
+            category: metar.flight_category,
         });
     }
     points.sort_by(|left, right| left.time.cmp(&right.time));
     Some((format!("obs: {icao}"), points))
-}
-
-fn cloud_ceiling(clouds: Option<&Value>) -> Option<f64> {
-    let rows = clouds?.as_array()?;
-    let mut best: Option<f64> = None;
-    for cloud in rows {
-        let cover = cloud
-            .get("cover")
-            .and_then(Value::as_str)
-            .unwrap_or("")
-            .to_ascii_uppercase();
-        if cover != "BKN" && cover != "OVC" && cover != "VV" {
-            continue;
-        }
-        let Some(base) = cloud.get("base").and_then(Value::as_f64) else {
-            continue;
-        };
-        best = Some(best.map(|current| current.min(base)).unwrap_or(base));
-    }
-    best
 }
 
 async fn load_metar(state: &AppState, icao: &str) -> (String, Option<f64>) {
@@ -717,12 +699,8 @@ async fn load_metar(state: &AppState, icao: &str) -> (String, Option<f64>) {
         form_encode(icao)
     );
     if let Some(row) = awc_row(&state.awc, &url).await {
-        let raw = row
-            .get("rawOb")
-            .and_then(Value::as_str)
-            .unwrap_or("")
-            .to_string();
-        return (raw, cloud_ceiling(row.get("clouds")));
+        let metar = crate::awc::parse_metar(&row);
+        return (metar.raw, metar.ceiling_ft);
     }
     (mock_metar_raw(icao, &state.clock), None)
 }
@@ -733,20 +711,8 @@ async fn load_taf(state: &AppState, icao: &str) -> (String, Option<f64>) {
         form_encode(icao)
     );
     if let Some(row) = awc_row(&state.awc, &url).await {
-        let raw = row
-            .get("rawTAF")
-            .and_then(Value::as_str)
-            .unwrap_or("")
-            .to_string();
-        let mut best: Option<f64> = None;
-        if let Some(periods) = row.get("fcsts").and_then(Value::as_array) {
-            for period in periods {
-                if let Some(base) = cloud_ceiling(period.get("clouds")) {
-                    best = Some(best.map(|current| current.min(base)).unwrap_or(base));
-                }
-            }
-        }
-        return (raw, best);
+        let taf = crate::awc::parse_taf(&row);
+        return (taf.raw, taf.ceiling_ft);
     }
     (mock_taf_raw(icao, &state.clock), None)
 }
@@ -833,7 +799,7 @@ fn js_number(text: &str) -> f64 {
     trimmed.parse::<f64>().unwrap_or(f64::NAN)
 }
 
-fn query_map(query: Option<&str>) -> HashMap<String, String> {
+pub(crate) fn query_map(query: Option<&str>) -> HashMap<String, String> {
     let mut map = HashMap::new();
     let Some(query) = query else {
         return map;
@@ -852,7 +818,7 @@ fn query_map(query: Option<&str>) -> HashMap<String, String> {
     map
 }
 
-fn form_encode(value: &str) -> String {
+pub(crate) fn form_encode(value: &str) -> String {
     let mut out = String::new();
     for byte in value.bytes() {
         match byte {

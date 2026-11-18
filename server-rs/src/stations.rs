@@ -191,3 +191,61 @@ pub fn station(icao: &str) -> Option<&'static Station> {
 pub fn require_station(icao: &str) -> &'static Station {
     station(icao).unwrap_or_else(|| station("SCEL").expect("SCEL is in the station table"))
 }
+
+pub fn all_stations() -> &'static [Station] {
+    STATIONS
+}
+
+/// FIR id, or `INTL` for stations outside the Chilean FIRs.
+pub fn fir_id(icao: &str) -> &'static str {
+    match icao.to_ascii_uppercase().as_str() {
+        "SCAR" | "SCDA" | "SCCF" | "SCFA" | "SCAT" => "ANTOFAGASTA",
+        "SCQP" | "SCVD" | "SCJO" | "SCTE" | "SCBA" | "SCNT" | "SCCI" => "PUERTO_MONTT",
+        "SCIP" | "SPJC" | "SAEZ" => "INTL",
+        _ => "SANTIAGO",
+    }
+}
+
+pub fn meteochile_id(icao: &str) -> Option<&'static str> {
+    if icao.eq_ignore_ascii_case("SCEL") {
+        Some("330021")
+    } else {
+        None
+    }
+}
+
+pub fn chile_stations() -> Vec<&'static Station> {
+    STATIONS
+        .iter()
+        .filter(|station| fir_id(station.icao) != "INTL")
+        .collect()
+}
+
+pub struct Fir {
+    pub id: &'static str,
+    pub label: &'static str,
+    pub icao_hint: &'static str,
+}
+
+pub const FIRS: &[Fir] = &[
+    Fir {
+        id: "ANTOFAGASTA",
+        label: "Antofagasta FIR",
+        icao_hint: "SCFA",
+    },
+    Fir {
+        id: "SANTIAGO",
+        label: "Santiago FIR",
+        icao_hint: "SCEL",
+    },
+    Fir {
+        id: "PUERTO_MONTT",
+        label: "Puerto Montt FIR",
+        icao_hint: "SCTE",
+    },
+];
+
+pub fn parse_fir(value: Option<&str>) -> &'static Fir {
+    let token = value.unwrap_or("SANTIAGO").to_ascii_uppercase();
+    FIRS.iter().find(|fir| fir.id == token).unwrap_or(&FIRS[1])
+}
