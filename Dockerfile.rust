@@ -5,6 +5,14 @@
 # GitHub Actions (or a dev machine) builds it. The VPS only runs a prebuilt image,
 # and that switch is a later PR.
 
+FROM node:22-alpine AS client
+WORKDIR /src
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts
+COPY index.html vite.config.ts tsconfig.json ./
+COPY src ./src
+RUN mkdir -p public && npm run build:client
+
 FROM rust:1.98.0-alpine AS chef
 WORKDIR /src
 RUN apk add --no-cache musl-dev file
@@ -32,7 +40,7 @@ RUN apk add --no-cache ca-certificates \
     && cp -a /etc/ssl/certs /out/etc/ssl/certs \
     && cp -a /etc/ssl/cert.pem /out/etc/ssl/cert.pem \
     && chown 65534:65534 /out/app/data
-COPY server-rs/placeholder-dist /out/app/dist
+COPY --from=client /src/dist /out/app/dist
 RUN chown -R 65534:65534 /out/app
 
 FROM scratch
