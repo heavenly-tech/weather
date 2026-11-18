@@ -23,6 +23,9 @@ import type {
   ProductEnvelope,
   SynopticProduct,
   TafForecast,
+  OfficialGametProduct,
+  OfficialMetarProduct,
+  OfficialTafProduct,
   VizStation,
 } from "@/lib/types";
 import NotFound from "@/app/not-found";
@@ -65,13 +68,24 @@ function MetarRoute() {
   const icao = clientIcao(search.get("icao"), DEFAULT_ICAO);
   const metar = useClientQuery<ProductEnvelope<MetarObservation>>(`/api/metar?icao=${icao}`);
   const taf = useClientQuery<ProductEnvelope<TafForecast>>(`/api/taf?icao=${icao}`);
+  const officialMetar = useClientQuery<OfficialMetarProduct>(`/api/official/metar?icao=${icao}`);
+  const officialTaf = useClientQuery<OfficialTafProduct>(`/api/official/taf?icao=${icao}`);
   if (metar.loading || taf.loading) return <ProductLoading rows={4} />;
   if (metar.error || taf.error || !metar.data || !taf.data) {
     return (
       <ProductError title="METAR / TAF unavailable" body={metar.error ?? taf.error ?? "No terminal product."} />
     );
   }
-  return <MetarTafView icao={icao} station={getStation(icao)} metar={metar.data} taf={taf.data} />;
+  return (
+    <MetarTafView
+      icao={icao}
+      station={getStation(icao)}
+      metar={metar.data}
+      taf={taf.data}
+      officialMetar={officialMetar.data}
+      officialTaf={officialTaf.data}
+    />
+  );
 }
 
 function ForecastRoute() {
@@ -109,9 +123,12 @@ function GametRoute() {
   const icao = clientIcao(search.get("icao"), DEFAULT_ICAO);
   const fir = parseFir(search.get("fir") ?? firForStation(icao));
   const envelope = useClientQuery<ProductEnvelope<GametBulletin>>(`/api/gamet?fir=${fir}`);
+  const official = useClientQuery<OfficialGametProduct>(`/api/official/gamet?fir=${fir}`);
   return (
     <DeskResult query={envelope} title="GAMET unavailable">
-      {(data) => <GametDesk fir={fir} envelope={data} />}
+      {(data) => (
+        <GametDesk fir={fir} envelope={data} officialGamet={official.loading ? null : official.data} />
+      )}
     </DeskResult>
   );
 }

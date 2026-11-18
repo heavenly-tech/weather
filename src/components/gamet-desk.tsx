@@ -7,15 +7,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductEmpty } from "@/components/product-state";
 import { ProductMeta } from "@/components/product-meta";
 import { DEFAULT_ICAO, FIRS } from "@/lib/stations";
-import type { ChileFirId, GametBulletin, ProductEnvelope } from "@/lib/types";
+import { OfficialDgacBadge } from "@/components/official-dgac-badge";
+import type { ChileFirId, GametBulletin, OfficialGametProduct, ProductEnvelope } from "@/lib/types";
 import { formatUtc } from "@/lib/format";
 
 export function GametDesk({
   fir,
   envelope,
+  officialGamet,
 }: {
   fir: ChileFirId;
   envelope: ProductEnvelope<GametBulletin>;
+  officialGamet: OfficialGametProduct | null;
 }) {
   const search = useSearchParams();
   const icao = (search.get("icao") ?? DEFAULT_ICAO).toUpperCase();
@@ -30,6 +33,12 @@ export function GametDesk({
           GAMET-style bulletin from GFS and any international SIGMETs that intersect Chile, then labels it
           derived so it is never confused with the signed DMC product.
         </p>
+        {officialGamet?.unavailable ? (
+          <p className="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <OfficialDgacBadge unavailable />
+            Official GAMET is not publicly available from DGAC ({officialGamet.unavailableReason}).
+          </p>
+        ) : null}
       </div>
 
       <div className="flex flex-wrap gap-2">

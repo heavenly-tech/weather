@@ -5,6 +5,8 @@ use std::time::Duration;
 
 use crate::cache::{BoxFuture, Clock, FetchFn, OpenMeteoCache, UpstreamResponse};
 use crate::field::ProbeCache;
+use crate::official_cache::OfficialIfis;
+use crate::official_ifis::DGAC_USER_AGENT;
 use crate::product_log::ProductLog;
 
 #[derive(Clone, Debug)]
@@ -26,6 +28,7 @@ pub struct AppState {
     pub random: Arc<dyn Fn() -> f64 + Send + Sync>,
     pub log: Arc<ProductLog>,
     pub probes: Arc<ProbeCache>,
+    pub official: OfficialIfis,
 }
 
 impl AppState {
@@ -38,6 +41,12 @@ impl AppState {
             let client = awc_client.clone();
             Box::pin(async move { awc_fetch(&client, &url).await })
         });
+        let dgac_client = dgac_client()?;
+        let dgac_fetch: FetchFn = Arc::new(move |url: String| {
+            let client = dgac_client.clone();
+            Box::pin(async move { dgac_fetch(&client, &url).await })
+        });
+        let official = OfficialIfis::new(dgac_fetch, clock.clone());
         let binary: BytesFn = Arc::new(move |url: String| {
             let client = binary_client.clone();
             Box::pin(async move { fetch_bytes(&client, &url).await })
@@ -50,6 +59,7 @@ impl AppState {
             random: Arc::new(production_random),
             log: Arc::new(ProductLog::new(clock)),
             probes: Arc::new(ProbeCache::new()),
+            official,
         })
     }
 
@@ -74,12 +84,13 @@ impl AppState {
         });
         Self {
             cache: Arc::new(OpenMeteoCache::new(fetch.clone(), clock.clone(), sleep)),
-            awc: fetch,
+            awc: fetch.clone(),
             binary,
             clock: clock.clone(),
             random,
-            log: Arc::new(ProductLog::new(clock)),
+            log: Arc::new(ProductLog::new(clock.clone())),
             probes: Arc::new(ProbeCache::new()),
+            official: OfficialIfis::new(fetch, clock),
         }
     }
 }
@@ -123,23 +134,42 @@ fn production_random() -> f64 {
 }
 
 fn awc_client() -> reqwest::Result<reqwest::Client> {
+    http_client("HeavenlyWeather/1.0 (aviation briefing; weather.heavenly.cl)")
+}
+
+fn dgac_client() -> reqwest::Result<reqwest::Client> {
+    http_client(DGAC_USER_AGENT)
+}
+
+fn http_client(user_agent: &str) -> reqwest::Result<reqwest::Client> {
     reqwest::Client::builder()
-        .user_agent("HeavenlyWeather/1.0 (aviation briefing; weather.heavenly.cl)")
+        .user_agent(user_agent)
         .timeout(Duration::from_secs(12))
         .redirect(reqwest::redirect::Policy::none())
         .build()
 }
 
 fn awc_fetch(client: &reqwest::Client, url: &str) -> BoxFuture<Result<UpstreamResponse, String>> {
+    text_fetch(client, url, true)
+}
+
+fn dgac_fetch(client: &reqwest::Client, url: &str) -> BoxFuture<Result<UpstreamResponse, String>> {
+    text_fetch(client, url, false)
+}
+
+fn text_fetch(
+    client: &reqwest::Client,
+    url: &str,
+    json_accept: bool,
+) -> BoxFuture<Result<UpstreamResponse, String>> {
     let client = client.clone();
     let url = url.to_string();
     Box::pin(async move {
-        match client
-            .get(&url)
-            .header("accept", "application/json")
-            .send()
-            .await
-        {
+        let mut request = client.get(&url);
+        if json_accept {
+            request = request.header("accept", "application/json");
+        }
+        match request.send().await {
             Err(error) if error.is_timeout() => {
                 Err("Timed out after 12s waiting for the weather circuit.".to_string())
             }

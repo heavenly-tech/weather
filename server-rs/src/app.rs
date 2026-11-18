@@ -5,6 +5,7 @@ use axum::Router;
 
 use crate::desk;
 use crate::health;
+use crate::official_routes;
 use crate::routes;
 use crate::state::AppState;
 use crate::static_files;
@@ -34,6 +35,9 @@ pub fn router_with(dist: PathBuf, state: AppState) -> Router {
         .route("/api/synoptic", get(desk::synoptic))
         .route("/api/synoptic/image", get(desk::synoptic_image))
         .route("/api/viz", get(desk::viz))
+        .route("/api/official/metar", get(official_routes::official_metar))
+        .route("/api/official/taf", get(official_routes::official_taf))
+        .route("/api/official/gamet", get(official_routes::official_gamet))
         .with_state(state);
     static_files::attach(api, &dist)
 }

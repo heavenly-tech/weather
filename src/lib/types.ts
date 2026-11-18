@@ -65,6 +65,44 @@ export type ProductEnvelope<T> = {
   warning?: string;
 };
 
+export type OfficialMetarProduct = {
+  icao: string;
+  raw: string;
+  kind: string;
+  source: string;
+  officialLabel: string;
+  sourceUrl: string;
+  fetchedAt: string;
+  issuedAt: string | null;
+  ageSeconds: number;
+  stale: boolean;
+  unavailable: boolean;
+  unavailableReason: string | null;
+};
+
+export type OfficialTafProduct = {
+  icao: string;
+  raw: string;
+  source: string;
+  officialLabel: string;
+  sourceUrl: string;
+  fetchedAt: string;
+  issuedAt: string | null;
+  ageSeconds: number;
+  stale: boolean;
+  unavailable: boolean;
+  unavailableReason: string | null;
+};
+
+export type OfficialGametProduct = {
+  fir: string;
+  source: string;
+  officialLabel: string;
+  fetchedAt: string;
+  unavailable: boolean;
+  unavailableReason: string;
+};
+
 export type PressureLevel = 1000 | 925 | 850 | 700 | 500 | 300;
 
 export type VerticalSample = {

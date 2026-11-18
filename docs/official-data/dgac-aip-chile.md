@@ -310,7 +310,7 @@ Visual separation: distinct badge colour for **Oficial DGAC** vs **model output,
 
 **Tests:** Recorded fixtures under `server-rs/tests/fixtures/official/` — **sanitized HTML snippets** (no CSRF tokens from live pages; strip `login[_csrf_token]`). Parity tests: parser extracts same `rawOb` as golden strings.
 
-**Politeness:** Single global semaphore to IFIS; `User-Agent: heavenly-weather/0.1 (server-side cache; contact ifis@dgac.gob.cl)`.
+**Politeness:** Single global semaphore to IFIS; `User-Agent: heavenly-weather/0.1 (server-side dgac-ifis cache)`; at most **1 req/min per ICAO** and **6 req/min** overall; 5 min METAR cache; exponential backoff on errors and HTTP 4xx/5xx.
 
 ---
 
@@ -365,12 +365,11 @@ Visual separation: distinct badge colour for **Oficial DGAC** vs **model output,
 
 ---
 
-## Open questions (track in PR 2+)
+## Open questions (track in PR 3+)
 
-1. Confirm with DGAC whether machine polling of IFIS HTML is acceptable at our planned rate (ifis@dgac.gob.cl).
-2. Whether **IWXXM** will get a public endpoint (AIP already mandates IWXXM to OPMET; no URL today).
-3. **SCIL / SCTL** — operational METAR/TAF availability on IFIS (verify per AIRAC).
-4. **AIP interactive map** roadmap — `/symfony/map` currently a stub.
+1. Whether **IWXXM** will get a public endpoint (AIP already mandates IWXXM to OPMET; no URL today).
+2. **SCIL / SCTL** — operational METAR/TAF availability on IFIS (verify per AIRAC).
+3. **AIP interactive map** roadmap — `/symfony/map` currently a stub.
 
 ---
 

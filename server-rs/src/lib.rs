@@ -17,6 +17,9 @@ pub mod metar;
 pub mod metar_wx;
 pub mod models;
 pub mod msa;
+pub mod official_cache;
+pub mod official_ifis;
+pub mod official_routes;
 pub mod product;
 pub mod product_log;
 pub mod regrid;
@@ -35,6 +38,8 @@ pub mod visibility;
 
 #[cfg(test)]
 mod desk_parity;
+#[cfg(test)]
+mod official_parity;
 #[cfg(test)]
 mod encoder_tests;
 #[cfg(test)]
