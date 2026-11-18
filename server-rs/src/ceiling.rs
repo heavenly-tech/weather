@@ -651,4 +651,41 @@ mod tests {
         assert!(sample.cloud_base_msl_m.is_some());
         assert!(!sample.obscured);
     }
+
+    #[test]
+    fn recorded_sctb_night_hour_ignores_the_negative_convective_base() {
+        let (value, hourly) = hourly_from("ceiling-sctb-night");
+        assert_eq!(value["label"], "recorded");
+        assert_eq!(value["validTime"], "2026-11-17T05:00");
+        let index = index_of(&value);
+        assert_eq!(value["hourly"]["time"][index], "2026-11-17T05:00");
+        assert!(value["hourly"]["visibility"][index].is_null());
+        assert!(value["hourly"].get("cloud_cover_400hPa").is_none());
+        let sample = ceiling_from_hourly(&hourly, index, f64_field(&value, "terrainElevM"));
+        assert!(sample.vis_m.is_none());
+        assert_ne!(sample.cloud_base_msl_m, Some(-500.0));
+        let json = String::from_utf8(sample.to_json_bytes()).unwrap();
+        assert!(json.contains("\"visM\":null"), "{json}");
+    }
+
+    #[test]
+    fn recorded_sctb_missing_field_stays_null() {
+        let (value, hourly) = hourly_from("ceiling-sctb-missing-field");
+        assert_eq!(value["label"], "recorded");
+        let index = index_of(&value);
+        assert!(value["hourly"]["visibility"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|item| item.is_null()));
+        assert!(value["hourly"].get("geopotential_height_300hPa").is_none());
+        assert_eq!(num_at(&hourly, "visibility", index), None);
+        assert_eq!(num_at(&hourly, "cloud_cover_400hPa", index), None);
+        assert!(num_at(&hourly, "surface_pressure", index).is_some());
+        let sample = ceiling_from_hourly(&hourly, index, f64_field(&value, "terrainElevM"));
+        assert!(sample.vis_m.is_none());
+        let json = String::from_utf8(sample.to_json_bytes()).unwrap();
+        assert!(json.contains("\"visM\":null"), "{json}");
+        assert!(!json.contains("\"visM\":0"));
+    }
 }

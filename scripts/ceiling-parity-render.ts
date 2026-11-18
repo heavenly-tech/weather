@@ -65,7 +65,9 @@ function asCoarse(value: unknown): Coarse {
 export async function renderCeilingParity(raw: unknown): Promise<unknown> {
   const revived = revive(raw);
   if (!isRecord(revived)) throw new Error("parity input must be an object");
-  if (revived.label !== "EXAMPLE") throw new Error("parity input label must be EXAMPLE");
+  if (revived.label !== "EXAMPLE" && revived.label !== "recorded") {
+    throw new Error("parity input label must be EXAMPLE or recorded");
+  }
   if (typeof revived.op !== "string") throw new Error("parity input missing op");
   const index = typeof revived.index === "number" ? revived.index : 0;
   const hourly = asHourly(revived.hourly);

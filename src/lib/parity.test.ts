@@ -3,10 +3,12 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { GET } from "@/app/api/health/route";
 import { renderCeilingParity } from "../../scripts/ceiling-parity-render";
+import recordedSctb from "../../tests/fixtures/recorded/sctb-icon-seamless-2026-11-18.json";
 
 type ParityCase = {
   id: string;
   label: string;
+  role?: string;
 };
 
 type ParityManifest = {
@@ -50,14 +52,24 @@ function assertSameBytes(id: string, actual: Buffer, expected: Buffer): void {
 }
 
 describe("TS vs Rust parity fixtures", () => {
-  it("uses EXAMPLE data", () => {
+  it("uses EXAMPLE data and recorded SCTB hours", () => {
     expect(manifest.label).toBe("EXAMPLE");
     expect(manifest.cases.length).toBeGreaterThan(0);
+    expect(manifest.cases.some((entry) => entry.label === "recorded" && entry.role === "night")).toBe(true);
+    expect(manifest.cases.some((entry) => entry.label === "recorded" && entry.role === "missing-field")).toBe(true);
+    for (const id of ["ceiling-sctb-night", "ceiling-sctb-missing-field"]) {
+      const input = JSON.parse(readFileSync(path.join(fixtureRoot, `${id}.input.json`), "utf8")) as {
+        hourly: unknown;
+        label: string;
+      };
+      expect(input.label).toBe("recorded");
+      expect(input.hourly).toEqual(recordedSctb.hourly);
+    }
   });
 
   for (const entry of manifest.cases) {
     it(`${entry.id} matches the captured body`, async () => {
-      expect(entry.label).toBe("EXAMPLE");
+      expect(["EXAMPLE", "recorded"]).toContain(entry.label);
       const actual = Buffer.from(await renderCase(entry.id));
       const expected = readFileSync(path.join(fixtureRoot, `${entry.id}.body`));
       assertSameBytes(entry.id, actual, expected);

@@ -1,7 +1,7 @@
 //! Evaluate a committed TypeScript parity input and emit JSON bytes.
 //!
 //! The body files next to these inputs were produced by
-//! `scripts/capture-ceiling-parity.ts`. `label` is always `EXAMPLE`.
+//! `scripts/capture-ceiling-parity.ts`. `label` is `EXAMPLE` or `recorded`.
 
 use crate::ceiling::{
     ceiling_from_hourly, interpolate_cloud_base_msl, surface_pressure_hpa, Hourly,
@@ -19,13 +19,17 @@ pub fn load_example(id: &str) -> Value {
     let raw = std::fs::read(&path).unwrap_or_else(|err| panic!("read {}: {err}", path.display()));
     let value: Value =
         serde_json::from_slice(&raw).unwrap_or_else(|err| panic!("parse {id}: {err}"));
-    assert_eq!(value["label"], "EXAMPLE", "{id}");
+    assert!(
+        value["label"] == "EXAMPLE" || value["label"] == "recorded",
+        "{id} label {}",
+        value["label"]
+    );
     value
 }
 
 pub fn render_input(value: &Value) -> Result<Vec<u8>, String> {
-    if value["label"] != "EXAMPLE" {
-        return Err("parity input label must be EXAMPLE".to_string());
+    if value["label"] != "EXAMPLE" && value["label"] != "recorded" {
+        return Err("parity input label must be EXAMPLE or recorded".to_string());
     }
     let op = value["op"]
         .as_str()

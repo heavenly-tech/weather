@@ -1,6 +1,6 @@
 {
   "label": "EXAMPLE",
-  "description": "Byte-identical TypeScript vs Rust outputs. Each case id has a sibling <id>.body captured from the TypeScript function. Ceiling and regrid cases also have <id>.input.json. Add a case and a renderer in both languages; the compare stays exact.",
+  "description": "Byte-identical TypeScript vs Rust outputs. Each case id has a sibling <id>.body captured from the TypeScript function. Ceiling and regrid cases also have <id>.input.json. Recorded cases are real SCTB Open-Meteo responses and are labeled recorded. The set includes a night hour and a missing-field hour. Add a case and a renderer in both languages; the compare stays exact.",
   "cases": [
     {
       "id": "api-health",
@@ -98,6 +98,18 @@
       "id": "regrid-isolated-cell",
       "source": "src/lib/andes/ceiling-regrid.ts refineCeilingGrid",
       "label": "EXAMPLE"
+    },
+    {
+      "id": "ceiling-sctb-night",
+      "source": "tests/fixtures/recorded/sctb-icon-seamless-2026-11-18.json",
+      "label": "recorded",
+      "role": "night"
+    },
+    {
+      "id": "ceiling-sctb-missing-field",
+      "source": "tests/fixtures/recorded/sctb-icon-seamless-2026-11-18.json",
+      "label": "recorded",
+      "role": "missing-field"
     }
   ]
 }

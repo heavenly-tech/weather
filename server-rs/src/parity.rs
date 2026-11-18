@@ -20,6 +20,8 @@ mod tests {
     struct Case {
         id: String,
         label: String,
+        #[serde(default)]
+        role: Option<String>,
     }
 
     fn render(id: &str) -> Result<Vec<u8>, String> {
@@ -58,13 +60,24 @@ mod tests {
         let manifest: Manifest = serde_json::from_slice(&raw).expect("parse parity manifest");
         assert_eq!(manifest.label, "EXAMPLE");
         assert!(!manifest.cases.is_empty());
+        let mut saw_night = false;
+        let mut saw_missing = false;
         for case in manifest.cases {
-            assert_eq!(case.label, "EXAMPLE", "{}", case.id);
+            assert!(
+                case.label == "EXAMPLE" || case.label == "recorded",
+                "{} label {}",
+                case.id,
+                case.label
+            );
+            saw_night |= case.role.as_deref() == Some("night");
+            saw_missing |= case.role.as_deref() == Some("missing-field");
             let actual = render(&case.id).unwrap_or_else(|err| panic!("{err}"));
             let path = root.join(format!("{}.body", case.id));
             let expected =
                 std::fs::read(&path).unwrap_or_else(|err| panic!("read {}: {err}", path.display()));
             assert_same_bytes(&case.id, &actual, &expected);
         }
+        assert!(saw_night, "recorded night case missing");
+        assert!(saw_missing, "recorded missing-field case missing");
     }
 }

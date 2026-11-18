@@ -13,12 +13,52 @@ type Case = {
   id: string;
   source: string;
   input: unknown;
+  role?: string;
 };
 
 function readHourly(name: string): unknown {
   const file = path.resolve(process.cwd(), "tests/fixtures", name);
   const parsed = JSON.parse(readFileSync(file, "utf8")) as { hourly: unknown };
   return parsed.hourly;
+}
+
+const sctbRecordedPath = path.resolve(
+  process.cwd(),
+  "tests/fixtures/recorded/sctb-icon-seamless-2026-11-18.json"
+);
+const sctbRecorded = JSON.parse(readFileSync(sctbRecordedPath, "utf8")) as {
+  elevation: number;
+  latitude: number;
+  longitude: number;
+  hourly: { time: string[] };
+};
+
+function sctbRecordedHour(stamp: string, role: "night" | "missing-field", note: string): Case {
+  const index = sctbRecorded.hourly.time.indexOf(stamp);
+  if (index < 0) throw new Error(`recorded SCTB response has no ${stamp}`);
+  return {
+    id: role === "night" ? "ceiling-sctb-night" : "ceiling-sctb-missing-field",
+    source: "tests/fixtures/recorded/sctb-icon-seamless-2026-11-18.json",
+    role,
+    input: {
+      label: "recorded",
+      op: "ceilingFromHourly",
+      role,
+      source: "tests/fixtures/recorded/sctb-icon-seamless-2026-11-18.json",
+      model: "icon_seamless",
+      icao: "SCTB",
+      latitude: -33.456,
+      longitude: -70.546,
+      modelLatitude: sctbRecorded.latitude,
+      modelLongitude: sctbRecorded.longitude,
+      modelElevationM: sctbRecorded.elevation,
+      terrainElevM: 649,
+      index,
+      validTime: stamp,
+      note,
+      hourly: sctbRecorded.hourly,
+    },
+  };
 }
 
 const sctbHourly = {
@@ -388,6 +428,16 @@ const cases: Case[] = [
     source: "src/lib/andes/ceiling-regrid.ts refineCeilingGrid",
     input: isolatedGrid(),
   },
+  sctbRecordedHour(
+    "2026-11-17T05:00",
+    "night",
+    "Recorded Open-Meteo ICON point response for SCTB. 2026-11-17T05:00Z is 02:00 local (UTC−3). visibility is null at this hour. The negative convective base in the response must not become the ceiling."
+  ),
+  sctbRecordedHour(
+    "2026-11-17T18:00",
+    "missing-field",
+    "Same recorded SCTB response. visibility is a series of JSON nulls at every hour, and cloud_cover_400hPa / geopotential_height_300hPa are absent. Neither becomes 0."
+  ),
 ];
 
 function jsNumberSamples(): string[] {
@@ -436,7 +486,14 @@ async function main(): Promise<void> {
     writeFileSync(path.join(root, `${entry.id}.input.json`), `${JSON.stringify(entry.input, null, 2)}\n`);
     const rendered = await renderCeilingParity(entry.input);
     writeFileSync(path.join(root, `${entry.id}.body`), JSON.stringify(rendered));
-    manifestCases.push({ id: entry.id, source: entry.source, label: "EXAMPLE" });
+    const input = entry.input as { label?: string };
+    const row: Record<string, string> = {
+      id: entry.id,
+      source: entry.source,
+      label: input.label ?? "EXAMPLE",
+    };
+    if (entry.role) row.role = entry.role;
+    manifestCases.push(row);
   }
   writeFileSync(
     path.join(root, "manifest.json"),
@@ -444,7 +501,7 @@ async function main(): Promise<void> {
       {
         label: "EXAMPLE",
         description:
-          "Byte-identical TypeScript vs Rust outputs. Each case id has a sibling <id>.body captured from the TypeScript function. Ceiling and regrid cases also have <id>.input.json. Add a case and a renderer in both languages; the compare stays exact.",
+          "Byte-identical TypeScript vs Rust outputs. Each case id has a sibling <id>.body captured from the TypeScript function. Ceiling and regrid cases also have <id>.input.json. Recorded cases are real SCTB Open-Meteo responses and are labeled recorded. The set includes a night hour and a missing-field hour. Add a case and a renderer in both languages; the compare stays exact.",
         cases: manifestCases,
       },
       null,
