@@ -2,6 +2,8 @@
 
 Research for Step 1 of the Andes ceiling viewer. This is not legal advice; confirm terms with DGAC before operational use.
 
+For the **official DGAC / IFIS** layer spike (METAR, TAF, SIGMET, NOTAM, AIP airspace) and PR 2–5 proposals, see [official-data/dgac-aip-chile.md](official-data/dgac-aip-chile.md).
+
 | Product | Typical source | URL / endpoint | Access method | Notes |
 | --- | --- | --- | --- | --- |
 | METAR | NOAA AWC (Chile stations) | `https://aviationweather.gov/api/data/metar` | Open JSON API, no auth | Used in app today; not DGAC-hosted. |
