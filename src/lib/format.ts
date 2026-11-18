@@ -36,6 +36,16 @@ export function formatUtc(iso: string | null | undefined): string {
   return d.toISOString().replace(".000Z", "Z").replace("T", " ");
 }
 
+export function formatOfficialAge(ageSeconds: number): string {
+  if (ageSeconds < 0) return "age unknown";
+  if (ageSeconds < 90) return `${ageSeconds}s ago`;
+  const minutes = Math.floor(ageSeconds / 60);
+  if (minutes < 90) return `${minutes} min ago`;
+  const hours = Math.floor(minutes / 60);
+  const rem = minutes % 60;
+  return rem ? `${hours} h ${rem} min ago` : `${hours} h ago`;
+}
+
 export function zuluShort(iso: string | null | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);
