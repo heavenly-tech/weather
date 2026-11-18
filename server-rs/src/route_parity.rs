@@ -124,6 +124,46 @@ fn first_diff(got: &str, want: &str) -> String {
     )
 }
 
+#[tokio::test]
+async fn unknown_model_on_times_is_400_invalid_model() {
+    let state = AppState::for_tests(failing("unused"), Clock::at(0), Arc::new(|| 0.5));
+    let (status, body) = call(&state, "/api/andes/times?model=not_a_model").await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(body, br#"{"error":"Invalid model"}"#);
+}
+
+#[tokio::test]
+async fn generated_transport_failure_is_502_json() {
+    let state = AppState::for_tests(failing("connection reset"), Clock::at(0), Arc::new(|| 0.5));
+    for path in [
+        "/api/generated/metar?icao=SCTB&model=gfs_seamless",
+        "/api/generated/taf?icao=SCTB&model=gfs_seamless",
+    ] {
+        let (status, body) = call(&state, path).await;
+        assert_eq!(status, StatusCode::BAD_GATEWAY, "{path}");
+        assert_eq!(body, br#"{"error":"connection reset"}"#, "{path}");
+    }
+}
+
+async fn call(state: &AppState, path: &str) -> (StatusCode, Vec<u8>) {
+    let dist = tempfile::tempdir().unwrap();
+    let response = crate::app::router_with(dist.path().to_path_buf(), state.clone())
+        .oneshot(Request::builder().uri(path).body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    let status = response.status();
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    (status, bytes.to_vec())
+}
+
+fn failing(message: &str) -> FetchFn {
+    let message = message.to_string();
+    Arc::new(move |_| {
+        let message = message.clone();
+        Box::pin(async move { Err(message) })
+    })
+}
+
 fn scripted(kind: &str, ecmwf: String, gfs: String) -> FetchFn {
     let kind = kind.to_string();
     Arc::new(move |url: String| {

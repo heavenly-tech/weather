@@ -56,16 +56,10 @@ pub async fn models(State(state): State<AppState>) -> Response {
 
 pub async fn times(State(state): State<AppState>, request: Request) -> Response {
     let query = query_map(request.uri().query());
-    let model = query
-        .get("model")
-        .map(String::as_str)
-        .unwrap_or("gfs_seamless");
-    if crate::models::model_by_id(model).is_none() {
-        return json(
-            StatusCode::INTERNAL_SERVER_ERROR,
-            error_bytes("Unknown model"),
-        );
-    }
+    let Some(model) = crate::models::parse_andes_model_id(query.get("model").map(String::as_str))
+    else {
+        return json(StatusCode::BAD_REQUEST, error_bytes("Invalid model"));
+    };
     let fetched = field::fetch_point_hourly(&state.cache, model, SCTB_LAT, SCTB_LON, 48, 0).await;
     if !fetched.ok {
         let error = fetched.error;

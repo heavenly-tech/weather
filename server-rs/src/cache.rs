@@ -473,6 +473,79 @@ mod tests {
             .cached_fetch("https://api.open-meteo.com/v1/forecast?apikey=secret", None)
             .await;
         assert!(keyed.is_err());
+        let api_key = cache
+            .cached_fetch(
+                "https://api.open-meteo.com/v1/forecast?api_key=secret",
+                None,
+            )
+            .await;
+        assert!(api_key.is_err());
         assert_eq!(calls.load(Ordering::SeqCst), 2);
+    }
+
+    #[tokio::test]
+    async fn batch_size_and_delay_are_read_on_each_call() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let calls_fetch = calls.clone();
+        let fetch: FetchFn = Arc::new(move |_| {
+            let calls_fetch = calls_fetch.clone();
+            Box::pin(async move {
+                calls_fetch.fetch_add(1, Ordering::SeqCst);
+                ok_body(200, "{}")
+            })
+        });
+        let sleeps = Arc::new(Mutex::new(Vec::new()));
+        let sleeps_cb = sleeps.clone();
+        let sleep: SleepFn = Arc::new(move |ms| {
+            let sleeps_cb = sleeps_cb.clone();
+            Box::pin(async move {
+                sleeps_cb.lock().await.push(ms);
+            })
+        });
+        let cache = OpenMeteoCache::new(fetch, Clock::at(1), sleep);
+        let points = [
+            crate::domain::GridPoint {
+                lat: -33.0,
+                lon: -71.0,
+            },
+            crate::domain::GridPoint {
+                lat: -33.1,
+                lon: -71.1,
+            },
+        ];
+        let _restore = EnvRestore;
+        std::env::set_var("OPEN_METEO_BATCH_SIZE", "2");
+        std::env::set_var("OPEN_METEO_BATCH_DELAY_MS", "11");
+        assert_eq!(batch_size(), 2);
+        assert_eq!(batch_delay_ms(), 11);
+        crate::field::fetch_multi(&cache, &points, "gfs_seamless")
+            .await
+            .unwrap();
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+        assert!(sleeps.lock().await.is_empty());
+
+        std::env::set_var("OPEN_METEO_BATCH_SIZE", "1");
+        std::env::set_var("OPEN_METEO_BATCH_DELAY_MS", "5");
+        assert_eq!(batch_size(), 1);
+        assert_eq!(batch_delay_ms(), 5);
+        crate::field::fetch_multi(&cache, &points, "icon_seamless")
+            .await
+            .unwrap();
+        assert_eq!(calls.load(Ordering::SeqCst), 3);
+        assert_eq!(sleeps.lock().await.as_slice(), [5]);
+
+        std::env::remove_var("OPEN_METEO_BATCH_SIZE");
+        std::env::remove_var("OPEN_METEO_BATCH_DELAY_MS");
+        assert_eq!(batch_size(), 60);
+        assert_eq!(batch_delay_ms(), 250);
+    }
+
+    struct EnvRestore;
+
+    impl Drop for EnvRestore {
+        fn drop(&mut self) {
+            std::env::remove_var("OPEN_METEO_BATCH_SIZE");
+            std::env::remove_var("OPEN_METEO_BATCH_DELAY_MS");
+        }
     }
 }
