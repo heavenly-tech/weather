@@ -1,0 +1,13 @@
+{
+  "label": "EXAMPLE",
+  "description": "Byte-identical TypeScript vs Rust response bodies. Each case id has a sibling <id>.body captured from the TypeScript handler. Add a case and a renderer in both languages; the compare stays exact.",
+  "cases": [
+    {
+      "id": "api-health",
+      "method": "GET",
+      "path": "/api/health",
+      "source": "src/app/api/health/route.ts",
+      "label": "EXAMPLE"
+    }
+  ]
+}

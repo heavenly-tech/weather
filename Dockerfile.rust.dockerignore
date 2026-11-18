@@ -1,0 +1,6 @@
+*
+!Cargo.toml
+!Cargo.lock
+!server-rs
+!server-rs/**
+server-rs/target

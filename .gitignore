@@ -12,6 +12,10 @@
 /coverage
 /data/product-log.jsonl
 
+# rust
+/target
+/server-rs/target
+
 # next.js
 /.next/
 /out/

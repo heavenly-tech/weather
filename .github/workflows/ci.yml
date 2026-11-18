@@ -19,3 +19,44 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.98.0
+        with:
+          components: clippy, rustfmt
+      - name: cargo fmt
+        run: cargo fmt --all -- --check
+      - name: cargo clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: cargo test
+        run: cargo test --workspace --all-targets
+
+  rust-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker build
+        run: docker build -f Dockerfile.rust -t weather-rust:ci .
+      - name: scratch healthcheck
+        run: |
+          set -eu
+          docker run -d --name weather-rs -p 4310:4310 weather-rust:ci
+          ok=0
+          for _ in $(seq 1 25); do
+            if docker run --rm --network container:weather-rs weather-rust:ci /weather healthcheck; then
+              ok=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ok" != 1 ]; then
+            docker logs weather-rs || true
+            exit 1
+          fi
+          curl -fsS http://127.0.0.1:4310/api/health -o /tmp/health.body
+          cmp server-rs/tests/fixtures/parity/api-health.body /tmp/health.body
+          curl -fsS http://127.0.0.1:4310/ -o /tmp/index.html
+          cmp server-rs/placeholder-dist/index.html /tmp/index.html

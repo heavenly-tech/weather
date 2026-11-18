@@ -1,0 +1,14 @@
+[workspace]
+resolver = "2"
+members = ["server-rs"]
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+publish = false
+
+[profile.release]
+panic = "abort"
+lto = "thin"
+codegen-units = 1
+strip = true
