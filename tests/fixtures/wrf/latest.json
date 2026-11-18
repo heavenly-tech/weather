@@ -1,0 +1,81 @@
+{
+  "cycle": "2026-11-18T00:00:00Z",
+  "model": "WRF (local)",
+  "domainId": "chile-central-3km",
+  "stations": {
+    "SCEL": {
+      "hours": [
+        {
+          "time": "2026-11-18T00:00:00Z",
+          "tempC": 12.5,
+          "dewpointC": 11.0,
+          "rhPct": 90.6,
+          "precipMm": 0.5,
+          "cloudPct": 80.0,
+          "windKt": 10,
+          "windDirDeg": 270,
+          "visKm": 0.8,
+          "weatherCode": 45,
+          "ceilingFt": 984.3,
+          "fogGuidance": "FG"
+        }
+      ]
+    },
+    "SCTB": {
+      "hours": [
+        {
+          "time": "2026-11-18T00:00:00Z",
+          "tempC": 7.0,
+          "dewpointC": 5.0,
+          "rhPct": 87.1,
+          "precipMm": 0.0,
+          "cloudPct": 20.0,
+          "windKt": 6,
+          "windDirDeg": 0,
+          "visKm": 4.0,
+          "weatherCode": null,
+          "ceilingFt": null,
+          "fogGuidance": "BR"
+        }
+      ]
+    }
+  },
+  "grid": {
+    "rows": 2,
+    "cols": 2,
+    "cells": [
+      {
+        "lat": -33.393,
+        "lon": -70.786,
+        "elevM": 474.0,
+        "ceilingFtAgl": 984.3,
+        "category": "IFR",
+        "obscured": false
+      },
+      {
+        "lat": -33.4,
+        "lon": -70.7,
+        "elevM": 649.0,
+        "ceilingFtAgl": null,
+        "category": "VFR",
+        "obscured": false
+      },
+      {
+        "lat": -33.5,
+        "lon": -70.8,
+        "elevM": 200.0,
+        "ceilingFtAgl": null,
+        "category": "VFR",
+        "obscured": false
+      },
+      {
+        "lat": -34.0,
+        "lon": -71.0,
+        "elevM": 100.0,
+        "ceilingFtAgl": null,
+        "category": "VFR",
+        "obscured": false
+      }
+    ]
+  }
+}

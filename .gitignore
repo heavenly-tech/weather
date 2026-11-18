@@ -11,6 +11,8 @@
 # testing
 /coverage
 /data/product-log.jsonl
+__pycache__/
+*.pyc
 
 # rust
 /target

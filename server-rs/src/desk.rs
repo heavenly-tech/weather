@@ -120,6 +120,12 @@ pub async fn taf(State(state): State<AppState>, request: Request) -> Response {
 
 pub async fn forecast(State(state): State<AppState>, request: Request) -> Response {
     let icao = icao_param(request.uri().query());
+    if query_map(request.uri().query())
+        .get("model")
+        .is_some_and(|model| model == crate::models::WRF_LOCAL_ID)
+    {
+        return crate::wrf_local::forecast_response(&state, &icao);
+    }
     let station = stations::require_station(&icao);
     if let Some(body) = fetch_wrf(&state, station).await {
         return product(&state, body, "live", "Live WRF-DMC from MeteoChile", None);

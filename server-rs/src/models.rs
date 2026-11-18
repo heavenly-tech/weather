@@ -4,6 +4,7 @@
 //! leaves the parameter order of the object literal.
 
 pub const FORECAST_ORIGIN: &str = "https://api.open-meteo.com/v1/forecast";
+pub const WRF_LOCAL_ID: &str = "wrf_local";
 
 pub const ANDES_MODELS: &[ModelMeta] = &[
     ModelMeta {
@@ -45,6 +46,9 @@ pub struct ModelMeta {
 
 pub fn parse_andes_model_id(raw: Option<&str>) -> Option<&'static str> {
     let id = raw.unwrap_or("gfs_seamless");
+    if id == WRF_LOCAL_ID {
+        return Some(WRF_LOCAL_ID);
+    }
     ANDES_MODELS
         .iter()
         .find(|model| model.id == id)

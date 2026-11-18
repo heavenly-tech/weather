@@ -60,7 +60,7 @@
     "clock": "2026-11-17T05:00:00.000Z",
     "upstream": "recorded",
     "label": "recorded",
-    "note": "Probe uses the recorded ECMWF and GFS bodies. ICON and GEM have no recording and come back unavailable.",
+    "note": "Probe uses the recorded ECMWF and GFS bodies. ICON and GEM have no recording and come back unavailable. WRF (local) is appended and says no run available yet when latest.json is absent.",
     "contentType": "application/json"
   },
   {

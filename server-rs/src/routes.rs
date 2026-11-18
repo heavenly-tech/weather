@@ -29,7 +29,7 @@ pub async fn models(State(state): State<AppState>) -> Response {
         .probes
         .probe(&state.cache, SCTB_LAT, SCTB_LON, state.clock.now_ms())
         .await;
-    let items = models
+    let mut items: Vec<Js<'_>> = models
         .iter()
         .map(|model| {
             let mut fields = vec![
@@ -43,6 +43,16 @@ pub async fn models(State(state): State<AppState>) -> Response {
             Js::Obj(fields)
         })
         .collect();
+    let local = crate::wrf_local::availability(&state);
+    let mut local_fields = vec![
+        ("id", Js::Str(crate::models::WRF_LOCAL_ID)),
+        ("label", Js::Str("WRF (local)")),
+        ("available", Js::Bool(local.available)),
+    ];
+    if let Some(warning) = local.warning.as_deref() {
+        local_fields.push(("warning", Js::Str(warning)));
+    }
+    items.push(Js::Obj(local_fields));
     let fetched_at = state.clock.now_iso();
     json(
         StatusCode::OK,
@@ -60,6 +70,9 @@ pub async fn times(State(state): State<AppState>, request: Request) -> Response 
     else {
         return json(StatusCode::BAD_REQUEST, error_bytes("Invalid model"));
     };
+    if model == crate::models::WRF_LOCAL_ID {
+        return crate::wrf_local::times_response(&state);
+    }
     let fetched = field::fetch_point_hourly(&state.cache, model, SCTB_LAT, SCTB_LON, 48, 0).await;
     if !fetched.ok {
         let error = fetched.error;
@@ -78,6 +91,9 @@ pub async fn ceiling(State(state): State<AppState>, request: Request) -> Respons
     else {
         return json(StatusCode::BAD_REQUEST, error_bytes("Invalid model"));
     };
+    if model == crate::models::WRF_LOCAL_ID {
+        return crate::wrf_local::ceiling_response(&state);
+    }
     let valid_ms = match query.get("validTime").map(String::as_str) {
         Some(text) if !text.is_empty() => parse_utc_iso(text)
             .map(|stamp| stamp.epoch_ms())
@@ -96,6 +112,9 @@ pub async fn slice(State(state): State<AppState>, request: Request) -> Response 
     else {
         return json(StatusCode::BAD_REQUEST, error_bytes("Invalid model"));
     };
+    if model == crate::models::WRF_LOCAL_ID {
+        return crate::wrf_local::slice_response();
+    }
     let hpa = js_number(query.get("hpa").map(String::as_str).unwrap_or("850"));
     let valid_raw = query.get("validTime").map(String::as_str);
     let (rows, cols) = domain::default_grid_shape();
@@ -289,6 +308,9 @@ pub async fn coherence(State(state): State<AppState>, request: Request) -> Respo
         .get("model")
         .map(String::as_str)
         .unwrap_or("gfs_seamless");
+    if model == crate::models::WRF_LOCAL_ID {
+        return crate::wrf_local::coherence_response(&state);
+    }
     let Some(field) = airfields::airfield(&icao) else {
         return json(StatusCode::BAD_REQUEST, error_bytes("unknown field"));
     };
@@ -375,6 +397,9 @@ pub async fn generated_metar(State(state): State<AppState>, request: Request) ->
     else {
         return json(StatusCode::BAD_REQUEST, error_bytes("Invalid model"));
     };
+    if model == crate::models::WRF_LOCAL_ID {
+        return crate::wrf_local::generated_response(&state, &icao);
+    }
     let (lat, lon, elev) = point_for(&icao);
     let fetched = field::fetch_point_hourly(&state.cache, model, lat, lon, 48, 0).await;
     if !fetched.ok || fetched.meta.is_none() {
@@ -422,6 +447,9 @@ pub async fn generated_taf(State(state): State<AppState>, request: Request) -> R
     else {
         return json(StatusCode::BAD_REQUEST, error_bytes("Invalid model"));
     };
+    if model == crate::models::WRF_LOCAL_ID {
+        return crate::wrf_local::generated_response(&state, &icao);
+    }
     let (lat, lon, elev) = point_for(&icao);
     let fetched = field::fetch_point_hourly(&state.cache, model, lat, lon, 48, 0).await;
     if !fetched.ok || fetched.meta.is_none() {
