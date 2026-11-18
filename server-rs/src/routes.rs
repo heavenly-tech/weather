@@ -294,12 +294,7 @@ pub async fn coherence(State(state): State<AppState>, request: Request) -> Respo
     };
     let fetched = field::fetch_point_hourly(&state.cache, model, field.lat, field.lon, 48, 0).await;
     if !fetched.ok || fetched.meta.is_none() {
-        let error = if fetched.error.is_empty() {
-            "model down".to_string()
-        } else {
-            fetched.error
-        };
-        return json(StatusCode::BAD_GATEWAY, error_bytes(&error));
+        return json(StatusCode::BAD_GATEWAY, upstream_unavailable(&fetched.code));
     }
     let (metar_raw, metar_ceiling) = load_metar(&state, &icao).await;
     let (taf_raw, taf_ceiling) = load_taf(&state, &icao).await;
@@ -378,12 +373,7 @@ pub async fn generated_metar(State(state): State<AppState>, request: Request) ->
     let (lat, lon, elev) = point_for(&icao);
     let fetched = field::fetch_point_hourly(&state.cache, model, lat, lon, 48, 0).await;
     if !fetched.ok || fetched.meta.is_none() {
-        let error = if fetched.error.is_empty() {
-            "model unavailable".to_string()
-        } else {
-            fetched.error
-        };
-        return json(StatusCode::BAD_GATEWAY, error_bytes(&error));
+        return json(StatusCode::BAD_GATEWAY, upstream_unavailable(&fetched.code));
     }
     let index = field::pick_hour_index(&fetched.times, state.clock.now_ms());
     let run_time = state.clock.now_iso();
@@ -425,12 +415,7 @@ pub async fn generated_taf(State(state): State<AppState>, request: Request) -> R
     let (lat, lon, elev) = point_for(&icao);
     let fetched = field::fetch_point_hourly(&state.cache, model, lat, lon, 48, 0).await;
     if !fetched.ok || fetched.meta.is_none() {
-        let error = if fetched.error.is_empty() {
-            "model unavailable".to_string()
-        } else {
-            fetched.error
-        };
-        return json(StatusCode::BAD_GATEWAY, error_bytes(&error));
+        return json(StatusCode::BAD_GATEWAY, upstream_unavailable(&fetched.code));
     }
     let run_time = state.clock.now_iso();
     let series = Series::from_json(&fetched.hourly);
@@ -702,7 +687,10 @@ async fn load_metar(state: &AppState, icao: &str) -> (String, Option<f64>) {
         let metar = crate::awc::parse_metar(&row);
         return (metar.raw, metar.ceiling_ft);
     }
-    (mock_metar_raw(icao, &state.clock), None)
+    if state.dev_mock {
+        return (mock_metar_raw(icao, &state.clock), None);
+    }
+    (String::new(), None)
 }
 
 async fn load_taf(state: &AppState, icao: &str) -> (String, Option<f64>) {
@@ -714,7 +702,10 @@ async fn load_taf(state: &AppState, icao: &str) -> (String, Option<f64>) {
         let taf = crate::awc::parse_taf(&row);
         return (taf.raw, taf.ceiling_ft);
     }
-    (mock_taf_raw(icao, &state.clock), None)
+    if state.dev_mock {
+        return (mock_taf_raw(icao, &state.clock), None);
+    }
+    (String::new(), None)
 }
 
 async fn awc_row(fetch: &FetchFn, url: &str) -> Option<Value> {
@@ -789,6 +780,17 @@ fn json(status: StatusCode, bytes: Vec<u8>) -> Response {
 
 fn error_bytes(message: &str) -> Vec<u8> {
     Js::Obj(vec![("error", Js::Str(message))]).to_bytes()
+}
+
+/// 502 body: a fixed sentence plus a short code. Never the serde message or
+/// the upstream payload.
+pub(crate) fn upstream_unavailable(code: &str) -> Vec<u8> {
+    let code = if code.is_empty() { "model-down" } else { code };
+    Js::Obj(vec![
+        ("error", Js::Str("Upstream unavailable")),
+        ("code", Js::Str(code)),
+    ])
+    .to_bytes()
 }
 
 fn js_number(text: &str) -> f64 {

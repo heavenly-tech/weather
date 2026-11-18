@@ -26,6 +26,9 @@ pub struct AppState {
     pub random: Arc<dyn Fn() -> f64 + Send + Sync>,
     pub log: Arc<ProductLog>,
     pub probes: Arc<ProbeCache>,
+    /// `WEATHER_DEV_MOCK=1` restores fabricated METAR/TAF bodies. Off unless
+    /// that exact value is set.
+    pub dev_mock: bool,
 }
 
 impl AppState {
@@ -50,6 +53,7 @@ impl AppState {
             random: Arc::new(production_random),
             log: Arc::new(ProductLog::new(clock)),
             probes: Arc::new(ProbeCache::new()),
+            dev_mock: std::env::var("WEATHER_DEV_MOCK").ok().as_deref() == Some("1"),
         })
     }
 
@@ -80,6 +84,7 @@ impl AppState {
             random,
             log: Arc::new(ProductLog::new(clock)),
             probes: Arc::new(ProbeCache::new()),
+            dev_mock: false,
         }
     }
 }

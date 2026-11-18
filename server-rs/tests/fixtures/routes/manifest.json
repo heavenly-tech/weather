@@ -113,7 +113,7 @@
     "clock": "2026-11-17T05:00:00.000Z",
     "upstream": "503",
     "label": "EXAMPLE",
-    "note": "Upstream 503 becomes 502 with error HTTP 503.",
+    "note": "Upstream 503 becomes 502 with a generic message and code http-503.",
     "contentType": "application/json"
   },
   {
@@ -123,7 +123,7 @@
     "clock": "2026-11-17T05:00:00.000Z",
     "upstream": "ceiling-429",
     "label": "EXAMPLE",
-    "note": "The batch retries a 429 once. The second response is still 429, so the body is the error text.",
+    "note": "The batch retries a 429 once. The second response is still 429. The unavailable text is generic plus http-429, not the upstream body.",
     "contentType": "application/json"
   },
   {
@@ -134,7 +134,7 @@
     "upstream": "recorded",
     "label": "recorded",
     "role": "night",
-    "note": "Open-Meteo is the recorded ECMWF body. AWC is down, so the official lines are the EXAMPLE mock.",
+    "note": "Open-Meteo is the recorded ECMWF body. AWC is down, so the official METAR is empty and the official TAF is (no TAF).",
     "contentType": "application/json"
   },
   {

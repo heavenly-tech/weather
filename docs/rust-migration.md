@@ -127,7 +127,7 @@ Port the functions on `main` at `2bc9325` (#7 merged), not `e59971b`.
 - Broken is 62.5% of `max(low, mid)`, not total cloud. Cirrus must not write or block a layer.
 - Liquid `< 0.2` mm/h and total cloud `< 25%`: no `-SHRA`, no `-RA`, no estimated layer.
 - Mid ≥ 50%, no convective signal (`CAPE ≥ 100`, showers ≥ 0.1, or a convective base > 30 m above the field), and low cloud not dominant (low ≥ 50% or low ≥ mid): `-RA`, `BKN` at 700/600, `RMK CLD EST`. Convective or low cloud stays `-SHRA`.
-- Drop `HZ` when a precip group is present. Keep `BR` at RH ≥ 80% (`visObscurationWx`: FG under 1000 m; BR/HZ from 1000 through 5000 inclusive).
+- Drop `HZ` when a precip group is present. `BR` is the 3000–5000 m band at RH ≥ 80%. `FG` under 1000 m also requires night, T−Td ≤ 1 °C, wind ≤ 5 kt, and a saturated lowest level.
 - `FEW` / `SCT` do not set the flight category. `RA` stays in dry air if a layer exists, and is omitted with no layer, so it never sits on `NSC` or `NCD`.
 
 `estimateVisibilityMeters` uses `exp` and `pow` (`60 * exp((-2.5 * (rh - 15)) / 80)`, `11.6 * r^-0.68`). V8 and musl libm can differ by an ulp, which `Math.round` then keeps. Match that operation order. The golden bar is the rounded token, not a relaxed string compare.

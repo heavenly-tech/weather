@@ -1,6 +1,8 @@
 "use client";
 
+import { FogGuidanceNote } from "@/components/fog-guidance-note";
 import { ModelOutputStamp } from "@/components/model-output-stamp";
+import { forecastHasFogGuidance } from "@/lib/fog-guidance";
 
 export type CoherencePayload = {
   views: {
@@ -42,6 +44,11 @@ export function CoherencePanels({ data }: { data: CoherencePayload | null }) {
       <section className="rounded-xl border border-border/60 p-4">
         <h3 className="text-sm font-medium">(b) Model TAF-style vs official TAF</h3>
         <ModelOutputStamp className="mb-2" />
+        {forecastHasFogGuidance(modelTafVsOfficial.model) ? (
+          <div className="mb-2">
+            <FogGuidanceNote />
+          </div>
+        ) : null}
         <pre className="max-h-40 overflow-auto whitespace-pre-wrap font-mono text-[10px] text-muted-foreground">
           {modelTafVsOfficial.model}
         </pre>

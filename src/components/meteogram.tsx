@@ -1,5 +1,7 @@
+import { FogGuidanceNote } from "@/components/fog-guidance-note";
 import type { PointForecast } from "@/lib/types";
 import { formatTemp, weatherCodeLabel } from "@/lib/format";
+import { hourIsModelFog } from "@/lib/fog-guidance";
 
 export function Meteogram({ forecast }: { forecast: PointForecast }) {
   const hours = forecast.hours.slice(0, 48);
@@ -63,6 +65,11 @@ export function Meteogram({ forecast }: { forecast: PointForecast }) {
           ) : null
         )}
       </svg>
+      {hours.some((hour) => hourIsModelFog(hour.weatherCode)) ? (
+        <div className="mt-3">
+          <FogGuidanceNote />
+        </div>
+      ) : null}
       <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {hours.filter((_, i) => i % 6 === 0).slice(0, 8).map((h) => (
           <div key={h.time} className="rounded-lg bg-muted/40 px-3 py-2 text-xs">

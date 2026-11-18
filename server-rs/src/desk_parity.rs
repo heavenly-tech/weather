@@ -353,11 +353,14 @@ async fn invalid_open_meteo_json_is_502_json() {
         .is_none());
     let bytes = response.into_body().collect().await.unwrap().to_bytes();
     let text = String::from_utf8(bytes.to_vec()).unwrap();
-    assert_eq!(text, "{\"error\":\"expected ident at line 1 column 2\"}");
+    assert_eq!(
+        text,
+        "{\"error\":\"Upstream unavailable\",\"code\":\"bad-json\"}"
+    );
 }
 
 #[tokio::test]
-async fn invalid_awc_json_stays_on_the_mock_envelope() {
+async fn invalid_awc_json_is_observations_unavailable() {
     let fetch: FetchFn = Arc::new(|_: String| {
         Box::pin(async move {
             Ok(UpstreamResponse {
@@ -381,8 +384,139 @@ async fn invalid_awc_json_stays_on_the_mock_envelope() {
     assert_eq!(response.status(), StatusCode::OK);
     let bytes = response.into_body().collect().await.unwrap().to_bytes();
     let text = String::from_utf8(bytes.to_vec()).unwrap();
+    assert!(text.contains("\"source\":\"unavailable\""));
+    assert!(text.contains("\"data\":null"));
+    assert!(text.contains("Observations unavailable"));
+    assert!(text.contains("\"code\":\"awc-bad-json\""));
+    assert!(!text.contains("expected ident"), "{text}");
+    assert!(!text.contains("METAR "), "{text}");
+}
+
+#[tokio::test]
+async fn dev_mock_flag_returns_a_marked_metar_without_upstream_text() {
+    let fetch: FetchFn =
+        Arc::new(|_: String| Box::pin(async move { Err("connection reset raw".to_string()) }));
+    let mut state = AppState::for_tests(fetch, Clock::at(0), Arc::new(|| 0.5));
+    state.dev_mock = true;
+    let dist = tempfile::tempdir().unwrap();
+    let response = crate::app::router_with(dist.path().to_path_buf(), state)
+        .oneshot(
+            Request::builder()
+                .uri("/api/metar?icao=SCEL")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    let text = String::from_utf8(bytes.to_vec()).unwrap();
     assert!(text.contains("\"source\":\"mock\""));
-    assert!(text.contains("expected ident at line 1 column 2"), "{text}");
+    assert!(text.contains("METAR SCEL"));
+    assert!(text.contains("\"warning\":\"awc-down\""));
+    assert!(!text.contains("connection reset"), "{text}");
+}
+
+#[tokio::test]
+async fn viz_down_is_observations_unavailable_unless_dev_mock() {
+    let fetch: FetchFn = Arc::new(|_: String| {
+        Box::pin(async move {
+            Ok(UpstreamResponse {
+                status: 502,
+                body: "upstream-bytes".to_string(),
+                status_text: "Bad Gateway".to_string(),
+            })
+        })
+    });
+    let state = AppState::for_tests(fetch, Clock::at(0), Arc::new(|| 0.5));
+    let dist = tempfile::tempdir().unwrap();
+    let response = crate::app::router_with(dist.path().to_path_buf(), state)
+        .oneshot(
+            Request::builder()
+                .uri("/api/viz?icao=SCEL")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    let text = String::from_utf8(bytes.to_vec()).unwrap();
+    assert!(text.contains("\"source\":\"unavailable\""));
+    assert!(text.contains("\"data\":null"));
+    assert!(text.contains("\"code\":\"awc-down\""));
+    assert!(!text.contains("upstream-bytes"), "{text}");
+    assert!(!text.contains("flightCategory"), "{text}");
+
+    let fetch: FetchFn =
+        Arc::new(|_: String| Box::pin(async move { Err("connection reset raw".to_string()) }));
+    let mut state = AppState::for_tests(fetch, Clock::at(0), Arc::new(|| 0.5));
+    state.dev_mock = true;
+    let dist = tempfile::tempdir().unwrap();
+    let response = crate::app::router_with(dist.path().to_path_buf(), state)
+        .oneshot(
+            Request::builder()
+                .uri("/api/viz?icao=SCEL")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    let text = String::from_utf8(bytes.to_vec()).unwrap();
+    assert!(text.contains("\"source\":\"mock\""));
+    assert!(text.contains("\"code\":\"awc-down\""));
+    assert!(text.contains("\"warning\":\"Upstream unavailable\""));
+    assert!(!text.contains("connection reset"), "{text}");
+}
+
+#[tokio::test]
+async fn gramet_down_warning_hides_upstream_bytes() {
+    let fetch: FetchFn = Arc::new(|_: String| {
+        Box::pin(async move {
+            Ok(UpstreamResponse {
+                status: 502,
+                body: "serde garbage upstream-bytes".to_string(),
+                status_text: "Bad Gateway".to_string(),
+            })
+        })
+    });
+    let state = AppState::for_tests(fetch, Clock::at(0), Arc::new(|| 0.5));
+    let dist = tempfile::tempdir().unwrap();
+    let response = crate::app::router_with(dist.path().to_path_buf(), state)
+        .oneshot(
+            Request::builder()
+                .uri("/api/gramet?from=SCEL&to=SCTE")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    let text = String::from_utf8(bytes.to_vec()).unwrap();
+    assert!(text.contains("\"warning\":\"Upstream unavailable\""));
+    assert!(text.contains("\"code\":\"http-502\""));
+    assert!(!text.contains("upstream-bytes"), "{text}");
+    assert!(!text.contains("serde"), "{text}");
+}
+
+#[tokio::test]
+async fn synoptic_chart_failure_is_a_short_code() {
+    let fetch: FetchFn =
+        Arc::new(|_: String| Box::pin(async move { Err("connection reset raw".to_string()) }));
+    let state = AppState::for_tests(fetch, Clock::at(0), Arc::new(|| 0.5));
+    let dist = tempfile::tempdir().unwrap();
+    let response = crate::app::router_with(dist.path().to_path_buf(), state)
+        .oneshot(
+            Request::builder()
+                .uri("/api/synoptic/image?id=sam-12")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::BAD_GATEWAY);
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    assert_eq!(&bytes[..], b"Chart unavailable (transport)");
 }
 
 #[tokio::test]
@@ -419,7 +553,7 @@ async fn meteochile_wrf_matches_typescript_bytes() {
     let _clear = ClearMeteochileEnv;
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let payload = std::fs::read_to_string(
-        root.join("../tests/fixtures/recorded/meteochile/wrf-scel-330021.json"),
+        root.join("../tests/fixtures/doc-shaped/meteochile/wrf-scel-330021.json"),
     )
     .unwrap();
     let fetch: FetchFn = Arc::new(move |url: String| {

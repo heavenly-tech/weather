@@ -4,17 +4,17 @@ import { describe, expect, it, vi } from "vitest";
 import { clientFetch } from "./client-fetch";
 
 describe("clientFetch", () => {
-  it("a 502 JSON response takes the error path", async () => {
+  it("a 502 JSON response shows the generic message", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () =>
-        new Response(JSON.stringify({ error: "model down" }), {
+        new Response(JSON.stringify({ error: "Upstream unavailable", code: "bad-json" }), {
           status: 502,
           headers: { "content-type": "application/json" },
         })
       )
     );
-    await expect(clientFetch("/api/forecast?icao=SCTB")).rejects.toThrow("model down");
+    await expect(clientFetch("/api/forecast?icao=SCTB")).rejects.toThrow("Upstream unavailable");
     vi.unstubAllGlobals();
   });
 

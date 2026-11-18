@@ -45,8 +45,12 @@ export function BriefingView({
 
       {!metar.data ? (
         <ProductEmpty
-          title="No observation for that aerodrome"
-          body="Pick a Chilean ICAO such as SCEL, SCFA, or SCCI. Some private strips never file a METAR."
+          title={metar.source === "unavailable" ? "Observations unavailable" : "No observation for that aerodrome"}
+          body={
+            metar.source === "unavailable"
+              ? "The Aviation Weather Center did not return a usable METAR. This briefing is not using a stand-in observation."
+              : "Pick a Chilean ICAO such as SCEL, SCFA, or SCCI. Some private strips never file a METAR."
+          }
         />
       ) : (
         <div className="space-y-3">
@@ -66,8 +70,12 @@ export function BriefingView({
         </div>
       ) : (
         <ProductEmpty
-          title="No TAF"
-          body="AWC did not return a terminal forecast for this aerodrome, and no fallback bulletin is on file. Try SCEL or SCFA."
+          title={taf.source === "unavailable" ? "Observations unavailable" : "No TAF"}
+          body={
+            taf.source === "unavailable"
+              ? "The Aviation Weather Center did not return a usable TAF. This briefing is not using a stand-in forecast."
+              : "AWC did not return a terminal forecast for this aerodrome. Try SCEL or SCFA."
+          }
         />
       )}
     </div>

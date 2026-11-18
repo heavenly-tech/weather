@@ -141,7 +141,10 @@ async fn generated_transport_failure_is_502_json() {
     ] {
         let (status, body) = call(&state, path).await;
         assert_eq!(status, StatusCode::BAD_GATEWAY, "{path}");
-        assert_eq!(body, br#"{"error":"connection reset"}"#, "{path}");
+        assert_eq!(
+            body, br#"{"error":"Upstream unavailable","code":"transport"}"#,
+            "{path}"
+        );
     }
 }
 
