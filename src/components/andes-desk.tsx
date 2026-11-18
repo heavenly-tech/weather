@@ -7,6 +7,7 @@ import { CeilingLegend } from "@/components/ceiling-legend";
 import { CeilingTimelineChart } from "@/components/ceiling-timeline-chart";
 import { CoherencePanels, type CoherencePayload } from "@/components/coherence-panels";
 import { ModelOutputStamp } from "@/components/model-output-stamp";
+import { clientFetch } from "@/lib/client-fetch";
 import { TIMELINE_AIRFIELDS } from "@/lib/andes/domain";
 import type { CeilingCell } from "@/lib/andes/fetch-field";
 import type { ModelCeilingSeries, ObservedCeilingSeries } from "@/lib/andes/timeline";
@@ -41,8 +42,7 @@ export function AndesDesk() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/andes/models")
-      .then((r) => r.json())
+    clientFetch<{ models?: { id: string; available: boolean }[] }>("/api/andes/models")
       .then((d) => {
         const map: Record<string, boolean> = {};
         (d.models ?? []).forEach((m: { id: string; available: boolean }) => {
@@ -58,8 +58,12 @@ export function AndesDesk() {
       model: state.model,
       ...(state.validIso ? { validTime: state.validIso } : {}),
     });
-    fetch(`/api/andes/ceiling?${q}`)
-      .then((r) => r.json())
+    clientFetch<{
+      cells?: CeilingCell[];
+      gridShape?: { rows: number; cols: number };
+      unavailable?: string | null;
+      modelRun?: string;
+    }>(`/api/andes/ceiling?${q}`)
       .then((d) => {
         setCells(d.cells ?? []);
         if (d.gridShape) setGridShape(d.gridShape);
@@ -75,8 +79,10 @@ export function AndesDesk() {
       hpa: String(state.pressureHpa),
       ...(state.validIso ? { validTime: state.validIso } : {}),
     });
-    fetch(`/api/andes/slice?${q}`)
-      .then((r) => r.json())
+    clientFetch<{
+      values?: { lat: number; lon: number; tempC: number | null; cloudPct: number | null }[];
+      sliceHeightM?: number | null;
+    }>(`/api/andes/slice?${q}`)
       .then((d) => {
         setSliceValues(d.values ?? []);
         setSliceHeightM(d.sliceHeightM ?? null);
@@ -85,16 +91,18 @@ export function AndesDesk() {
   }, [state.model, state.pressureHpa, state.validIso]);
 
   useEffect(() => {
-    fetch(`/api/andes/times?model=${encodeURIComponent(state.model)}`)
-      .then((r) => r.json())
+    clientFetch<{ times?: string[] }>(`/api/andes/times?model=${encodeURIComponent(state.model)}`)
       .then((d) => setTimeLabels(d.times ?? []))
       .catch(() => setTimeLabels([]));
   }, [state.model]);
 
   useEffect(() => {
     TIMELINE_AIRFIELDS.forEach((icao) => {
-      fetch(`/api/andes/timeline?icao=${icao}`)
-        .then((r) => r.json())
+      clientFetch<{
+        observation: ObservedCeilingSeries | null;
+        models: ModelCeilingSeries[];
+        obsProxyLabel?: string;
+      }>(`/api/andes/timeline?icao=${icao}`)
         .then((d) => {
           setTimelines((prev) => ({
             ...prev,
@@ -110,17 +118,20 @@ export function AndesDesk() {
   }, []);
 
   useEffect(() => {
-    fetch(`/api/andes/coherence?icao=SCEL&model=${state.model}`)
-      .then((r) => r.json())
+    clientFetch<CoherencePayload>(`/api/andes/coherence?icao=SCEL&model=${state.model}`)
       .then(setCoherence)
       .catch(() => setCoherence(null));
   }, [state.model]);
 
   useEffect(() => {
     Promise.all([
-      fetch(`/api/generated/metar?icao=SCTB&model=${state.model}`).then((r) => r.json()),
-      fetch(`/api/generated/metar?icao=SCVH&model=${state.model}`).then((r) => r.json()),
-      fetch(`/api/generated/taf?icao=SCTB&model=${state.model}`).then((r) => r.json()),
+      clientFetch<{ raw?: string; visEstimated?: boolean; cldEstimated?: boolean; midCloudBaseUnk?: boolean }>(
+        `/api/generated/metar?icao=SCTB&model=${state.model}`
+      ),
+      clientFetch<{ raw?: string }>(`/api/generated/metar?icao=SCVH&model=${state.model}`),
+      clientFetch<{ raw?: string; visEstimated?: boolean; cldEstimated?: boolean; midCloudBaseUnk?: boolean }>(
+        `/api/generated/taf?icao=SCTB&model=${state.model}`
+      ),
     ]).then(([m, mVh, t]) => {
       setGeneratedMetar(
         [m.raw, mVh.raw].filter(Boolean).join("\n\n---\n\n") || null
@@ -129,6 +140,10 @@ export function AndesDesk() {
       setVisEstimated(Boolean(m.visEstimated || t.visEstimated));
       setCldEstimated(Boolean(m.cldEstimated || t.cldEstimated));
       setMidCloudBaseUnk(Boolean(m.midCloudBaseUnk || t.midCloudBaseUnk));
+    }).catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : "Generated product failed";
+      setGeneratedMetar(message);
+      setGeneratedTaf(message);
     });
   }, [state.model]);
 

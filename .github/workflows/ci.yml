@@ -59,4 +59,8 @@ jobs:
           curl -fsS http://127.0.0.1:4310/api/health -o /tmp/health.body
           cmp server-rs/tests/fixtures/parity/api-health.body /tmp/health.body
           curl -fsS http://127.0.0.1:4310/ -o /tmp/index.html
-          cmp server-rs/placeholder-dist/index.html /tmp/index.html
+          grep -q 'id="root"' /tmp/index.html
+          code=$(curl -fsS -o /tmp/spa.html -w '%{http_code}' http://127.0.0.1:4310/metar-taf)
+          test "$code" = 200
+          cmp /tmp/index.html /tmp/spa.html
+          curl -fsS -o /dev/null -D - http://127.0.0.1:4310/cesium/Widgets/widgets.css | grep -qi 'content-type: text/css'

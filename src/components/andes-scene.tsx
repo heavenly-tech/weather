@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Viewer } from "cesium";
+import { clientFetch } from "@/lib/client-fetch";
 import { ANDES_DOMAIN, SCTB_FOCUS } from "@/lib/andes/domain";
 import { categoryColor } from "@/lib/andes/ceiling";
 import type { CeilingCell } from "@/lib/andes/fetch-field";
@@ -106,7 +107,7 @@ export function AndesScene({
         let ionToken = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN ?? "";
         if (!ionToken) {
           try {
-            const cfg = await fetch("/api/config").then((r) => r.json());
+            const cfg = await clientFetch<{ cesiumIonToken?: string | null }>("/api/config");
             ionToken = cfg.cesiumIonToken ?? "";
           } catch {
             /* ellipsoid */

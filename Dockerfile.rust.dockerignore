@@ -4,3 +4,10 @@
 !server-rs
 !server-rs/**
 server-rs/target
+!package.json
+!package-lock.json
+!index.html
+!vite.config.ts
+!tsconfig.json
+!src
+!src/**
