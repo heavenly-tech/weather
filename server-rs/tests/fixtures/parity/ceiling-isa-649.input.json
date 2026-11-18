@@ -1,0 +1,12 @@
+{
+  "label": "EXAMPLE",
+  "op": "surfacePressureHpa",
+  "note": "EXAMPLE SCTB elevation with no surface_pressure key. Locks the ISA pow path.",
+  "terrainElevM": 649,
+  "index": 0,
+  "hourly": {
+    "time": [
+      "t"
+    ]
+  }
+}

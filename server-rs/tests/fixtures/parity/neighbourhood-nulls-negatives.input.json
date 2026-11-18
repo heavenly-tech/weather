@@ -1,0 +1,32 @@
+{
+  "label": "EXAMPLE",
+  "op": "neighbourhoodBaseAndPrecip",
+  "note": "EXAMPLE negative base is the minimum. Null base is skipped. NaN precip is not finite and is skipped. Zero precip still counts.",
+  "corners": [
+    {
+      "lat": -33.456,
+      "lon": -70.546,
+      "baseMslM": -20,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": -3
+    },
+    {
+      "lat": -33.456,
+      "lon": -70.5,
+      "baseMslM": null,
+      "obscured": false,
+      "lowCloudUnresolved": true,
+      "precipMmH": 0
+    },
+    null,
+    {
+      "lat": -33.5,
+      "lon": -70.5,
+      "baseMslM": 100,
+      "obscured": false,
+      "lowCloudUnresolved": false,
+      "precipMmH": "NaN"
+    }
+  ]
+}

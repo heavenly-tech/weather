@@ -1,12 +1,102 @@
 {
   "label": "EXAMPLE",
-  "description": "Byte-identical TypeScript vs Rust response bodies. Each case id has a sibling <id>.body captured from the TypeScript handler. Add a case and a renderer in both languages; the compare stays exact.",
+  "description": "Byte-identical TypeScript vs Rust outputs. Each case id has a sibling <id>.body captured from the TypeScript function. Ceiling and regrid cases also have <id>.input.json. Add a case and a renderer in both languages; the compare stays exact.",
   "cases": [
     {
       "id": "api-health",
       "method": "GET",
       "path": "/api/health",
       "source": "src/app/api/health/route.ts",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "ceiling-recorded-interpolate",
+      "source": "src/lib/andes/ceiling.ts interpolateCloudBaseMsl",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "ceiling-recorded-underground",
+      "source": "src/lib/andes/ceiling.ts ceilingFromHourly",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "ceiling-sctb-shape",
+      "source": "src/lib/andes/ceiling.ts ceilingFromHourly",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "ceiling-nulls-negatives",
+      "source": "src/lib/andes/ceiling.ts ceilingFromHourly",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "ceiling-isa-649",
+      "source": "src/lib/andes/ceiling.ts surfacePressureHpa",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "ceiling-isa-out-of-range",
+      "source": "src/lib/andes/ceiling.ts surfacePressureHpa",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "ceiling-surface-950-2",
+      "source": "src/lib/andes/ceiling.ts surfacePressureHpa",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "ceiling-vis-lifr",
+      "source": "src/lib/andes/ceiling.ts ceilingFromHourly",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "ceiling-fog",
+      "source": "src/lib/andes/ceiling.ts ceilingFromHourly",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "ceiling-low-cloud-unresolved",
+      "source": "src/lib/andes/ceiling.ts ceilingFromHourly",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "ceiling-moist-140m",
+      "source": "src/lib/andes/ceiling.ts ceilingFromHourly",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "ceiling-convective-ignored",
+      "source": "src/lib/andes/ceiling.ts ceilingFromHourly",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "ceiling-cape-only",
+      "source": "src/lib/andes/ceiling.ts ceilingFromHourly",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "ceiling-showers",
+      "source": "src/lib/andes/ceiling.ts ceilingFromHourly",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "neighbourhood-min-base",
+      "source": "src/lib/andes/ceiling-regrid.ts neighbourhoodBaseAndPrecip",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "neighbourhood-nulls-negatives",
+      "source": "src/lib/andes/ceiling-regrid.ts neighbourhoodBaseAndPrecip",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "neighbourhood-nan-base",
+      "source": "src/lib/andes/ceiling-regrid.ts neighbourhoodBaseAndPrecip",
+      "label": "EXAMPLE"
+    },
+    {
+      "id": "regrid-isolated-cell",
+      "source": "src/lib/andes/ceiling-regrid.ts refineCeilingGrid",
       "label": "EXAMPLE"
     }
   ]

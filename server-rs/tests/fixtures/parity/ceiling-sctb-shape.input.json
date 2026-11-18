@@ -1,0 +1,186 @@
+{
+  "label": "EXAMPLE",
+  "op": "ceilingFromHourly",
+  "note": "EXAMPLE values in the hourly key shape of an Open-Meteo ICON point response (docs/validation/scel-2026-11-17), plus the ceiling keys a grid fetch adds. Terrain is SCTB at 649 m. Not a live fetch.",
+  "focus": {
+    "icao": "SCTB",
+    "lat": -33.456,
+    "lon": -70.546,
+    "elevM": 649
+  },
+  "terrainElevM": 649,
+  "index": 0,
+  "hourly": {
+    "time": [
+      "2026-11-18T15:00"
+    ],
+    "surface_pressure": [
+      950.2
+    ],
+    "cloud_cover": [
+      70
+    ],
+    "cloud_cover_low": [
+      35
+    ],
+    "cloud_cover_mid": [
+      60
+    ],
+    "cloud_cover_high": [
+      10
+    ],
+    "temperature_2m": [
+      18.4
+    ],
+    "dew_point_2m": [
+      9.1
+    ],
+    "relative_humidity_2m": [
+      55
+    ],
+    "pressure_msl": [
+      1016.4
+    ],
+    "wind_speed_10m": [
+      12.5
+    ],
+    "wind_direction_10m": [
+      220
+    ],
+    "wind_gusts_10m": [
+      20.1
+    ],
+    "visibility": [
+      9000
+    ],
+    "precipitation": [
+      0
+    ],
+    "rain": [
+      0
+    ],
+    "showers": [
+      0
+    ],
+    "snowfall": [
+      0
+    ],
+    "weather_code": [
+      3
+    ],
+    "convective_cloud_base": [
+      2100
+    ],
+    "cape": [
+      40
+    ],
+    "cloud_cover_1000hPa": [
+      90
+    ],
+    "geopotential_height_1000hPa": [
+      110
+    ],
+    "relative_humidity_1000hPa": [
+      95
+    ],
+    "cloud_cover_975hPa": [
+      null
+    ],
+    "geopotential_height_975hPa": [
+      280
+    ],
+    "relative_humidity_975hPa": [
+      null
+    ],
+    "cloud_cover_950hPa": [
+      15
+    ],
+    "geopotential_height_950hPa": [
+      720
+    ],
+    "relative_humidity_950hPa": [
+      70
+    ],
+    "cloud_cover_925hPa": [
+      25
+    ],
+    "geopotential_height_925hPa": [
+      980
+    ],
+    "relative_humidity_925hPa": [
+      60
+    ],
+    "cloud_cover_900hPa": [
+      40
+    ],
+    "geopotential_height_900hPa": [
+      1200
+    ],
+    "relative_humidity_900hPa": [
+      55
+    ],
+    "cloud_cover_850hPa": [
+      85
+    ],
+    "geopotential_height_850hPa": [
+      1580
+    ],
+    "relative_humidity_850hPa": [
+      80
+    ],
+    "cloud_cover_800hPa": [
+      20
+    ],
+    "geopotential_height_800hPa": [
+      2100
+    ],
+    "relative_humidity_800hPa": [
+      40
+    ],
+    "cloud_cover_700hPa": [
+      5
+    ],
+    "geopotential_height_700hPa": [
+      3100
+    ],
+    "relative_humidity_700hPa": [
+      20
+    ],
+    "cloud_cover_600hPa": [
+      null
+    ],
+    "geopotential_height_600hPa": [
+      null
+    ],
+    "relative_humidity_600hPa": [
+      null
+    ],
+    "cloud_cover_500hPa": [
+      null
+    ],
+    "geopotential_height_500hPa": [
+      4300
+    ],
+    "relative_humidity_500hPa": [
+      10
+    ],
+    "cloud_cover_400hPa": [
+      null
+    ],
+    "geopotential_height_400hPa": [
+      null
+    ],
+    "relative_humidity_400hPa": [
+      null
+    ],
+    "cloud_cover_300hPa": [
+      null
+    ],
+    "geopotential_height_300hPa": [
+      null
+    ],
+    "relative_humidity_300hPa": [
+      null
+    ]
+  }
+}

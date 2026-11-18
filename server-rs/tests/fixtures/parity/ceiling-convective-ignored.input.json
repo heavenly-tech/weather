@@ -1,0 +1,29 @@
+{
+  "label": "EXAMPLE",
+  "op": "ceilingFromHourly",
+  "terrainElevM": 474,
+  "index": 0,
+  "hourly": {
+    "time": [
+      "t"
+    ],
+    "surface_pressure": [
+      955
+    ],
+    "convective_cloud_base": [
+      1200
+    ],
+    "showers": [
+      0
+    ],
+    "cloud_cover_low": [
+      10
+    ],
+    "cloud_cover_850hPa": [
+      5
+    ],
+    "geopotential_height_850hPa": [
+      1600
+    ]
+  }
+}
