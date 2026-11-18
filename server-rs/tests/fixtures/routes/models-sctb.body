@@ -1,0 +1,1 @@
+{"models":[{"id":"gfs_seamless","label":"GFS","available":true},{"id":"ecmwf_ifs025","label":"ECMWF IFS 0.25°","available":true},{"id":"icon_seamless","label":"DWD ICON","available":false,"warning":"no recording"},{"id":"gem_seamless","label":"GEM","available":false,"warning":"no recording"}],"fetchedAt":"2026-11-17T05:00:00.000Z"}

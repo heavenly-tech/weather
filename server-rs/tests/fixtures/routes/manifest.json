@@ -1,0 +1,151 @@
+[
+  {
+    "id": "generated-metar-ecmwf-night",
+    "path": "/api/generated/metar?icao=SCTB&model=ecmwf_ifs025",
+    "status": 200,
+    "clock": "2026-11-17T05:00:00.000Z",
+    "upstream": "recorded",
+    "label": "recorded",
+    "role": "night",
+    "note": "ECMWF point body, clock at 2026-11-17T05:00Z. Visibility is null, so the METAR visibility is estimated.",
+    "contentType": "application/json"
+  },
+  {
+    "id": "generated-metar-ecmwf-missing",
+    "path": "/api/generated/metar?icao=SCTB&model=ecmwf_ifs025",
+    "status": 200,
+    "clock": "2026-11-17T18:00:00.000Z",
+    "upstream": "recorded",
+    "label": "recorded",
+    "role": "missing-field",
+    "note": "Same ECMWF body at 15:00 local. Null visibility and null 975/950/900/800 hPa series. cape is absent.",
+    "contentType": "application/json"
+  },
+  {
+    "id": "generated-metar-gfs-night",
+    "path": "/api/generated/metar?icao=SCTB&model=gfs_seamless",
+    "status": 200,
+    "clock": "2026-11-17T05:00:00.000Z",
+    "upstream": "recorded",
+    "label": "recorded",
+    "role": "night",
+    "note": "GFS point body at the same night hour. Visibility is the observed series.",
+    "contentType": "application/json"
+  },
+  {
+    "id": "generated-taf-ecmwf",
+    "path": "/api/generated/taf?icao=SCTB&model=ecmwf_ifs025",
+    "status": 200,
+    "clock": "2026-11-17T05:00:00.000Z",
+    "upstream": "recorded",
+    "label": "recorded",
+    "role": "night",
+    "note": "TAF from the recorded ECMWF series. The issue clock is the night hour.",
+    "contentType": "application/json"
+  },
+  {
+    "id": "times-ecmwf",
+    "path": "/api/andes/times?model=ecmwf_ifs025",
+    "status": 200,
+    "clock": "2026-11-17T05:00:00.000Z",
+    "upstream": "recorded",
+    "label": "recorded",
+    "note": "Hour list from the recorded ECMWF body.",
+    "contentType": "application/json"
+  },
+  {
+    "id": "models-sctb",
+    "path": "/api/andes/models",
+    "status": 200,
+    "clock": "2026-11-17T05:00:00.000Z",
+    "upstream": "recorded",
+    "label": "recorded",
+    "note": "Probe uses the recorded ECMWF and GFS bodies. ICON and GEM have no recording and come back unavailable.",
+    "contentType": "application/json"
+  },
+  {
+    "id": "ceiling-ecmwf-night",
+    "path": "/api/andes/ceiling?model=ecmwf_ifs025&validTime=2026-11-17T05:00:00.000Z",
+    "status": 200,
+    "clock": "2026-11-17T05:00:00.000Z",
+    "upstream": "recorded",
+    "label": "recorded",
+    "role": "night",
+    "note": "Each coarse point is a copy of the recorded ECMWF hour. validTime selects 05:00Z.",
+    "contentType": "application/json"
+  },
+  {
+    "id": "ceiling-ecmwf-missing",
+    "path": "/api/andes/ceiling?model=ecmwf_ifs025&validTime=2026-11-17T18:00:00.000Z",
+    "status": 200,
+    "clock": "2026-11-17T18:00:00.000Z",
+    "upstream": "recorded",
+    "label": "recorded",
+    "role": "missing-field",
+    "note": "Same recorded ECMWF body, validTime 18:00Z.",
+    "contentType": "application/json"
+  },
+  {
+    "id": "slice-ecmwf-night",
+    "path": "/api/andes/slice?model=ecmwf_ifs025&hpa=850&validTime=2026-11-17T05:00:00.000Z",
+    "status": 200,
+    "clock": "2026-11-17T05:00:00.000Z",
+    "upstream": "recorded",
+    "label": "recorded",
+    "role": "night",
+    "note": "850 hPa slice. Coarse points replay the recorded ECMWF body.",
+    "contentType": "application/json"
+  },
+  {
+    "id": "times-429",
+    "path": "/api/andes/times?model=gfs_seamless",
+    "status": 200,
+    "clock": "2026-11-17T05:00:00.000Z",
+    "upstream": "429",
+    "label": "EXAMPLE",
+    "note": "Upstream 429 is not stored. The point route reports HTTP 429 and does not retry.",
+    "contentType": "application/json"
+  },
+  {
+    "id": "generated-metar-503",
+    "path": "/api/generated/metar?icao=SCTB&model=gfs_seamless",
+    "status": 502,
+    "clock": "2026-11-17T05:00:00.000Z",
+    "upstream": "503",
+    "label": "EXAMPLE",
+    "note": "Upstream 503 becomes 502 with error HTTP 503.",
+    "contentType": "application/json"
+  },
+  {
+    "id": "ceiling-429",
+    "path": "/api/andes/ceiling?model=ecmwf_ifs025&validTime=2026-11-17T05:00:00.000Z",
+    "status": 200,
+    "clock": "2026-11-17T05:00:00.000Z",
+    "upstream": "ceiling-429",
+    "label": "EXAMPLE",
+    "note": "The batch retries a 429 once. The second response is still 429, so the body is the error text.",
+    "contentType": "application/json"
+  },
+  {
+    "id": "coherence-ecmwf-night",
+    "path": "/api/andes/coherence?icao=SCTB&model=ecmwf_ifs025",
+    "status": 200,
+    "clock": "2026-11-17T05:00:00.000Z",
+    "upstream": "recorded",
+    "label": "recorded",
+    "role": "night",
+    "note": "Open-Meteo is the recorded ECMWF body. AWC is down, so the official lines are the EXAMPLE mock.",
+    "contentType": "application/json"
+  },
+  {
+    "id": "timeline-sctb-night",
+    "path": "/api/andes/timeline?icao=SCTB",
+    "status": 200,
+    "clock": "2026-11-17T05:00:00.000Z",
+    "upstream": "recorded",
+    "label": "recorded",
+    "role": "night",
+    "note": "ECMWF and GFS series are the recorded bodies. ICON and GEM are unavailable. AWC observation is null.",
+    "contentType": "application/json"
+  }
+]
