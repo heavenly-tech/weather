@@ -1,6 +1,6 @@
 # Rust + scratch-image migration
 
-Design note only. The port starts from `main` **after** [PR #7](https://github.com/heavenly-tech/weather/pull/7) lands. #7 (head `b0e9769`, branch `cursor/andes-ecmwf-hz-7c33`, held by Pablo) is unmerged. Do not branch from it and do not port today's `main` (`e59971b`): that tree still treats ECMWF rain as showers, can emit `FEW00x` from a low LCL, lets total cloud invent a `BKN`, and writes a midnight `BECMG` as `1823/1900` instead of `1823/1824`.
+Design note only. [PR #7](https://github.com/heavenly-tech/weather/pull/7) merged as `2bc9325` on `main`. The port starts from that commit. It is the encoder: ECMWF cloud base, HZ dropped when precipitation is present, `max(low, mid)`, trace rain, mid-deck `-RA`, and the TAF `DD24` clamp. Do not port the pre-#7 tree (`e59971b`): that tree still treats ECMWF rain as showers, can emit `FEW00x` from a low LCL, lets total cloud invent a `BKN`, and writes a midnight `BECMG` as `1823/1900` instead of `1823/1824`.
 
 Replace `node:22-alpine` + Next standalone `server.js` ([Dockerfile](../Dockerfile)) with one static musl binary on `FROM scratch`, as in [heavenly-tech/flight_vis](https://github.com/heavenly-tech/flight_vis) (`Dockerfile`, `server-rs/`). Weather has no ffmpeg, so the image is the binary, `/app/dist`, CA certificates, and `/app/data`.
 
@@ -98,7 +98,7 @@ Keep vitest until cutover. Map each file onto the Rust module:
 | `src/lib/andes/altitude.test.ts` | `altitude.rs` |
 | `src/lib/andes/ceiling-regrid.test.ts` | `regrid.rs` |
 | `src/lib/andes/ceiling.test.ts` | `ceiling.rs` |
-| `src/lib/andes/wmo-metar-wx.test.ts` | `metar_wx.rs` (#7 ECMWF cases once on main) |
+| `src/lib/andes/wmo-metar-wx.test.ts` | `metar_wx.rs` (#7 ECMWF cases, on main as of `2bc9325`) |
 | `src/lib/andes/wmo-metar.test.ts` | `metar.rs` |
 | `src/lib/andes/wmo-taf.test.ts` | `taf.rs` + `taf_format.rs` |
 | `src/lib/andes/generated-taf.test.ts` | `taf.rs` |
@@ -107,7 +107,7 @@ Keep vitest until cutover. Map each file onto the Rust module:
 | `src/lib/andes/product-rmk.test.ts` | `rmk.rs` |
 | `src/lib/andes/open-meteo-cache.test.ts` | `cache.rs` (one shared flight, then `x-open-meteo-cache: hit`) |
 
-Existing inputs (`tests/fixtures/*.json`, `docs/validation/scel-2026-11-17/`) are SCEL. Before any route switches, record **SCTB** (lat −33.456, lon −70.546, elev 649 m) for all four models with a frozen clock, and check them in at `tests/fixtures/recorded/` labeled `EXAMPLE` / `recorded` (UTC, model, URL, no key). Include the #7 hours: 2% low cloud with a low LCL, mid ≥ 50%, total cloud 90% with low/mid under 10%, trace rain 0.15 mm/h with total cloud under 25%, and a validity end at midnight.
+Existing inputs (`tests/fixtures/*.json`, `docs/validation/scel-2026-11-17/`) are SCEL. Before any route switches, record **SCTB** (lat −33.456, lon −70.546, elev 649 m) for all four models with a frozen clock, and check them in at `tests/fixtures/recorded/` labeled `EXAMPLE` / `recorded` (UTC, model, URL, no key). Include the #7 hours: 2% low cloud with a low LCL, mid ≥ 50%, total cloud 90% with low/mid under 10%, trace rain 0.15 mm/h with total cloud under 25%, and a validity end at midnight. Also keep the review edge cases as goldens: validity `1812/1912` with `BECMG 1823/1901` (crosses midnight, not clamped to `1824`), the 600 hPa base when 700 hPa is missing, and an absent or null `cloud_cover_mid` falling back to the low-cloud decision.
 
 Both languages read the same body. METAR and TAF strings are **byte-identical**, including the stamp, group order, and `RMK`. Regrid JSON is **byte-identical** (row-major order, `null` vs number, category token). No epsilon. `assertModelTafFormat` (`taf-format.ts`) runs on every golden TAF in both languages: reject `…/1900` and a group past `1800/1824`, accept `BECMG 1823/1824`.
 
@@ -115,9 +115,9 @@ Both languages read the same body. METAR and TAF strings are **byte-identical**,
 
 ## 5. Parity risks
 
-Port the post-#7 functions, not `e59971b`.
+Port the functions on `main` at `2bc9325` (#7 merged), not `e59971b`.
 
-**TAF merging and the DD24 clamp.** In `generateModelTaf` (`wmo-taf.ts`), a flip that is only `BR` / `HZ` / `-RA` / `-DZ`, with wind, vis, and ceiling in the same Annex 3 bin, is dropped when the run is under 2 h. At 2 h or more it is a `BECMG` ending at `min(i + 2, runEnd)`, using the weather at that end. A new shower shorter than 3 h and not reaching the validity end is `TEMPO`; otherwise a persistent change is a 2 h `BECMG` and a blip is `TEMPO`. Groups are stable-sorted by start epoch. Clearing weather emits `NSW`. #7's `changeWindow` clamps every `BECMG` / `TEMPO` / `PROB` end to the validity end. Midnight (`h = m = s = 0`) is hour 24 of the previous day (`tafEndToken`): `1800/1824` and `BECMG 1823/1824`, never `1900`. A window shortened below an hour is kept. The group is dropped only when the start is at or after the validity end, or the clamped tokens match. `assertModelTafFormat` rejects end-hour `00` on the header and on every group, and rejects a group outside validity. Today's `tafValidityEnd` rewrites only the header. Mitigation: one end-token function, and the #7 validator cases as Rust tests that fail the build. `chrono` stays in UTC. `DD24` on the 1st is the previous month's last day. A local `NaiveDateTime` shifts every group.
+**TAF merging and the DD24 clamp.** In `generateModelTaf` (`wmo-taf.ts`), a flip that is only `BR` / `HZ` / `-RA` / `-DZ`, with wind, vis, and ceiling in the same Annex 3 bin, is dropped when the run is under 2 h. At 2 h or more it is a `BECMG` ending at `min(i + 2, runEnd)`, using the weather at that end. A new shower shorter than 3 h and not reaching the validity end is `TEMPO`; otherwise a persistent change is a 2 h `BECMG` and a blip is `TEMPO`. Groups are stable-sorted by start epoch. Clearing weather emits `NSW`. #7's `changeWindow` clamps every `BECMG` / `TEMPO` / `PROB` end to the validity end. Midnight (`h = m = s = 0`) is hour 24 of the previous day (`tafEndToken`): `1800/1824` and `BECMG 1823/1824`, never `1900`. A window shortened below an hour is kept. The group is dropped only when the start is at or after the validity end, or the clamped tokens match. `assertModelTafFormat` rejects end-hour `00` on the header and on every group, and rejects a group outside validity. On `2bc9325`, `changeWindow` clamps every end and `tafEndToken` writes midnight as `DD24`. A validity that runs through the next noon (`1812/1912`) keeps a cross-midnight `BECMG 1823/1901`; it is not rewritten to `1824`. Mitigation: one end-token function, and the #7 validator cases as Rust tests that fail the build. `chrono` stays in UTC. `DD24` on the 1st is the previous month's last day. A local `NaiveDateTime` shifts every group.
 
 **Rounding.** Cloud height is `floor(ft / 100)`, minimum 1 (`cloudHeightHundredsFt`). TAF vis floors in 50 / 100 / 1000 m steps (`roundVisTafMeters`); METAR vis uses `Math.round` (`roundVisM`). Direction is `round(dir / 10) * 10`, with 0 → 360. Knots are `round(kmh / 1.852)`. A gust requires `gustKt >= kt + 10`. QNH floors. Temp rounds, and `(−0.5, 0)` is forced to `M00`. JS `Math.round` is half toward +∞ (`-1.5` → `-1`); Rust `f64::round` is half away from 0 (`-1.5` → `-2`). SCTB temperatures are negative. Mitigation: a `js_round` helper at every `Math.round` site, and floor-toward-−∞ at every `Math.floor`. No `round_ties_even`.
 
@@ -140,7 +140,7 @@ Feet are `(baseMslM - elevM) * 3.280839895` with that literal, not `1/0.3048`, i
 
 ## 6. Phased plan
 
-Each PR targets `main` after #7. None touch `cursor/andes-ecmwf-hz-7c33`.
+Each implementation PR targets `main`, which already contains #7 as `2bc9325`. None touch `cursor/andes-ecmwf-hz-7c33`.
 
 1. **Skeleton.** `server-rs`, axum, `/api/health`, `weather healthcheck`, scratch Dockerfile, `panic = "abort"`. CI `cargo test`. Not deployed.
 2. **Ceiling and regrid**, with the vitest cases and a recorded coarse-grid golden. No route changes.
