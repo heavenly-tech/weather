@@ -1,0 +1,63 @@
+{
+  "window": "2026-10-01 to 2026-11-17 UTC",
+  "model": "ecmwf_ifs025",
+  "source": "Ogimet METAR text and Open-Meteo historical-forecast (free tier)",
+  "stations": [
+    {
+      "icao": "SCTB",
+      "matched_hours": 586,
+      "observed_fog_hours": 3,
+      "old": {
+        "hit": 0,
+        "miss": 3,
+        "false_alarm": 2,
+        "pod": 0.0,
+        "far": 1.0
+      },
+      "new": {
+        "hit": 0,
+        "miss": 3,
+        "false_alarm": 0,
+        "pod": 0.0,
+        "far": null
+      }
+    },
+    {
+      "icao": "SCEL",
+      "matched_hours": 1152,
+      "observed_fog_hours": 1,
+      "old": {
+        "hit": 0,
+        "miss": 1,
+        "false_alarm": 43,
+        "pod": 0.0,
+        "far": 1.0
+      },
+      "new": {
+        "hit": 0,
+        "miss": 1,
+        "false_alarm": 20,
+        "pod": 0.0,
+        "far": 1.0
+      }
+    }
+  ],
+  "combined": {
+    "matched_hours": 1738,
+    "observed_fog_hours": 4,
+    "old": {
+      "hit": 0,
+      "miss": 4,
+      "false_alarm": 45,
+      "pod": 0.0,
+      "far": 1.0
+    },
+    "new": {
+      "hit": 0,
+      "miss": 4,
+      "false_alarm": 20,
+      "pod": 0.0,
+      "far": 1.0
+    }
+  }
+}

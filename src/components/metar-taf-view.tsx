@@ -22,7 +22,8 @@ export function MetarTafView({
         <h1 className="mt-1 font-heading text-3xl">{station?.city ?? icao} METAR and TAF</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
           Live products from the NOAA Aviation Weather Center. Chilean aerodromes file through the international
-          OPMET exchange; if AWC has a gap, the desk falls back to a clearly marked mock so you can still brief.
+          OPMET exchange. If the center is unreachable or the report cannot be read, the desk says observations
+          are unavailable. It does not fill the gap with a made-up METAR or TAF.
         </p>
       </div>
 
@@ -32,7 +33,14 @@ export function MetarTafView({
           <MetarPanel metar={metar.data} />
         </div>
       ) : (
-        <ProductEmpty title="No METAR" body="That ICAO is not in the observation circuit right now." />
+        <ProductEmpty
+          title={metar.source === "unavailable" ? "Observations unavailable" : "No METAR"}
+          body={
+            metar.source === "unavailable"
+              ? "The Aviation Weather Center did not return a usable METAR. This page is not showing a stand-in observation."
+              : "That ICAO is not in the observation circuit right now."
+          }
+        />
       )}
 
       {taf.data ? (
@@ -41,7 +49,14 @@ export function MetarTafView({
           <TafPanel taf={taf.data} />
         </div>
       ) : (
-        <ProductEmpty title="No TAF" body="Not every strip gets a terminal forecast. Try SCEL or SCFA." />
+        <ProductEmpty
+          title={taf.source === "unavailable" ? "Observations unavailable" : "No TAF"}
+          body={
+            taf.source === "unavailable"
+              ? "The Aviation Weather Center did not return a usable TAF. This page is not showing a stand-in forecast."
+              : "Not every strip gets a terminal forecast. Try SCEL or SCFA."
+          }
+        />
       )}
     </div>
   );

@@ -1,9 +1,10 @@
 //! Desk routes that were still on Next: config, METAR, TAF, forecast, GRAMET,
 //! GAMET, synoptic, and the 3D field. JSON key order follows the TypeScript
 //! handlers. An Open-Meteo 200 body that is not JSON is `502` JSON rather than
-//! a Next HTML error page. An AWC body that is not JSON stays on the mock
-//! envelope, the same branch TypeScript takes after `fetchJson` catches the
-//! parse error.
+//! a Next HTML error page. The 502 body is a fixed sentence plus a short
+//! code. An AWC METAR or TAF that is unreachable, empty, or not JSON is an
+//! observations-unavailable envelope. A fabricated METAR or TAF is returned
+//! only when `WEATHER_DEV_MOCK=1`.
 
 use std::collections::BTreeMap;
 
@@ -55,19 +56,17 @@ pub async fn metar(State(state): State<AppState>, request: Request) -> Response 
         form_encode(&icao)
     );
     match fetch_rows(&state, &url).await {
-        Err(HttpFail::Down { error }) => product(
+        Err(HttpFail::Down { code }) => awc_gap(
             &state,
+            code,
             mock_metar_json(&state, &icao),
-            "mock",
-            "Mock METAR (AWC did not return an observation)",
-            Some(error),
+            "Mock METAR (dev flag; not an observation)",
         ),
-        Ok(rows) if rows.is_empty() => product(
+        Ok(rows) if rows.is_empty() => awc_gap(
             &state,
+            "awc-empty",
             mock_metar_json(&state, &icao),
-            "mock",
-            "Mock METAR (AWC did not return an observation)",
-            Some(format!("No METAR on file for {icao}.")),
+            "Mock METAR (dev flag; not an observation)",
         ),
         Ok(rows) => {
             let mut parsed = awc::parse_metar(&rows[0]);
@@ -90,19 +89,17 @@ pub async fn taf(State(state): State<AppState>, request: Request) -> Response {
         form_encode(&icao)
     );
     match fetch_rows(&state, &url).await {
-        Err(HttpFail::Down { error }) => product(
+        Err(HttpFail::Down { code }) => awc_gap(
             &state,
+            code,
             mock_taf_json(&state, &icao),
-            "mock",
-            "Mock TAF (AWC did not return a forecast)",
-            Some(error),
+            "Mock TAF (dev flag; not a forecast)",
         ),
-        Ok(rows) if rows.is_empty() => product(
+        Ok(rows) if rows.is_empty() => awc_gap(
             &state,
+            "awc-empty",
             mock_taf_json(&state, &icao),
-            "mock",
-            "Mock TAF (AWC did not return a forecast)",
-            Some(format!("No TAF on file for {icao}.")),
+            "Mock TAF (dev flag; not a forecast)",
         ),
         Ok(rows) => {
             let mut parsed = awc::parse_taf(&rows[0]);
@@ -126,7 +123,7 @@ pub async fn forecast(State(state): State<AppState>, request: Request) -> Respon
     }
     let url = surface_url(station.lat, station.lon, 5);
     match fetch_open_meteo(&state, &url).await {
-        Err(OpenFail::BadJson(error)) => gateway(&error),
+        Err(OpenFail::BadJson(_error)) => gateway("bad-json"),
         Err(OpenFail::Down(error)) => product(
             &state,
             mock_forecast_json(&state, station),
@@ -176,7 +173,7 @@ pub async fn gramet(State(state): State<AppState>, request: Request) -> Response
     let points = great_circle(from.lat, from.lon, to.lat, to.lon, 6);
     let url = pressure_url_multi(&points, 1);
     match fetch_open_meteo(&state, &url).await {
-        Err(OpenFail::BadJson(error)) => gateway(&error),
+        Err(OpenFail::BadJson(_error)) => gateway("bad-json"),
         Err(OpenFail::Down(error)) => {
             let warning = format!("Open-Meteo did not return a route sounding: {error}");
             product(
@@ -301,8 +298,8 @@ pub async fn gamet(State(state): State<AppState>, request: Request) -> Response 
             .collect(),
         Err(_) => Vec::new(),
     };
-    if let Err(OpenFail::BadJson(error)) = &model_result {
-        return gateway(error);
+    if let Err(OpenFail::BadJson(_)) = &model_result {
+        return gateway("bad-json");
     }
     let sigmet_json = sigmet_list(&sigmets);
     if let Err(OpenFail::Down(error)) = &model_result {
@@ -331,8 +328,8 @@ pub async fn gamet(State(state): State<AppState>, request: Request) -> Response 
         sigmet_result.is_err(),
     );
     let warning = match &sigmet_result {
-        Err(HttpFail::Down { error }) => Some(format!(
-            "SIGMET circuit unavailable ({error}). Hazards section has no live SIGMETs."
+        Err(HttpFail::Down { code }) => Some(format!(
+            "SIGMET circuit unavailable ({code}). Hazards section has no live SIGMETs."
         )),
         _ => None,
     };
@@ -366,9 +363,9 @@ pub async fn synoptic_image(State(state): State<AppState>, request: Request) -> 
             .expect("response");
     };
     match (state.binary)(origin.to_string()).await {
-        Err(error) => chart_failed(&error),
+        Err(_error) => chart_failed("transport"),
         Ok(response) if !(200..300).contains(&response.status) => {
-            chart_failed(&format!("{} {}", response.status, response.status_text))
+            chart_failed(&format!("http-{}", response.status))
         }
         Ok(response) => {
             let content_type = if response.content_type.contains("image") {
@@ -404,15 +401,15 @@ pub async fn viz(State(state): State<AppState>, request: Request) -> Response {
         fetch_rows(&state, &metar_url),
         fetch_open_meteo(&state, &model_url)
     );
-    if let Err(OpenFail::BadJson(error)) = &model_result {
-        return gateway(error);
+    if let Err(OpenFail::BadJson(_)) = &model_result {
+        return gateway("bad-json");
     }
     let metars_down = matches!(metar_result, Err(HttpFail::Down { .. }));
     let model_down = matches!(model_result, Err(OpenFail::Down(_)));
     if metars_down && model_down {
         let warning = match (&metar_result, &model_result) {
             (Ok(_), Err(OpenFail::Down(error))) => error.clone(),
-            (Err(HttpFail::Down { error }), _) => error.clone(),
+            (Err(HttpFail::Down { code }), _) => code.to_string(),
             _ => String::new(),
         };
         return product(
@@ -470,7 +467,7 @@ pub async fn viz(State(state): State<AppState>, request: Request) -> Response {
         .collect();
     let (source, label, warning) = if metars_down {
         let error = match &metar_result {
-            Err(HttpFail::Down { error }) => error.clone(),
+            Err(HttpFail::Down { code }) => code.to_string(),
             _ => String::new(),
         };
         (
@@ -489,7 +486,7 @@ pub async fn viz(State(state): State<AppState>, request: Request) -> Response {
 }
 
 enum HttpFail {
-    Down { error: String },
+    Down { code: &'static str },
 }
 
 enum OpenFail {
@@ -500,22 +497,15 @@ enum OpenFail {
 async fn fetch_rows(state: &AppState, url: &str) -> Result<Vec<Value>, HttpFail> {
     let response = fetch_retry(&state.awc, url)
         .await
-        .map_err(|error| HttpFail::Down { error })?;
-    if response.status == 204 {
-        return Err(HttpFail::Down {
-            error: "No product available for that query.".to_string(),
-        });
-    }
-    if response.status != 200 {
-        return Err(HttpFail::Down {
-            error: error_text(&response.body, response.status, &response.status_text),
-        });
+        .map_err(|_| HttpFail::Down { code: "awc-down" })?;
+    if response.status == 204 || response.status != 200 {
+        return Err(HttpFail::Down { code: "awc-down" });
     }
     match serde_json::from_str::<Value>(&response.body) {
         Ok(Value::Array(rows)) => Ok(rows),
         Ok(_) => Ok(Vec::new()),
-        Err(error) => Err(HttpFail::Down {
-            error: error.to_string(),
+        Err(_) => Err(HttpFail::Down {
+            code: "awc-bad-json",
         }),
     }
 }
@@ -1267,18 +1257,43 @@ fn json_string(value: &str) -> String {
     String::from_utf8(Js::Str(value).to_bytes()).expect("json string")
 }
 
-fn gateway(error: &str) -> Response {
+fn awc_gap(state: &AppState, code: &str, mock: Vec<u8>, mock_label: &str) -> Response {
+    if state.dev_mock {
+        return product(state, mock, "mock", mock_label, Some(code.to_string()));
+    }
+    observations_unavailable(state, code)
+}
+
+fn observations_unavailable(state: &AppState, code: &str) -> Response {
+    let fetched = state.clock.now_iso();
+    let body = Js::Obj(vec![
+        ("data", Js::Null),
+        ("source", Js::Str("unavailable")),
+        ("sourceLabel", Js::Str("Observations unavailable")),
+        ("fetchedAt", Js::Str(&fetched)),
+        ("code", Js::Str(code)),
+    ])
+    .to_bytes();
+    Response::builder()
+        .status(StatusCode::OK)
+        .header(header::CONTENT_TYPE, "application/json")
+        .header(header::CACHE_CONTROL, "no-store")
+        .body(Body::from(body))
+        .expect("response")
+}
+
+fn gateway(code: &str) -> Response {
     json_only(
         StatusCode::BAD_GATEWAY,
-        Js::Obj(vec![("error", Js::Str(error))]).to_bytes(),
+        crate::routes::upstream_unavailable(code),
     )
 }
 
-fn chart_failed(error: &str) -> Response {
+fn chart_failed(code: &str) -> Response {
     Response::builder()
         .status(StatusCode::BAD_GATEWAY)
         .header(header::CONTENT_TYPE, "text/plain;charset=UTF-8")
-        .body(Body::from(format!("Chart fetch failed: {error}")))
+        .body(Body::from(format!("Chart unavailable ({code})")))
         .expect("response")
 }
 

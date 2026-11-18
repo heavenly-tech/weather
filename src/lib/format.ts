@@ -23,6 +23,14 @@ export function formatWind(dir: number | null, kt: number | null, gust?: number 
   return `${d}° / ${kt} kt${g}`;
 }
 
+export function formatCloudBases(
+  clouds: { cover: string; baseFt: number | null }[]
+): string {
+  return clouds
+    .map((cloud) => (cloud.baseFt == null ? cloud.cover : `${cloud.cover} ${cloud.baseFt} ft`))
+    .join(", ");
+}
+
 export function formatTemp(c: number | null | undefined): string {
   if (c == null || Number.isNaN(c)) return "—";
   const rounded = Math.round(c);

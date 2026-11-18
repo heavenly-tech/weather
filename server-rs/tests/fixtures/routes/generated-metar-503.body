@@ -1,1 +1,1 @@
-{"error":"HTTP 503"}
+{"error":"Upstream unavailable","code":"http-503"}

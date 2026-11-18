@@ -14,6 +14,10 @@ serde_json = "1"
 tokio = { version = "1", features = ["macros", "net", "rt-multi-thread", "time"] }
 tower-http = { version = "0.6", features = ["fs"] }
 
+[[bin]]
+name = "score-fog"
+path = "src/bin/score_fog.rs"
+
 [dev-dependencies]
 http-body-util = "0.1"
 tempfile = "3"

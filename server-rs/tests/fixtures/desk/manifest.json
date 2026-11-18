@@ -55,7 +55,7 @@
     "upstream": "down",
     "label": "EXAMPLE",
     "role": null,
-    "note": "AWC transport failure falls back to the EXAMPLE mock.",
+    "note": "AWC transport failure is observations unavailable. The body is not a mock METAR.",
     "contentType": "application/json",
     "cacheControl": "no-store"
   },
@@ -79,7 +79,7 @@
     "upstream": "recorded",
     "label": "recorded",
     "role": "missing-field",
-    "note": "The live SCTB TAF query returned [].",
+    "note": "The live SCTB TAF query returned []. An empty AWC array is observations unavailable, not a mock TAF.",
     "contentType": "application/json",
     "cacheControl": "no-store"
   },

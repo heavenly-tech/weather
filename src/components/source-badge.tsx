@@ -7,6 +7,7 @@ const LABELS: Record<SourceKind, string> = {
   fallback: "Fallback",
   derived: "Derived",
   mock: "Mock",
+  unavailable: "Unavailable",
 };
 
 export function SourceBadge({
@@ -24,7 +25,8 @@ export function SourceBadge({
         source === "live" && "border-emerald-400/40 bg-emerald-500/10 text-emerald-200",
         source === "fallback" && "border-sky-400/40 bg-sky-500/10 text-sky-200",
         source === "derived" && "border-amber-400/40 bg-amber-500/10 text-amber-200",
-        source === "mock" && "border-rose-400/40 bg-rose-500/10 text-rose-200"
+        source === "mock" && "border-rose-400/40 bg-rose-500/10 text-rose-200",
+        source === "unavailable" && "border-rose-400/40 bg-rose-500/10 text-rose-200"
       )}
     >
       {LABELS[source]}

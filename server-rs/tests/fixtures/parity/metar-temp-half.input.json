@@ -1,7 +1,7 @@
 {
   "label": "EXAMPLE",
   "op": "generateModelMetar",
-  "note": "Math.round(Math.abs(-1.5)) is 2 and Math.round(Math.abs(-0.5)) is 1, so the group is M02/M01. The signed JS half (-1.5 → -1) is not what this formatter does.",
+  "note": "WMO-No. 306 Regulation 15.11 and FAA FMH-1 sections 2.6.3 and 12.6.10 round a half toward the warmer degree, so -1.5 / -0.5 is M01/M00.",
   "icao": "SCTB",
   "elevM": 649,
   "model": "gfs_seamless",

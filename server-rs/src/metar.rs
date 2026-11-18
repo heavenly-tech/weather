@@ -2,9 +2,8 @@
 //!
 //! Group order is ICAO, `DDHHMMZ`, wind, visibility, weather, clouds,
 //! temperature/dewpoint, QNH, then `RMK`. Visibility uses `Math.round`.
-//! Temperature rounds `Math.abs` for every negative value, so `-1.5` is `M02`
-//! and `-0.5` is `M01`. `M00` is `(-0.5, 0)`, where that absolute round is 0.
-//! The source's later `M00` branch is unreachable and is not compiled.
+//! Temperature uses the signed half-up rule in WMO-No. 306 Regulation 15.11
+//! and FAA FMH-1 §§2.6.3 and 12.6.10: `-1.5` is `M01` and `-0.5` is `M00`.
 
 use crate::annex3::kmh_to_kt;
 use crate::ceiling::ceiling_from_hourly;
@@ -85,11 +84,15 @@ pub fn format_model_wind(
 }
 
 fn format_temp_token(n: f64) -> String {
+    // Half degrees round toward the warmer whole degree (`js_round`), then a
+    // negative observation keeps the M prefix even when that whole degree is 0.
+    let rounded = js_round(n);
+    let digits = format!("{:02}", rounded.abs() as i64);
     if n < 0.0 {
-        let rounded = js_round(n.abs()) as i64;
-        return format!("M{rounded:02}");
+        format!("M{digits}")
+    } else {
+        digits
     }
-    format!("{:02}", js_round(n) as i64)
 }
 
 fn format_temp_group(temp_c: Option<f64>, dew_c: Option<f64>) -> String {
@@ -186,11 +189,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn negative_halves_round_the_absolute_value() {
-        assert_eq!(format_temp_token(-1.5), "M02");
-        assert_eq!(format_temp_token(-0.5), "M01");
+    fn negative_halves_round_toward_the_warmer_degree() {
+        assert_eq!(format_temp_token(-1.5), "M01");
+        assert_eq!(format_temp_token(-0.5), "M00");
         assert_eq!(format_temp_token(-0.4), "M00");
+        assert_eq!(format_temp_token(-1.6), "M02");
         assert_eq!(format_temp_token(0.5), "01");
+        assert_eq!(format_temp_token(1.5), "02");
         assert_eq!(format_temp_token(-0.0), "00");
     }
 }

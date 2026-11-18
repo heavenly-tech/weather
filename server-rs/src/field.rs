@@ -20,6 +20,8 @@ pub struct PointFetch {
     pub elev_m: f64,
     pub times: Vec<String>,
     pub error: String,
+    /// Short reason for a 502. Empty when the fetch succeeded.
+    pub code: String,
     pub meta: Option<ModelMeta>,
 }
 
@@ -38,6 +40,7 @@ pub async fn fetch_point_hourly(
             elev_m: 0.0,
             times: Vec::new(),
             error: "Unknown model".to_string(),
+            code: "unknown-model".to_string(),
             meta: None,
         };
     };
@@ -51,6 +54,7 @@ pub async fn fetch_point_hourly(
                 elev_m: 0.0,
                 times: Vec::new(),
                 error,
+                code: "transport".to_string(),
                 meta: Some(meta),
             };
         }
@@ -62,6 +66,7 @@ pub async fn fetch_point_hourly(
             elev_m: 0.0,
             times: Vec::new(),
             error: format!("HTTP {}", response.status),
+            code: format!("http-{}", response.status),
             meta: Some(meta),
         };
     }
@@ -74,6 +79,7 @@ pub async fn fetch_point_hourly(
                 elev_m: 0.0,
                 times: Vec::new(),
                 error: error.to_string(),
+                code: "bad-json".to_string(),
                 meta: Some(meta),
             };
         }
@@ -87,6 +93,7 @@ pub async fn fetch_point_hourly(
         hourly,
         elev_m,
         error: String::new(),
+        code: String::new(),
         meta: Some(meta),
     }
 }

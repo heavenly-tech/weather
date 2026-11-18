@@ -1,4 +1,4 @@
-export type SourceKind = "live" | "fallback" | "derived" | "mock";
+export type SourceKind = "live" | "fallback" | "derived" | "mock" | "unavailable";
 
 export type FlightCategory = "VFR" | "MVFR" | "IFR" | "LIFR" | "UNK";
 
@@ -58,11 +58,12 @@ export type TafForecast = {
 };
 
 export type ProductEnvelope<T> = {
-  data: T;
+  data: T | null;
   source: SourceKind;
   sourceLabel: string;
   fetchedAt: string;
   warning?: string;
+  code?: string;
 };
 
 export type PressureLevel = 1000 | 925 | 850 | 700 | 500 | 300;

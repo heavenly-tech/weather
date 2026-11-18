@@ -1,5 +1,6 @@
 import Link from "@/client/next-link";
 import { buttonVariants } from "@/components/ui/button";
+import { ProductEmpty } from "@/components/product-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FlightCategoryBadge } from "@/components/flight-category-badge";
 import { ProductMeta } from "@/components/product-meta";
@@ -39,8 +40,9 @@ export function VfrSvfrView({
   station: Station | undefined;
   metar: ProductEnvelope<MetarObservation>;
 }) {
-  const fit = metar.data ? metarChileFit(metar.data) : "unknown";
-  const ceiling = metar.data ? ceilingFtFromClouds(metar.data.clouds) : null;
+  const observation = metar.source === "unavailable" ? null : metar.data;
+  const fit = observation ? metarChileFit(observation) : "unknown";
+  const ceiling = observation ? ceilingFtFromClouds(observation.clouds) : null;
 
   return (
     <div className="space-y-6">
@@ -80,7 +82,12 @@ export function VfrSvfrView({
         </CardContent>
       </Card>
 
-      {metar.data ? (
+      {metar.source === "unavailable" ? (
+        <ProductEmpty
+          title="Observations unavailable"
+          body="The Aviation Weather Center did not return a usable METAR, so the Chile margin check is not run against a stand-in observation."
+        />
+      ) : metar.data ? (
         <div className="space-y-3">
           <ProductMeta envelope={metar} />
           <Card>

@@ -4,13 +4,17 @@
 //! total cloud under 25% is dropped. A mid deck without a convective signal
 //! is `-RA` at 700 hPa, or 600 hPa when 700 is missing. The surface LCL is a
 //! low-cloud base only when low cloud is at least 10% and the LCL is at least
-//! 1500 ft AGL. HZ is dropped when precipitation is present. VV is written
+//! 1500 ft AGL. HZ is dropped when precipitation is present. FG also requires
+//! the night, spread, wind, and saturated-level gate in `vis_wx`. VV is written
 //! only when the sky is obscured and no FEW/SCT/BKN/OVC group was chosen.
 
-use crate::ceiling::{surface_pressure_hpa, CeilingSample, BKN_CLOUD_COVER_PCT, M_TO_FT};
+use crate::annex3::kmh_to_kt;
+use crate::ceiling::{
+    lowest_level_saturated, surface_pressure_hpa, CeilingSample, BKN_CLOUD_COVER_PCT, M_TO_FT,
+};
 use crate::msa::annex3_nsc_ceiling_ft_agl;
 use crate::series::Series;
-use crate::vis_wx::vis_obscuration_wx;
+use crate::vis_wx::{fog_allowed, is_night, vis_obscuration_wx};
 use crate::visibility::cap_estimated_vis_for_low_cloud;
 
 const MAX_LCL_SPREAD_C: f64 = 15.0;
@@ -361,7 +365,18 @@ pub fn derive_metar_wx_and_cloud(
         precip_wx.push(token.to_string());
     }
 
-    let vis_wx = vis_obscuration_wx(vis_m, rh);
+    let wind_kt = kmh_to_kt(series.num("wind_speed_10m", index));
+    let night = series
+        .time
+        .get(index)
+        .is_some_and(|stamp| is_night(icao, stamp));
+    let fog_ok = fog_allowed(
+        night,
+        spread,
+        wind_kt,
+        lowest_level_saturated(&series.hourly, index, elev_m),
+    );
+    let vis_wx = vis_obscuration_wx(vis_m, rh, fog_ok);
     let obsc = if !precip_wx.is_empty() && vis_wx == "HZ" {
         ""
     } else {

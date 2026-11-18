@@ -150,6 +150,17 @@ fn collect_levels_above_ground(
     out
 }
 
+/// The lowest model level above the aerodrome is saturated at RH ≥ 95.
+/// With no such level, the surface humidity is the lowest level we have.
+pub fn lowest_level_saturated(hourly: &Hourly, index: usize, terrain_elev_m: f64) -> bool {
+    let surface_hpa = surface_pressure_hpa(hourly, index, terrain_elev_m);
+    let levels = collect_levels_above_ground(hourly, index, terrain_elev_m, surface_hpa);
+    if let Some(lowest) = levels.first() {
+        return lowest.rh.is_some_and(|rh| rh >= 95.0);
+    }
+    num_at(hourly, "relative_humidity_2m", index).is_some_and(|rh| rh >= 95.0)
+}
+
 fn cover_or_rh(sample: &LevelSample, rh_fill: f64) -> f64 {
     if let Some(cover) = sample.cover {
         cover

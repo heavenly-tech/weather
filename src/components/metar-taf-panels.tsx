@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FlightCategoryBadge } from "@/components/flight-category-badge";
-import { formatTemp, formatUtc, formatWind } from "@/lib/format";
+import { formatCloudBases, formatTemp, formatUtc, formatWind } from "@/lib/format";
 import { formatVisM } from "@/lib/visibility";
 import type { MetarObservation, TafForecast } from "@/lib/types";
 
@@ -41,9 +41,7 @@ export function MetarPanel({ metar }: { metar: MetarObservation }) {
           <div>
             <dt className="text-muted-foreground">Ceiling</dt>
             <dd>
-              {metar.clouds.length
-                ? metar.clouds.map((c) => `${c.cover}${c.baseFt ?? ""}`).join(" ")
-                : metar.cover ?? "—"}
+              {metar.clouds.length ? formatCloudBases(metar.clouds) : metar.cover ?? "—"}
             </dd>
           </div>
         </dl>
@@ -84,7 +82,7 @@ export function TafPanel({ taf }: { taf: TafForecast }) {
                 <div className="text-muted-foreground">
                   {formatUtc(p.from)} · {formatWind(p.windDirDeg, p.windKt)} · vis {formatVisM(p.visM)}
                   {p.wx ? ` · ${p.wx}` : ""} ·{" "}
-                  {p.clouds.map((c) => `${c.cover}${c.baseFt ?? ""}`).join(" ") || "NSC"}
+                  {p.clouds.length ? formatCloudBases(p.clouds) : "NSC"}
                 </div>
               </div>
             ))

@@ -327,7 +327,7 @@ fn metar_stamp_time_qnh_and_gust_order() {
 }
 
 #[test]
-fn negative_half_temperature_group_matches_absolute_js_round() {
+fn negative_half_temperature_group_rounds_toward_the_warmer_degree() {
     let hourly = json!({
         "time": ["2026-11-17T06:00"],
         "temperature_2m": [-1.5],
@@ -348,7 +348,7 @@ fn negative_half_temperature_group_matches_absolute_js_round() {
         &hourly,
         0,
     );
-    assert!(raw.raw.contains("M02/M01"), "{}", raw.raw);
+    assert!(raw.raw.contains("M01/M00"), "{}", raw.raw);
     let m00 = json!({
         "time": ["2026-11-17T06:00"],
         "temperature_2m": [-0.4],
@@ -1009,7 +1009,10 @@ fn ecmwf_layer_trace_mid_deck_lcl_and_missing_fields() {
     assert_eq!(rain600.clouds, format!("BKN{}", hundreds(agl600)));
     assert_eq!(rain600.effective_ceil_ft, Some(agl600));
     assert!(rain600.rmk_extra.iter().any(|item| item == "CLD EST"));
-    assert!(has_plain_ra_or_dz(&rain600.weather));
+    assert!(rain600
+        .weather
+        .split_whitespace()
+        .any(|token| token == "-RA"));
     assert!(!rain600.weather.contains("SHRA"));
 
     let shared = json!({
@@ -1057,7 +1060,10 @@ fn ecmwf_layer_trace_mid_deck_lcl_and_missing_fields() {
         Some("ecmwf_ifs025"),
     );
     assert!(with_mid.clouds.starts_with("BKN"));
-    assert!(has_plain_ra_or_dz(&with_mid.weather));
+    assert!(with_mid
+        .weather
+        .split_whitespace()
+        .any(|token| token == "-RA"));
     assert!(!with_mid.weather.contains("SHRA"));
 }
 
@@ -1191,7 +1197,24 @@ fn haze_drop_obscuration_vv_and_category() {
         Some("gfs_seamless"),
     );
     assert_eq!(fog_rain.clouds, "VV000");
-    assert!(fog_rain.weather == "-RA FG" || fog_rain.weather == "-DZ FG");
+    assert!(
+        fog_rain
+            .weather
+            .split_whitespace()
+            .any(|token| token == "-RA")
+            || fog_rain
+                .weather
+                .split_whitespace()
+                .any(|token| token == "-DZ")
+    );
+    assert!(
+        !fog_rain
+            .weather
+            .split_whitespace()
+            .any(|token| token == "FG"),
+        "daytime obscured rain is not FG: {}",
+        fog_rain.weather
+    );
     let fog_metar = metar(
         "SCTB",
         649.0,
@@ -1201,7 +1224,12 @@ fn haze_drop_obscuration_vv_and_category() {
         &obscured,
         0,
     );
-    assert!(fog_metar.raw.contains("FG") && fog_metar.raw.contains("VV000"));
+    assert!(fog_metar.raw.contains("VV000"), "{}", fog_metar.raw);
+    assert!(
+        !fog_metar.raw.split_whitespace().any(|token| token == "FG"),
+        "12:00 UTC is day at SCTB: {}",
+        fog_metar.raw
+    );
 
     let agl_shower = 250.0 * M_TO_FT;
     let heavy = json!({
@@ -1385,14 +1413,17 @@ fn visibility_gust_and_nsw() {
 
 #[test]
 fn vis_wx_thresholds_br_fg_and_vv_rules() {
-    assert_eq!(vis_obscuration_wx(Some(800.0), Some(70.0)), "FG");
-    assert_eq!(vis_obscuration_wx(Some(3000.0), Some(85.0)), "BR");
-    assert_eq!(vis_obscuration_wx(Some(3000.0), Some(60.0)), "HZ");
-    assert_eq!(vis_obscuration_wx(Some(5000.0), Some(85.0)), "BR");
-    assert_eq!(vis_obscuration_wx(Some(5000.0), Some(80.0)), "BR");
-    assert_eq!(vis_obscuration_wx(Some(5000.0), Some(60.0)), "HZ");
-    assert_eq!(vis_obscuration_wx(Some(5001.0), Some(95.0)), "");
-    assert_eq!(vis_obscuration_wx(Some(9999.0), Some(95.0)), "");
+    assert_eq!(vis_obscuration_wx(Some(800.0), Some(70.0), true), "FG");
+    assert_eq!(vis_obscuration_wx(Some(800.0), Some(97.0), false), "");
+    assert_eq!(vis_obscuration_wx(Some(1500.0), Some(90.0), false), "");
+    assert_eq!(vis_obscuration_wx(Some(1500.0), Some(60.0), false), "HZ");
+    assert_eq!(vis_obscuration_wx(Some(3000.0), Some(85.0), false), "BR");
+    assert_eq!(vis_obscuration_wx(Some(3000.0), Some(60.0), false), "HZ");
+    assert_eq!(vis_obscuration_wx(Some(5000.0), Some(85.0), false), "BR");
+    assert_eq!(vis_obscuration_wx(Some(5000.0), Some(80.0), false), "BR");
+    assert_eq!(vis_obscuration_wx(Some(5000.0), Some(60.0), false), "HZ");
+    assert_eq!(vis_obscuration_wx(Some(5001.0), Some(95.0), true), "");
+    assert_eq!(vis_obscuration_wx(Some(9999.0), Some(95.0), true), "");
 
     let base = json!({
         "time": ["t"],
@@ -1477,14 +1508,16 @@ fn vis_wx_thresholds_br_fg_and_vv_rules() {
     let floor = estimate_visibility_meters(98.0, 0.0);
     assert!(floor > 4000.0);
     let surface = json!({
-        "time": ["t"],
+        "time": ["2026-11-17T05:00"],
         "temperature_2m": [10],
         "dew_point_2m": [9.7],
         "relative_humidity_2m": [98],
+        "wind_speed_10m": [4],
         "cloud_cover_low": [95],
         "surface_pressure": [980],
         "cloud_cover_925hPa": [90],
         "geopotential_height_925hPa": [649.0 + 20.0],
+        "relative_humidity_925hPa": [98],
         "precipitation": [0],
         "rain": [0],
         "showers": [0]
@@ -1514,14 +1547,50 @@ fn vis_wx_thresholds_br_fg_and_vv_rules() {
     );
     assert!(surface_metar.raw.contains("FG") && surface_metar.raw.contains("VV000"));
     assert_est_only_in_trailing_rmk(&surface_metar.raw).unwrap();
+    let mut day = surface.clone();
+    day["time"] = json!(["2026-11-17T16:00"]);
+    assert!(
+        !derive(&day, 0, 649.0, "SCTB", Some(400.0), false, true, None)
+            .weather
+            .split_whitespace()
+            .any(|token| token == "FG")
+    );
+    let mut windy = surface.clone();
+    windy["wind_speed_10m"] = json!([20]);
+    assert!(
+        !derive(&windy, 0, 649.0, "SCTB", Some(400.0), false, true, None)
+            .weather
+            .split_whitespace()
+            .any(|token| token == "FG")
+    );
+    let mut dry = surface.clone();
+    dry["relative_humidity_925hPa"] = json!([40]);
+    dry["relative_humidity_2m"] = json!([40]);
+    assert!(
+        !derive(&dry, 0, 649.0, "SCTB", Some(400.0), false, true, None)
+            .weather
+            .split_whitespace()
+            .any(|token| token == "FG")
+    );
+    let mut wide = surface.clone();
+    wide["dew_point_2m"] = json!([8.0]);
+    assert!(
+        !derive(&wide, 0, 649.0, "SCTB", Some(400.0), false, true, None)
+            .weather
+            .split_whitespace()
+            .any(|token| token == "FG")
+    );
 
     let manual = json!({
-        "time": ["t"],
+        "time": ["2026-11-17T05:00"],
         "temperature_2m": [11],
         "dew_point_2m": [10],
         "relative_humidity_2m": [90],
+        "wind_speed_10m": [4],
         "cloud_cover_low": [90],
         "surface_pressure": [980],
+        "geopotential_height_925hPa": [800],
+        "relative_humidity_925hPa": [98],
         "precipitation": [0],
         "rain": [0],
         "showers": [0],

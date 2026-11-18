@@ -24,7 +24,7 @@ export function SynopticDesk({ envelope }: { envelope: ProductEnvelope<SynopticP
       <div className="space-y-4">
         <ProductMeta envelope={envelope} />
         <div className="grid gap-4 lg:grid-cols-2">
-          {envelope.data.map((chart) => (
+          {(envelope.data ?? []).map((chart) => (
             <Card key={chart.id}>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between gap-3">

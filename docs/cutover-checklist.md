@@ -32,11 +32,11 @@ One probe is an explained difference, and the script allows only that shape:
 
 These other differences are documented and pinned by Rust tests. They are not expected on the live probe above, and the script does not ignore them if they show up on a normal route:
 
-- A failed fetch with no HTTP status on the generated routes is `502` JSON on Rust. Next left that throw uncaught.
+- A failed fetch with no HTTP status on the generated routes is `502` JSON `{"error":"Upstream unavailable","code":"transport"}` on Rust. Next left that throw uncaught.
 - The Rust Open-Meteo client allows only `https://api.open-meteo.com/`, refuses `apikey` / `api_key` / `customer-api`, and does not follow redirects.
 - `OPEN_METEO_BATCH_SIZE` and `OPEN_METEO_BATCH_DELAY_MS` are read on each batch.
-- An Open-Meteo 200 that is not JSON is `502` JSON on Rust. Next served an HTML 500.
-- An AWC 200 that is not JSON stays on the mock envelope. The warning text is serde's message rather than Node's `Unexpected token` message.
+- An Open-Meteo 200 that is not JSON is `502` JSON `{"error":"Upstream unavailable","code":"bad-json"}` on Rust. Next served an HTML 500.
+- An AWC 200 that is not JSON is an observations-unavailable envelope. It is not a mock METAR or TAF unless `WEATHER_DEV_MOCK=1`.
 
 `node scripts/dual-run-diff.mjs --self-test` checks the route count and that classifier without opening a socket. CI runs the self-test. It does not run the live compare.
 
@@ -118,4 +118,4 @@ HTML responses send:
 
 Desk JSON goes through `/api`, so `connect-src` is `'self'` plus the OpenStreetMap tile host the globe actually requests. `style-src` allows the inline style attributes Cesium writes on its widget. `script-src` does not allow `'unsafe-eval'`. The 3D field and the Andes map use `CesiumWidget`, not `Viewer`, so Knockout is not in the bundle. CI runs `node scripts/check-csp-globe.mjs` against the scratch image and fails if the globe canvas does not render or the console reports a CSP violation.
 
-The TAF TEMPO row that shows a coded cloud group beside feet (`SCT8000 BKN20000`) is unchanged. That display fix is a later PR.
+The TAF TEMPO cloud row renders bases in feet with a space and a unit (`SCT 8000 ft, BKN 20000 ft`).
